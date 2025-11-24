@@ -1,0 +1,9 @@
+# Crawlee storage
+.crawlee/
+
+# Build output
+dist/
+
+# Logs
+*.log
+storage/
