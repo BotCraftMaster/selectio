@@ -38,6 +38,10 @@ async function runParser() {
         });
 
         log.info("✍️  Заполнение email...");
+        await page.click('input[type="text"][name="username"]', {
+          clickCount: 3,
+        });
+        await page.keyboard.press("Backspace");
         await page.type('input[type="text"][name="username"]', email);
 
         log.info("🔑 Нажатие на кнопку 'Войти с паролем'...");
@@ -182,46 +186,16 @@ async function parseResponses(page: any, url: string) {
 
   const responses = await page.$$eval("[data-resume-id]", (elements: any[]) => {
     return elements.map((el) => {
-      const getText = (selector: string) => {
-        const node = el.querySelector(selector);
-        return node ? node.textContent.trim() : "";
-      };
-      const getAttr = (selector: string, attr: string) => {
-        const node = el.querySelector(selector);
-        return node ? node.getAttribute(attr) : "";
-      };
-
-      // Helper to find field content by title
-      const getFieldContent = (titleText: string) => {
-        const fields = Array.from(
-          el.querySelectorAll(".field--FCBCQo0nBg5byw86"),
-        );
-        const field = fields.find((f: any) => {
-          const title = f.querySelector(".title--qEdGQ1tNR4koZr8t");
-          return title && title.textContent.trim().includes(titleText);
-        });
-        if (field) {
-          const content = (field as any).querySelector(
-            ".content--vAUqut0YCUxg4xgv",
-          );
-          return content ? content.textContent.trim() : "";
-        }
-        return "";
-      };
+      const link = el.querySelector('a[data-qa*="serp-item__title"]');
+      const url = link ? link.getAttribute("href") : "";
+      const nameEl = el.querySelector(
+        'span[data-qa="resume-serp__resume-fullname"]',
+      );
+      const name = nameEl ? nameEl.textContent.trim() : "";
 
       return {
-        id: el.getAttribute("data-resume-id"),
-        title: getText('[data-qa="serp-item__title-text"]'),
-        url: getAttr('[data-qa="serp-item__title"]', "href"),
-        fullName: getText('[data-qa="resume-serp__resume-fullname"]'),
-        age: getText('[data-qa="resume-serp__resume-age"]'),
-        experience: getFieldContent("Опыт работы"),
-        lastExperience: getFieldContent("Последнее место работы"),
-        tags: Array.from(
-          el.querySelectorAll(
-            '[data-qa="resume-card-tags"] .magritte-tag__label___YHV-o_4-0-24',
-          ),
-        ).map((tag: any) => tag.textContent.trim()),
+        name,
+        url: url ? new URL(url, "https://hh.ru").href : "",
       };
     });
   });
