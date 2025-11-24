@@ -158,11 +158,9 @@ async function parseVacancies(page: any) {
 
   console.log(`✅ Найдено активных вакансий: ${vacancies.length}`);
 
-  // Fetch detailed descriptions for each vacancy
   for (const vacancy of vacancies) {
     let vacancyUrl = vacancy.url;
 
-    // If URL is not found, construct it from vacancy ID
     if (!vacancyUrl && vacancy.id) {
       vacancyUrl = `https://hh.ru/vacancy/${vacancy.id}`;
     }
@@ -206,9 +204,12 @@ async function parseVacancyDetails(page: any, url: string): Promise<string> {
 async function parseResumeExperience(
   page: any,
   url: string,
-): Promise<{ experience: string }> {
+): Promise<{ experience: string; contacts: any }> {
   console.log(`📄 Переход на страницу резюме: ${url}`);
   await page.goto(url, { waitUntil: "networkidle2" });
+
+  let experience = "";
+  let contacts = null;
 
   try {
     await page.waitForSelector('div[data-qa="resume-experience-block"]', {
@@ -221,11 +222,43 @@ async function parseResumeExperience(
     );
 
     const { result } = stripHtml(htmlContent);
-    return { experience: result.trim() };
+    experience = result.trim();
   } catch (e) {
     console.log("⚠️ Не удалось получить опыт работы из резюме.");
-    return { experience: "" };
   }
+
+  // Extract resume ID from URL
+  // URL format: https://hh.ru/resume/75e1c092000fa74cfd004a23a14174456d7774
+  const resumeIdMatch = url.match(/\/resume\/([a-f0-9]+)/);
+  if (resumeIdMatch && resumeIdMatch[1]) {
+    const resumeId = resumeIdMatch[1];
+    const contactsUrl = `https://hh.ru/resume/contacts/${resumeId}?simHash=&goal=Contacts_Phone`;
+
+    try {
+      console.log(`📞 Получение контактов: ${contactsUrl}`);
+
+      // Make GET request using page.evaluate to use browser's fetch with cookies
+      contacts = await page.evaluate(async (url: string) => {
+        const response = await fetch(url, {
+          method: "GET",
+          credentials: "include",
+          headers: {
+            Accept: "application/json",
+          },
+        });
+        return await response.json();
+      }, contactsUrl);
+
+      console.log("✅ Контакты получены");
+    } catch (e) {
+      console.log("⚠️ Не удалось получить контакты.");
+      console.error(e);
+    }
+  } else {
+    console.log("⚠️ Не удалось извлечь ID резюме из URL.");
+  }
+
+  return { experience, contacts };
 }
 
 async function parseResponses(page: any, url: string) {
@@ -258,10 +291,9 @@ async function parseResponses(page: any, url: string) {
   console.log(`✅ Найдено откликов: ${responses.length}`);
   console.log(JSON.stringify(responses, null, 2));
 
-  // Parse experience data from the first response
   if (responses.length > 0 && responses[0].url) {
     const experienceData = await parseResumeExperience(page, responses[0].url);
-    console.log("\n📊 Опыт работы первого кандидата:");
+    console.log("\n📊 Данные первого кандидата (опыт работы и контакты):");
     console.log(JSON.stringify(experienceData, null, 2));
   }
 
