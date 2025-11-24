@@ -1,0 +1,15 @@
+{
+  "servers": {
+    "context7": {
+      "type": "stdio",
+      "command": "bunx",
+      "args": [
+        "-y",
+        "@upstash/context7-mcp",
+        "--api-key",
+        "ctx7sk-3300007b-e2ac-4596-9695-c9b304ab17d8"
+      ]
+    }
+  },
+  "inputs": []
+}
