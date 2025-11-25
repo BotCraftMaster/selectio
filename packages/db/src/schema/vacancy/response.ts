@@ -1,5 +1,6 @@
 import {
   jsonb,
+  pgEnum,
   pgTable,
   text,
   timestamp,
@@ -11,6 +12,23 @@ import { z } from "zod/v4";
 
 import { vacancy } from "./vacancy";
 
+export const responseStatusEnum = pgEnum("response_status", [
+  "NEW",
+  "EVALUATED",
+  "DIALOG_APPROVED",
+  "INTERVIEW_HH",
+  "INTERVIEW_WHATSAPP",
+  "COMPLETED",
+  "SKIPPED",
+]);
+
+export const hrSelectionStatusEnum = pgEnum("hr_selection_status", [
+  "INVITE",
+  "RECOMMENDED",
+  "NOT_RECOMMENDED",
+  "REJECTED",
+]);
+
 export const vacancyResponse = pgTable("vacancy_responses", {
   id: uuid("id").primaryKey().defaultRandom(),
   vacancyId: varchar("vacancy_id", { length: 50 })
@@ -18,6 +36,8 @@ export const vacancyResponse = pgTable("vacancy_responses", {
     .references(() => vacancy.id, { onDelete: "cascade" }),
   resumeUrl: text("resume_url").notNull(),
   candidateName: varchar("candidate_name", { length: 500 }),
+  status: responseStatusEnum("status").default("NEW").notNull(),
+  hrSelectionStatus: hrSelectionStatusEnum("hr_selection_status"),
   experience: text("experience"),
   contacts: jsonb("contacts"),
   languages: text("languages"),
@@ -34,6 +54,20 @@ export const CreateVacancyResponseSchema = createInsertSchema(vacancyResponse, {
   vacancyId: z.string().max(50),
   resumeUrl: z.string(),
   candidateName: z.string().max(500).optional(),
+  status: z
+    .enum([
+      "NEW",
+      "EVALUATED",
+      "DIALOG_APPROVED",
+      "INTERVIEW_HH",
+      "INTERVIEW_WHATSAPP",
+      "COMPLETED",
+      "SKIPPED",
+    ])
+    .default("NEW"),
+  hrSelectionStatus: z
+    .enum(["INVITE", "RECOMMENDED", "NOT_RECOMMENDED", "REJECTED"])
+    .optional(),
 }).omit({
   id: true,
   createdAt: true,

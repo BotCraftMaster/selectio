@@ -14,6 +14,7 @@ export async function saveResponseToDb(response: SaveResponseData) {
         vacancyId: response.vacancyId,
         resumeUrl: response.resumeUrl,
         candidateName: response.candidateName,
+        status: "NEW",
         experience: response.experience,
         contacts: response.contacts,
         languages: response.languages,
