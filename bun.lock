@@ -147,6 +147,7 @@
       "name": "@selectio/jobs",
       "version": "0.1.0",
       "dependencies": {
+        "@selectio/db": "workspace:*",
         "@t3-oss/env-core": "0.13.8",
         "crawlee": "3.15.3",
         "puppeteer": "24.31.0",

@@ -1,3 +1,6 @@
+import { eq } from "@selectio/db";
+import { db } from "@selectio/db/client";
+import { vacancy, vacancyResponse } from "@selectio/db/schema";
 import { type Log, PuppeteerCrawler } from "crawlee";
 import type { CookieParam, Page } from "puppeteer";
 import puppeteer from "puppeteer-extra";
@@ -71,7 +74,7 @@ async function runParser() {
         for (const vacancy of vacancies) {
           if (vacancy.responsesUrl) {
             const fullUrl = new URL(vacancy.responsesUrl, "https://hh.ru").href;
-            await parseResponses(page, fullUrl);
+            await parseResponses(page, fullUrl, vacancy.id);
           }
         }
 
@@ -173,8 +176,11 @@ async function parseVacancies(page: Page) {
         : new URL(vacancyUrl, "https://hh.ru").href;
       const description = await parseVacancyDetails(page, fullUrl);
       vacancy.description = description;
-      vacancy.url = fullUrl; // Update URL in the object
+      vacancy.url = fullUrl;
     }
+
+    // Сохраняем или обновляем вакансию в БД
+    await saveVacancyToDb(vacancy);
   }
 
   console.log(JSON.stringify(vacancies, null, 2));
@@ -263,7 +269,7 @@ async function parseResumeExperience(
   return { experience, contacts };
 }
 
-async function parseResponses(page: Page, url: string) {
+async function parseResponses(page: Page, url: string, vacancyId: string) {
   console.log(`📄 Переход на страницу откликов: ${url}`);
   await page.goto(url, { waitUntil: "networkidle2" });
 
@@ -301,9 +307,93 @@ async function parseResponses(page: Page, url: string) {
     const experienceData = await parseResumeExperience(page, firstResponse.url);
     console.log("\n📊 Данные первого кандидата (опыт работы и контакты):");
     console.log(JSON.stringify(experienceData, null, 2));
+
+    // Сохраняем отклик в БД
+    await saveResponseToDb({
+      vacancyId,
+      resumeUrl: firstResponse.url,
+      candidateName: firstResponse.name,
+      experience: experienceData.experience,
+      contacts: experienceData.contacts,
+    });
   }
 
   return responses;
+}
+
+async function saveVacancyToDb(vacancyData: {
+  id: string;
+  title: string;
+  url: string | null;
+  views: string;
+  responses: string;
+  newResponses: string;
+  resumesInProgress: string;
+  suitableResumes: string;
+  region: string;
+  description: string;
+}) {
+  try {
+    const existingVacancy = await db.query.vacancy.findFirst({
+      where: eq(vacancy.id, vacancyData.id),
+    });
+
+    const dataToSave = {
+      id: vacancyData.id,
+      title: vacancyData.title,
+      url: vacancyData.url || undefined,
+      views: Number.parseInt(vacancyData.views) || 0,
+      responses: Number.parseInt(vacancyData.responses) || 0,
+      newResponses: Number.parseInt(vacancyData.newResponses) || 0,
+      resumesInProgress: Number.parseInt(vacancyData.resumesInProgress) || 0,
+      suitableResumes: Number.parseInt(vacancyData.suitableResumes) || 0,
+      region: vacancyData.region,
+      description: vacancyData.description,
+      isActive: true,
+    };
+
+    if (existingVacancy) {
+      await db
+        .update(vacancy)
+        .set(dataToSave)
+        .where(eq(vacancy.id, vacancyData.id));
+      console.log(`✅ Вакансия обновлена: ${vacancyData.title}`);
+    } else {
+      await db.insert(vacancy).values(dataToSave);
+      console.log(`✅ Вакансия создана: ${vacancyData.title}`);
+    }
+  } catch (error) {
+    console.error(`❌ Ошибка сохранения вакансии ${vacancyData.id}:`, error);
+  }
+}
+
+async function saveResponseToDb(response: {
+  vacancyId: string;
+  resumeUrl: string;
+  candidateName: string;
+  experience: string;
+  contacts: unknown;
+}) {
+  try {
+    const existingResponse = await db.query.vacancyResponse.findFirst({
+      where: eq(vacancyResponse.resumeUrl, response.resumeUrl),
+    });
+
+    if (!existingResponse) {
+      await db.insert(vacancyResponse).values({
+        vacancyId: response.vacancyId,
+        resumeUrl: response.resumeUrl,
+        candidateName: response.candidateName,
+        experience: response.experience,
+        contacts: response.contacts,
+      });
+      console.log(`✅ Отклик сохранен: ${response.candidateName}`);
+    } else {
+      console.log(`ℹ️ Отклик уже существует: ${response.candidateName}`);
+    }
+  } catch (error) {
+    console.error(`❌ Ошибка сохранения отклика:`, error);
+  }
 }
 
 async function performLogin(

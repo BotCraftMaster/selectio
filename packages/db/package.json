@@ -21,6 +21,7 @@
     "build": "tsc",
     "clean": "git clean -xdf .cache .turbo dist node_modules",
     "dev": "tsc",
+    "drop": "bun with-env bun src/scripts/drop-schema.ts",
     "format": "biome format .",
     "lint": "biome lint .",
     "check": "biome check .",
