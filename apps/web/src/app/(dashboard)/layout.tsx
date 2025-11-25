@@ -15,7 +15,7 @@ export default async function DashboardLayout({
   }
 
   return (
-    <>
+    <SidebarProvider>
       <AppSidebar
         user={{
           name: session.user.name,
@@ -24,6 +24,6 @@ export default async function DashboardLayout({
         }}
       />
       <SidebarInset>{children}</SidebarInset>
-    </>
+    </SidebarProvider>
   );
 }
