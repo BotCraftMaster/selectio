@@ -1,6 +1,5 @@
 import { PlaywrightCrawler } from "crawlee";
 
-import { env } from "./env";
 import { loadCookies } from "./utils/cookies";
 
 /**
@@ -13,7 +12,7 @@ async function exampleWithCookies() {
 
   if (!savedCookies) {
     console.error(
-      "❌ Cookies не найдены. Сначала выполните авторизацию: bun run hh:login",
+      "❌ Cookies не найдены. Сначала выполните авторизацию: bun run hh:login"
     );
     process.exit(1);
   }
@@ -51,7 +50,7 @@ async function exampleWithCookies() {
           log.info("✅ Авторизация активна!");
         } else {
           log.warning(
-            "⚠️  Возможно, сессия истекла. Требуется повторная авторизация.",
+            "⚠️  Возможно, сессия истекла. Требуется повторная авторизация."
           );
         }
 

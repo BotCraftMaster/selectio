@@ -1,10 +1,4 @@
-import {
-  cn,
-  SidebarProvider,
-  ThemeProvider,
-  ThemeToggle,
-  Toaster,
-} from "@selectio/ui";
+import { cn, ThemeProvider, ThemeToggle, Toaster } from "@selectio/ui";
 import { Analytics } from "@vercel/analytics/next";
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
