@@ -2,7 +2,7 @@ import type { Page } from "puppeteer";
 import { stripHtml } from "string-strip-html";
 import type { ResumeExperience } from "../types";
 import { HH_CONFIG } from "./config";
-import { humanBrowse, humanDelay, humanRead } from "./human-behavior";
+import { humanDelay } from "./human-behavior";
 
 export async function parseResumeExperience(
   page: Page,
@@ -15,9 +15,11 @@ export async function parseResumeExperience(
   while (retries > 0) {
     try {
       await page.goto(url, {
-        waitUntil: "networkidle2",
+        waitUntil: "domcontentloaded",
         timeout: 30000,
       });
+      // Дополнительная задержка для загрузки динамического контента
+      await humanDelay(1000, 2000);
       break;
     } catch (error) {
       retries--;
@@ -33,8 +35,8 @@ export async function parseResumeExperience(
     }
   }
 
-  // Имитируем чтение резюме
-  await humanRead(page);
+  // Имитируем чтение резюме (без движения мыши, чтобы избежать detached frame)
+  await humanDelay(2000, 4000);
 
   let experience = "";
   let languages = "";
@@ -45,20 +47,24 @@ export async function parseResumeExperience(
 
   // Парсинг опыта работы
   try {
-    await page.waitForSelector('div[data-qa="resume-experience-block"]', {
-      timeout: HH_CONFIG.timeouts.selector,
-    });
-
-    // Небольшая задержка перед чтением
-    await humanDelay(500, 1500);
-
-    const htmlContent = await page.$eval(
+    const experienceElement = await page.waitForSelector(
       'div[data-qa="resume-experience-block"]',
-      (el: HTMLElement) => el.innerHTML
+      {
+        timeout: HH_CONFIG.timeouts.selector,
+      }
     );
 
-    const { result } = stripHtml(htmlContent);
-    experience = result.trim();
+    if (experienceElement) {
+      // Небольшая задержка перед чтением
+      await humanDelay(500, 1500);
+
+      const htmlContent = await experienceElement.evaluate(
+        (el: HTMLElement) => el.innerHTML
+      );
+
+      const { result } = stripHtml(htmlContent);
+      experience = result.trim();
+    }
   } catch (_e) {
     console.log("⚠️ Не удалось получить опыт работы из резюме.");
   }
@@ -67,13 +73,16 @@ export async function parseResumeExperience(
   try {
     await humanDelay(300, 800);
 
-    const htmlContent = await page.$eval(
-      'div[data-qa="resume-languages-block"]',
-      (el: HTMLElement) => el.innerHTML
+    const languagesElement = await page.$(
+      'div[data-qa="resume-languages-block"]'
     );
-
-    const { result } = stripHtml(htmlContent);
-    languages = result.trim();
+    if (languagesElement) {
+      const htmlContent = await languagesElement.evaluate(
+        (el: HTMLElement) => el.innerHTML
+      );
+      const { result } = stripHtml(htmlContent);
+      languages = result.trim();
+    }
   } catch (_e) {
     console.log("⚠️ Не удалось получить языки из резюме.");
   }
@@ -82,31 +91,42 @@ export async function parseResumeExperience(
   try {
     await humanDelay(300, 800);
 
-    const htmlContent = await page.$eval(
-      'div[data-qa="resume-about-block"]',
-      (el: HTMLElement) => el.innerHTML
-    );
-
-    const { result } = stripHtml(htmlContent);
-    about = result.trim();
+    const aboutElement = await page.$('div[data-qa="resume-about-block"]');
+    if (aboutElement) {
+      const htmlContent = await aboutElement.evaluate(
+        (el: HTMLElement) => el.innerHTML
+      );
+      const { result } = stripHtml(htmlContent);
+      about = result.trim();
+    }
   } catch (_e) {
     console.log("⚠️ Не удалось получить информацию о себе из резюме.");
   }
 
-  // Имитируем скролл для просмотра остальной части резюме
-  await humanBrowse(page);
+  // Легкий скролл для загрузки остального контента (без humanBrowse чтобы избежать detached frame)
+  try {
+    await page.evaluate(() => {
+      window.scrollBy({ top: 400, behavior: "smooth" });
+    });
+    await humanDelay(1000, 2000);
+  } catch (_e) {
+    // Игнорируем ошибки скролла
+  }
 
   // Парсинг образования
   try {
     await humanDelay(300, 800);
 
-    const htmlContent = await page.$eval(
-      'div[data-qa="resume-education-block"]',
-      (el: HTMLElement) => el.innerHTML
+    const educationElement = await page.$(
+      'div[data-qa="resume-education-block"]'
     );
-
-    const { result } = stripHtml(htmlContent);
-    education = result.trim();
+    if (educationElement) {
+      const htmlContent = await educationElement.evaluate(
+        (el: HTMLElement) => el.innerHTML
+      );
+      const { result } = stripHtml(htmlContent);
+      education = result.trim();
+    }
   } catch (_e) {
     console.log("⚠️ Не удалось получить образование из резюме.");
   }
@@ -115,13 +135,16 @@ export async function parseResumeExperience(
   try {
     await humanDelay(300, 800);
 
-    const htmlContent = await page.$eval(
-      'div[data-qa="resume-education-courses-block"]',
-      (el: HTMLElement) => el.innerHTML
+    const coursesElement = await page.$(
+      'div[data-qa="resume-education-courses-block"]'
     );
-
-    const { result } = stripHtml(htmlContent);
-    courses = result.trim();
+    if (coursesElement) {
+      const htmlContent = await coursesElement.evaluate(
+        (el: HTMLElement) => el.innerHTML
+      );
+      const { result } = stripHtml(htmlContent);
+      courses = result.trim();
+    }
   } catch (_e) {
     console.log("⚠️ Не удалось получить курсы из резюме.");
   }
