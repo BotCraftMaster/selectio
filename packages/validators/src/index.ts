@@ -1,8 +1,7 @@
-import { z } from "zod/v4";
+// Re-export all validation schemas from their respective files
 
-export const unused = z.string().describe(
-  `This lib is currently not used as we use drizzle-zod for simple schemas
-   But as your application grows and you need other validators to share
-   with back and frontend, you can put them in here
-  `,
-);
+export * from "./account";
+export * from "./data-table";
+export * from "./login";
+export * from "./otp";
+export * from "./profile";

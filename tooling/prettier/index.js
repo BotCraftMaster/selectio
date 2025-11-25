@@ -15,7 +15,7 @@ const config = {
     "^(next/(.*)$)|^(next$)",
     "<THIRD_PARTY_MODULES>",
     "",
-    "<TYPES>^@acme",
+    "<TYPES>^@selectio",
     "^@selectio/(.*)$",
     "",
     "<TYPES>^[.|..|~]",

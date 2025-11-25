@@ -1,28 +1,28 @@
 {
-  "name": "@selectio/validators",
+  "name": "@selectio/lib",
+  "version": "0.1.0",
   "private": true,
   "type": "module",
   "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "default": "./src/index.ts"
-    }
+    ".": "./dist/index.js"
   },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "license": "MIT",
   "scripts": {
-    "build": "tsc",
+    "build": "tsup",
     "clean": "git clean -xdf .cache .turbo dist node_modules",
     "dev": "tsc",
-    "format": "biome format .",
-    "lint": "biome lint .",
-    "check": "biome check .",
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
   "dependencies": {
-    "zod": "4.1.13"
+    "@selectio/config": "workspace:*",
+    "@aws-sdk/client-s3": "3.939.0",
+    "@aws-sdk/s3-request-presigner": "3.939.0"
   },
   "devDependencies": {
     "@selectio/tsconfig": "workspace:*",
+    "tsup": "8.5.1",
     "typescript": "5.9.3"
   }
 }
