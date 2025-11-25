@@ -1,11 +1,10 @@
-import type { TRPCRouterRecord } from "@trpc/server";
-
+import { createTRPCRouter } from "../../trpc";
 import { getById } from "./get-by-id";
 import { list } from "./list";
 import { responsesRouter } from "./responses";
 
-export const vacancyRouter = {
+export const vacancyRouter = createTRPCRouter({
   list,
   getById,
-  responses: responsesRouter,
-} satisfies TRPCRouterRecord;
+  responses: createTRPCRouter(responsesRouter),
+});
