@@ -10,78 +10,109 @@ export async function parseResponses(
   url: string,
   vacancyId: string
 ): Promise<ResponseData[]> {
-  console.log(`📄 Переход на страницу откликов: ${url}`);
-  await page.goto(url, { waitUntil: "networkidle2" });
+  const allResponses: ResponseData[] = [];
+  let currentPage = 0;
+  let hasMorePages = true;
 
-  // Небольшая пауза после загрузки страницы
-  await humanDelay(1000, 2000);
+  // Извлекаем vacancyId из URL если он там есть
+  const urlObj = new URL(url, HH_CONFIG.urls.baseUrl);
+  const urlVacancyId = urlObj.searchParams.get("vacancyId") || vacancyId;
 
-  try {
-    await page.waitForSelector("[data-resume-id]", {
-      timeout: HH_CONFIG.timeouts.selector,
-    });
-  } catch (_e) {
-    console.log("⚠️ Не найдено резюме на странице (возможно, нет откликов).");
-    return [];
-  }
+  while (hasMorePages) {
+    // Формируем URL для текущей страницы
+    const pageUrl =
+      currentPage === 0
+        ? `https://hh.ru/employer/vacancyresponses?vacancyId=${urlVacancyId}`
+        : `https://hh.ru/employer/vacancyresponses?vacancyId=${urlVacancyId}&page=${currentPage}`;
 
-  // Скроллим страницу для подгрузки всех откликов (как человек)
-  console.log("🔄 Скроллинг страницы для загрузки всех откликов...");
-  let previousCount = 0;
-  let currentCount = 0;
-  let noChangeCount = 0;
+    console.log(
+      `📄 Переход на страницу откликов: ${pageUrl} (страница ${currentPage})`
+    );
 
-  do {
-    previousCount = currentCount;
+    try {
+      await page.goto(pageUrl, { waitUntil: "networkidle2", timeout: 30000 });
+    } catch (error) {
+      console.error(
+        `❌ Ошибка загрузки страницы откликов ${currentPage}:`,
+        error
+      );
+      hasMorePages = false;
+      break;
+    }
 
-    // Получаем текущее количество откликов
-    currentCount = await page.$$eval("[data-resume-id]", (els) => els.length);
+    // Небольшая пауза после загрузки страницы
+    await humanDelay(1000, 2000);
 
-    // Скроллим вниз как человек (плавно, с паузами)
+    // Проверяем наличие контейнера с откликами
+    const hasResponses = await page
+      .waitForSelector('div[data-qa="vacancy-real-responses"]', {
+        timeout: HH_CONFIG.timeouts.selector,
+      })
+      .then(() => true)
+      .catch(() => false);
+
+    if (!hasResponses) {
+      console.log(
+        `⚠️ Контейнер с откликами не найден на странице ${currentPage}. Парсинг завершен.`
+      );
+      hasMorePages = false;
+      break;
+    }
+
+    // Скроллим страницу для подгрузки всех откликов (как человек)
+    console.log("🔄 Скроллинг страницы для загрузки откликов...");
     await humanScroll(page);
-
-    // Случайная задержка для подгрузки (имитация чтения)
     await humanDelay(1500, 3000);
 
-    // Если количество не изменилось, увеличиваем счетчик
-    if (currentCount === previousCount) {
-      noChangeCount++;
-    } else {
-      noChangeCount = 0;
-      console.log(`📊 Загружено откликов: ${currentCount}`);
+    // Парсим отклики на текущей странице
+    const pageResponses = await page.$$eval(
+      'div[data-qa="vacancy-real-responses"] [data-resume-id]',
+      (elements: Array<Element>) => {
+        return elements.map((el) => {
+          const link = el.querySelector('a[data-qa*="serp-item__title"]');
+          const url = link ? link.getAttribute("href") : "";
+          const nameEl = el.querySelector(
+            'span[data-qa="resume-serp__resume-fullname"]'
+          );
+          const name = nameEl ? nameEl.textContent?.trim() : "";
+
+          return {
+            name,
+            url: url ? new URL(url, "https://hh.ru").href : "",
+          };
+        });
+      }
+    );
+
+    if (pageResponses.length === 0) {
+      console.log(
+        `⚠️ Не найдено откликов на странице ${currentPage}. Парсинг завершен.`
+      );
+      hasMorePages = false;
+      break;
     }
 
-    // Если 3 раза подряд количество не менялось, значит все загружено
-  } while (noChangeCount < 3);
+    console.log(
+      `✅ Найдено откликов на странице ${currentPage}: ${pageResponses.length}`
+    );
+    allResponses.push(...pageResponses);
 
-  const responses = await page.$$eval(
-    "[data-resume-id]",
-    (elements: Array<Element>) => {
-      return elements.map((el) => {
-        const link = el.querySelector('a[data-qa*="serp-item__title"]');
-        const url = link ? link.getAttribute("href") : "";
-        const nameEl = el.querySelector(
-          'span[data-qa="resume-serp__resume-fullname"]'
-        );
-        const name = nameEl ? nameEl.textContent?.trim() : "";
+    // Переходим к следующей странице
+    currentPage++;
+    await humanDelay(2000, 4000);
+  }
 
-        return {
-          name,
-          url: url ? new URL(url, "https://hh.ru").href : "",
-        };
-      });
-    }
-  );
-
-  console.log(`✅ Всего найдено откликов: ${responses.length}`);
+  console.log(`✅ Всего найдено откликов: ${allResponses.length}`);
 
   // Сохраняем все отклики
-  for (let i = 0; i < responses.length; i++) {
-    const response = responses[i];
+  for (let i = 0; i < allResponses.length; i++) {
+    const response = allResponses[i];
     if (response?.url) {
       try {
         console.log(
-          `\n📊 Обработка кандидата ${i + 1}/${responses.length}: ${response.name}`
+          `\n📊 Обработка кандидата ${i + 1}/${allResponses.length}: ${
+            response.name
+          }`
         );
 
         // Случайная задержка между просмотром резюме (имитация человека)
@@ -107,12 +138,45 @@ export async function parseResponses(
           courses: experienceData.courses,
         });
       } catch (error) {
-        console.error(`❌ Ошибка обработки отклика ${response.name}:`, error);
+        const errorMessage =
+          error instanceof Error ? error.message : String(error);
+        console.error(
+          `❌ Ошибка обработки отклика ${response.name}:`,
+          errorMessage
+        );
+
+        // Если это ошибка detached frame, пытаемся восстановить страницу
+        if (
+          errorMessage.includes("detached") ||
+          errorMessage.includes("disposed")
+        ) {
+          console.log(
+            "🔄 Попытка восстановления после ошибки detached frame..."
+          );
+          try {
+            // Возвращаемся на страницу откликов
+            const recoveryUrl =
+              currentPage === 0
+                ? `https://hh.ru/employer/vacancyresponses?vacancyId=${urlVacancyId}`
+                : `https://hh.ru/employer/vacancyresponses?vacancyId=${urlVacancyId}&page=${currentPage - 1}`;
+            await page.goto(recoveryUrl, {
+              waitUntil: "networkidle2",
+              timeout: 30000,
+            });
+            await humanDelay(2000, 3000);
+          } catch (recoveryError) {
+            console.error(
+              "❌ Не удалось восстановить страницу:",
+              recoveryError
+            );
+          }
+        }
+
         // Пауза после ошибки
-        await humanDelay(2000, 4000);
+        await humanDelay(3000, 5000);
       }
     }
   }
 
-  return responses;
+  return allResponses;
 }

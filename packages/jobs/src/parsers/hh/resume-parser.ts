@@ -9,7 +9,29 @@ export async function parseResumeExperience(
   url: string
 ): Promise<ResumeExperience> {
   console.log(`📄 Переход на страницу резюме: ${url}`);
-  await page.goto(url, { waitUntil: "networkidle2" });
+
+  // Пытаемся перейти на страницу с повторными попытками
+  let retries = 3;
+  while (retries > 0) {
+    try {
+      await page.goto(url, {
+        waitUntil: "networkidle2",
+        timeout: 30000,
+      });
+      break;
+    } catch (error) {
+      retries--;
+      if (retries === 0) {
+        throw new Error(
+          `Не удалось загрузить страницу резюме после нескольких попыток: ${error}`
+        );
+      }
+      console.log(
+        `⚠️ Ошибка загрузки страницы, повторная попытка... (осталось попыток: ${retries})`
+      );
+      await humanDelay(2000, 4000);
+    }
+  }
 
   // Имитируем чтение резюме
   await humanRead(page);
