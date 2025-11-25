@@ -1,9 +1,10 @@
+import { SidebarProvider } from "@selectio/ui";
 import { ChartAreaInteractive, SectionCards } from "~/components/dashboard";
 import { SiteHeader } from "~/components/layout";
 
 export default async function Page() {
   return (
-    <>
+    <SidebarProvider>
       <SiteHeader title="Панель управления" />
       <div className="flex flex-1 flex-col">
         <div className="@container/main flex flex-1 flex-col gap-2">
@@ -15,6 +16,6 @@ export default async function Page() {
           </div>
         </div>
       </div>
-    </>
+    </SidebarProvider>
   );
 }

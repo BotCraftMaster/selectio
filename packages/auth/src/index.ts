@@ -1,9 +1,8 @@
+import { db } from "@selectio/db/client";
 import type { BetterAuthOptions, BetterAuthPlugin } from "better-auth";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { oAuthProxy } from "better-auth/plugins";
-
-import { db } from "@selectio/db/client";
+import { emailOTP, oAuthProxy } from "better-auth/plugins";
 
 export function initAuth<
   TExtraPlugins extends BetterAuthPlugin[] = [],
@@ -11,9 +10,13 @@ export function initAuth<
   baseUrl: string;
   productionUrl: string;
   secret: string | undefined;
-
-  discordClientId: string;
-  discordClientSecret: string;
+  googleClientId?: string;
+  googleClientSecret?: string;
+  sendEmail?: (data: {
+    email: string;
+    otp: string;
+    type: "sign-in" | "email-verification" | "forget-password";
+  }) => Promise<void>;
   extraPlugins?: TExtraPlugins;
 }) {
   const config = {
@@ -26,15 +29,25 @@ export function initAuth<
       oAuthProxy({
         productionURL: options.productionUrl,
       }),
+      emailOTP({
+        async sendVerificationOTP(data) {
+          if (options.sendEmail) {
+            await options.sendEmail(data);
+          }
+        },
+      }),
       ...(options.extraPlugins ?? []),
     ],
-    socialProviders: {
-      discord: {
-        clientId: options.discordClientId,
-        clientSecret: options.discordClientSecret,
-        redirectURI: `${options.productionUrl}/api/auth/callback/discord`,
-      },
-    },
+    socialProviders:
+      options.googleClientId && options.googleClientSecret
+        ? {
+            google: {
+              clientId: options.googleClientId,
+              clientSecret: options.googleClientSecret,
+              redirectURI: `${options.productionUrl}/api/auth/callback/google`,
+            },
+          }
+        : {},
     onAPIError: {
       onError(error, ctx) {
         console.error("BETTER AUTH API ERROR", error, ctx);
