@@ -1,5 +1,6 @@
 "use client";
 
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Button,
   Card,
@@ -19,7 +20,6 @@ import {
   InputOTPSlot,
 } from "@selectio/ui";
 import { type OTPFormData, otpFormSchema } from "@selectio/validators";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -64,11 +64,11 @@ export function OTPForm({ ...props }: React.ComponentProps<typeof Card>) {
         email,
         otp: data.otp,
       });
-      toast.success("Successfully verified!");
+      toast.success("Успешно подтверждено!");
       router.push("/"); // Redirect to dashboard
     } catch (error) {
       console.error(error);
-      toast.error("Invalid code. Please try again.");
+      toast.error("Неверный код. Попробуйте снова.");
     } finally {
       setLoading(false);
     }
@@ -82,11 +82,11 @@ export function OTPForm({ ...props }: React.ComponentProps<typeof Card>) {
         email,
         type: "sign-in",
       });
-      toast.success("Code sent! Check your email.");
+      toast.success("Код отправлен! Проверьте вашу почту.");
       setCountdown(60); // 60 second cooldown
     } catch (error) {
       console.error(error);
-      toast.error("Failed to send code. Please try again.");
+      toast.error("Не удалось отправить код. Попробуйте снова.");
     } finally {
       setResending(false);
     }
@@ -95,8 +95,10 @@ export function OTPForm({ ...props }: React.ComponentProps<typeof Card>) {
   return (
     <Card {...props}>
       <CardHeader className="text-center">
-        <CardTitle className="text-xl">Enter verification code</CardTitle>
-        <CardDescription>We sent a 6-digit code to {email}.</CardDescription>
+        <CardTitle className="text-xl">Введите код подтверждения</CardTitle>
+        <CardDescription>
+          Мы отправили 6-значный код на {email}.
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -107,7 +109,7 @@ export function OTPForm({ ...props }: React.ComponentProps<typeof Card>) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel htmlFor="otp" className="sr-only">
-                    Verification code
+                    Код подтверждения
                   </FormLabel>
                   <FormControl>
                     <InputOTP maxLength={6} id="otp" {...field}>
@@ -122,17 +124,17 @@ export function OTPForm({ ...props }: React.ComponentProps<typeof Card>) {
                     </InputOTP>
                   </FormControl>
                   <FormDescription className="text-center">
-                    Enter the 6-digit code sent to your email.
+                    Введите 6-значный код, отправленный на вашу почту.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
             />
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Verifying..." : "Verify"}
+              {loading ? "Проверка..." : "Подтвердить"}
             </Button>
             <FormDescription className="text-center">
-              Didn&apos;t receive the code?{" "}
+              Не получили код?{" "}
               <button
                 type="button"
                 onClick={handleResend}
@@ -140,10 +142,10 @@ export function OTPForm({ ...props }: React.ComponentProps<typeof Card>) {
                 className="text-primary underline-offset-4 hover:underline disabled:opacity-50 disabled:cursor-not-allowed disabled:no-underline"
               >
                 {resending
-                  ? "Sending..."
+                  ? "Отправка..."
                   : countdown > 0
-                    ? `Resend (${countdown}s)`
-                    : "Resend"}
+                    ? `Отправить повторно (${countdown}с)`
+                    : "Отправить повторно"}
               </button>
             </FormDescription>
           </form>

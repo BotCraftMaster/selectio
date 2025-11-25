@@ -1,5 +1,6 @@
 "use client";
 
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Button,
   Card,
@@ -17,7 +18,6 @@ import {
   Input,
 } from "@selectio/ui";
 import { type LoginFormData, loginFormSchema } from "@selectio/validators";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -47,11 +47,11 @@ export function LoginForm({
       });
       // Store email in localStorage or URL to pre-fill OTP form
       localStorage.setItem("otp_email", data.email);
-      toast.success("Code sent! Check your email.");
+      toast.success("Код отправлен! Проверьте вашу почту.");
       router.push("/auth/otp");
     } catch (error) {
       console.error(error);
-      toast.error("Failed to send code. Please try again.");
+      toast.error("Не удалось отправить код. Попробуйте снова.");
     } finally {
       setLoading(false);
     }
@@ -61,8 +61,8 @@ export function LoginForm({
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
         <CardHeader className="text-center">
-          <CardTitle className="text-xl">Welcome back</CardTitle>
-          <CardDescription>Login with your email address</CardDescription>
+          <CardTitle className="text-xl">С возвращением</CardTitle>
+          <CardDescription>Войдите с помощью вашего email</CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -76,7 +76,7 @@ export function LoginForm({
                     <FormControl>
                       <Input
                         type="email"
-                        placeholder="m@example.com"
+                        placeholder="email@example.com"
                         {...field}
                       />
                     </FormControl>
@@ -85,7 +85,7 @@ export function LoginForm({
                 )}
               />
               <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? "Sending code..." : "Send Login Code"}
+                {loading ? "Отправка кода..." : "Отправить код для входа"}
               </Button>
             </form>
           </Form>
@@ -95,7 +95,7 @@ export function LoginForm({
             </div>
             <div className="relative flex justify-center text-xs uppercase">
               <span className="bg-background px-2 text-muted-foreground">
-                Or continue with
+                Или продолжить с
               </span>
             </div>
           </div>
@@ -127,7 +127,7 @@ export function LoginForm({
                 fill="#EA4335"
               />
             </svg>
-            Sign in with Google
+            Войти через Google
           </Button>
         </CardContent>
       </Card>

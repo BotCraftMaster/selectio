@@ -1,5 +1,6 @@
 "use client";
 
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Button,
   Form,
@@ -15,23 +16,25 @@ import {
   SelectValue,
   toast,
 } from "@selectio/ui";
-import { type AccountFormValues, accountFormSchema } from "@selectio/validators";
-import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  type AccountFormValues,
+  accountFormSchema,
+} from "@selectio/validators";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 
 import { useTRPC } from "~/trpc/react";
 
 const languages = [
-  { label: "English", value: "en" },
-  { label: "French", value: "fr" },
-  { label: "German", value: "de" },
-  { label: "Spanish", value: "es" },
-  { label: "Portuguese", value: "pt" },
-  { label: "Russian", value: "ru" },
-  { label: "Japanese", value: "ja" },
-  { label: "Korean", value: "ko" },
-  { label: "Chinese", value: "zh" },
+  { label: "Английский", value: "en" },
+  { label: "Французский", value: "fr" },
+  { label: "Немецкий", value: "de" },
+  { label: "Испанский", value: "es" },
+  { label: "Португальский", value: "pt" },
+  { label: "Русский", value: "ru" },
+  { label: "Японский", value: "ja" },
+  { label: "Корейский", value: "ko" },
+  { label: "Китайский", value: "zh" },
 ];
 
 export function AccountForm({
@@ -58,7 +61,7 @@ export function AccountForm({
       onError: (err) => {
         toast.error(err.message || "Failed to update account");
       },
-    }),
+    })
   );
 
   function onSubmit(data: AccountFormValues) {
@@ -74,13 +77,10 @@ export function AccountForm({
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-foreground font-medium">
-                Name
-              </FormLabel>
-              <Input placeholder="Your name" {...field} />
+              <FormLabel className="text-foreground font-medium">Имя</FormLabel>
+              <Input placeholder="Ваше имя" {...field} />
               <p className="text-sm text-amber-700/70">
-                This is the name that will be displayed on your profile and in
-                emails.
+                Это имя будет отображаться в вашем профиле и в письмах.
               </p>
               <FormMessage />
             </FormItem>
@@ -94,11 +94,11 @@ export function AccountForm({
           render={({ field }) => (
             <FormItem>
               <FormLabel className="text-foreground font-medium">
-                Language
+                Язык
               </FormLabel>
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select language" />
+                  <SelectValue placeholder="Выберите язык" />
                 </SelectTrigger>
                 <SelectContent>
                   {languages.map((language) => (
@@ -109,7 +109,7 @@ export function AccountForm({
                 </SelectContent>
               </Select>
               <p className="text-sm text-amber-700/70">
-                This is the language that will be used in the dashboard.
+                Этот язык будет использоваться в панели управления.
               </p>
               <FormMessage />
             </FormItem>
@@ -121,7 +121,7 @@ export function AccountForm({
           className="bg-foreground text-background hover:bg-foreground/90"
           disabled={updateAccount.isPending}
         >
-          {updateAccount.isPending ? "Updating..." : "Update account"}
+          {updateAccount.isPending ? "Обновление..." : "Обновить аккаунт"}
         </Button>
       </form>
     </Form>

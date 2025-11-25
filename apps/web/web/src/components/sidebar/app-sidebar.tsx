@@ -37,74 +37,74 @@ import {
 const data = {
   navMain: [
     {
-      title: "Dashboard",
+      title: "Панель управления",
       url: "#",
       icon: IconDashboard,
     },
     {
-      title: "Lifecycle",
+      title: "Жизненный цикл",
       url: "#",
       icon: IconListDetails,
     },
     {
-      title: "Analytics",
+      title: "Аналитика",
       url: "#",
       icon: IconChartBar,
     },
     {
-      title: "Projects",
+      title: "Проекты",
       url: "#",
       icon: IconFolder,
     },
     {
-      title: "Team",
+      title: "Команда",
       url: "#",
       icon: IconUsers,
     },
   ],
   navClouds: [
     {
-      title: "Capture",
+      title: "Захват",
       icon: IconCamera,
       isActive: true,
       url: "#",
       items: [
         {
-          title: "Active Proposals",
+          title: "Активные предложения",
           url: "#",
         },
         {
-          title: "Archived",
+          title: "Архив",
           url: "#",
         },
       ],
     },
     {
-      title: "Proposal",
+      title: "Предложение",
       icon: IconFileDescription,
       url: "#",
       items: [
         {
-          title: "Active Proposals",
+          title: "Активные предложения",
           url: "#",
         },
         {
-          title: "Archived",
+          title: "Архив",
           url: "#",
         },
       ],
     },
     {
-      title: "Prompts",
+      title: "Подсказки",
       icon: IconFileAi,
       url: "#",
       items: [
         {
-          title: "Active Proposals",
+          title: "Активные предложения",
           url: "#",
         },
         {
-          title: "Archived",
+          title: "Архив",
           url: "#",
         },
       ],
@@ -112,34 +112,34 @@ const data = {
   ],
   navSecondary: [
     {
-      title: "Settings",
+      title: "Настройки",
       url: "/settings",
       icon: IconSettings,
     },
     {
-      title: "Get Help",
+      title: "Помощь",
       url: "#",
       icon: IconHelp,
     },
     {
-      title: "Search",
+      title: "Поиск",
       url: "#",
       icon: IconSearch,
     },
   ],
   documents: [
     {
-      name: "Data Library",
+      name: "Библиотека данных",
       url: "#",
       icon: IconDatabase,
     },
     {
-      name: "Reports",
+      name: "Отчеты",
       url: "#",
       icon: IconReport,
     },
     {
-      name: "Word Assistant",
+      name: "Помощник Word",
       url: "#",
       icon: IconFileWord,
     },
@@ -167,7 +167,7 @@ export function AppSidebar({
             >
               <a href="/">
                 <IconInnerShadowTop className="!size-5" />
-                <span className="text-base font-semibold">Acme Inc.</span>
+                <span className="text-base font-semibold">Selectio Inc.</span>
               </a>
             </SidebarMenuButton>
           </SidebarMenuItem>

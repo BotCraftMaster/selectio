@@ -10,7 +10,7 @@ interface PackageJson {
 
 export default function generator(plop: PlopTypes.NodePlopAPI): void {
   plop.setGenerator("init", {
-    description: "Generate a new package for the Acme Monorepo",
+    description: "Generate a new package for the Selectio Monorepo",
     prompts: [
       {
         type: "input",
@@ -62,7 +62,7 @@ export default function generator(plop: PlopTypes.NodePlopAPI): void {
             const pkg = JSON.parse(content) as PackageJson;
             for (const dep of answers.deps.split(" ").filter(Boolean)) {
               const version = await fetch(
-                `https://registry.npmjs.org/-/package/${dep}/dist-tags`,
+                `https://registry.npmjs.org/-/package/${dep}/dist-tags`
               )
                 .then((res) => res.json())
                 .then((json) => json.latest);
@@ -84,7 +84,7 @@ export default function generator(plop: PlopTypes.NodePlopAPI): void {
           // });
           execSync("bun install", { stdio: "inherit" });
           execSync(
-            `bun prettier --write packages/${answers.name}/** --list-different`,
+            `bun prettier --write packages/${answers.name}/** --list-different`
           );
           return "Package scaffolded";
         }
