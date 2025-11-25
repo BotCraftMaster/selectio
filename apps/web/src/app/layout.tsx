@@ -10,18 +10,18 @@ import "~/app/styles.css";
 export const metadata: Metadata = {
   metadataBase: new URL(
     env.VERCEL_ENV === "production"
-      ? "https://turbo.t3.gg"
+      ? "https://selectio-web.vercel.app"
       : "http://localhost:3000"
   ),
-  title: "Bun Turbo Starter",
+  title: "Selectio - Автоматизация работы с вакансиями HH.ru",
   description:
-    "Простой монорепозиторий с общим бэкендом для веб и мобильных приложений",
+    "Платформа для автоматизации рекрутинга на HH.ru. Автоматический парсинг вакансий, откликов кандидатов и управление процессом найма.",
   openGraph: {
-    title: "Bun Turbo Starter",
+    title: "Selectio - Автоматизация работы с вакансиями HH.ru",
     description:
-      "Простой монорепозиторий с общим бэкендом для веб и мобильных приложений",
-    url: "https://bun-turbo-starter.vercel.app",
-    siteName: "Bun Turbo Starter",
+      "Платформа для автоматизации рекрутинга на HH.ru. Автоматический парсинг вакансий, откликов кандидатов и управление процессом найма.",
+    url: "https://selectio-web.vercel.app",
+    siteName: "Selectio",
   },
 };
 
