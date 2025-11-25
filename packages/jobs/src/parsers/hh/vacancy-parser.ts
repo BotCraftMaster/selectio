@@ -92,12 +92,12 @@ async function parseVacancyDetails(page: Page, url: string): Promise<string> {
   await page.goto(url, { waitUntil: "networkidle2" });
 
   try {
-    await page.waitForSelector('div[data-qa="main-content"]', {
+    await page.waitForSelector("div[class=vacancy-section]", {
       timeout: HH_CONFIG.timeouts.selector,
     });
 
     const htmlContent = await page.$eval(
-      'div[data-qa="main-content"]',
+      "div[class=vacancy-section]",
       (el: HTMLElement) => el.innerHTML
     );
 
