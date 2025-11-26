@@ -27,6 +27,7 @@ import { ResponseRow } from "./response-row";
 
 interface ResponseTableProps {
   responses: VacancyResponse[];
+  vacancyId: string;
 }
 
 const ITEMS_PER_PAGE = 25;
@@ -44,7 +45,7 @@ const STATUS_ORDER = {
   SKIPPED: 7,
 } as const;
 
-export function ResponseTable({ responses }: ResponseTableProps) {
+export function ResponseTable({ responses, vacancyId }: ResponseTableProps) {
   const [accessToken, setAccessToken] = useState<string | undefined>();
   const [currentPage, setCurrentPage] = useState(1);
   const [sortField, setSortField] = useState<SortField>(null);
@@ -182,23 +183,32 @@ export function ResponseTable({ responses }: ResponseTableProps) {
     setIsProcessingAll(true);
 
     try {
-      const promises = responses.map(async (response) => {
-        const res = await fetch("/api/trigger/screen-response", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${accessToken}`,
-          },
-          body: JSON.stringify({ responseId: response.id }),
-        });
-        return res.json();
+      const res = await fetch("/api/trigger/screen-all-responses", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({ vacancyId }),
       });
 
-      await Promise.all(promises);
+      const data = await res.json();
 
-      await queryClient.invalidateQueries(
-        trpc.vacancy.responses.list.pathFilter()
+      if (!data.success) {
+        console.error("Failed to trigger screen all:", data.error);
+        return;
+      }
+
+      console.log(
+        `Запущена пакетная оценка ${data.count} откликов (batch ID: ${data.batchId})`
       );
+
+      // Обновляем данные через некоторое время, чтобы дать триггерам время выполниться
+      setTimeout(() => {
+        void queryClient.invalidateQueries(
+          trpc.vacancy.responses.list.pathFilter()
+        );
+      }, 2000);
     } finally {
       setIsProcessingAll(false);
     }
@@ -221,7 +231,9 @@ export function ResponseTable({ responses }: ResponseTableProps) {
             ) : (
               <Sparkles className="h-4 w-4 mr-2" />
             )}
-            Оценить всех
+            {isProcessingAll
+              ? "Запуск оценки..."
+              : `Оценить всех (${responses.length})`}
           </Button>
         </div>
       )}

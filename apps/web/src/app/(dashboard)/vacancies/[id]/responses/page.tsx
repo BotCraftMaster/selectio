@@ -97,7 +97,7 @@ export default function VacancyResponsesPage({
                       </CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <ResponseTable responses={responses} />
+                      <ResponseTable responses={responses} vacancyId={id} />
                     </CardContent>
                   </Card>
 

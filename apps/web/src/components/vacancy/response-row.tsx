@@ -74,6 +74,17 @@ export function ResponseRow({
         )}
       </TableCell>
       <TableCell>
+        {response.screening?.detailedScore !== undefined ? (
+          <div className="flex items-center gap-2">
+            <span className="text-lg font-bold text-primary">
+              {response.screening.detailedScore}/100
+            </span>
+          </div>
+        ) : (
+          <span className="text-muted-foreground text-sm">—</span>
+        )}
+      </TableCell>
+      <TableCell>
         {response.hrSelectionStatus ? (
           <Badge variant="secondary" className="whitespace-nowrap">
             {HR_SELECTION_STATUS_LABELS[response.hrSelectionStatus]}

@@ -35,3 +35,46 @@ export async function triggerScreenResponse(responseId: string) {
     return { success: false as const, error: "Failed to trigger task" };
   }
 }
+
+export async function triggerScreenAllResponses(vacancyId: string) {
+  try {
+    const { db } = await import("@selectio/db/client");
+    const { vacancyResponse } = await import("@selectio/db/schema");
+    const { eq } = await import("@selectio/db");
+
+    // Получаем все отклики для вакансии
+    const responses = await db.query.vacancyResponse.findMany({
+      where: eq(vacancyResponse.vacancyId, vacancyId),
+      columns: {
+        id: true,
+      },
+    });
+
+    if (responses.length === 0) {
+      return {
+        success: false as const,
+        error: "No responses found for this vacancy",
+      };
+    }
+
+    // Используем batch для эффективной обработки большого количества откликов
+    const batchHandle = await tasks.batchTrigger(
+      "screen-response",
+      responses.map((response) => ({
+        payload: { responseId: response.id },
+      }))
+    );
+
+    return {
+      success: true as const,
+      count: responses.length,
+      batchId: batchHandle.batchId,
+    };
+  } catch (error) {
+    console.error("Failed to trigger screen-all-responses:", error);
+    return {
+      success: false as const,
+      error: "Failed to trigger tasks",
+    };
+  }
+}
