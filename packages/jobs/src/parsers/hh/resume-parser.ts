@@ -136,7 +136,8 @@ export async function parseResumeExperience(
         const contactsPromise = new Promise((resolve, reject) => {
           const timeout = setTimeout(() => {
             page.off("response", responseHandler);
-            reject(new Error("Timeout waiting for contacts request"));
+            console.log("⚠️ Таймаут ожидания контактов, продолжаем без них");
+            resolve(null);
           }, HH_CONFIG.timeouts.contacts);
 
           const responseHandler = async (response: any) => {
