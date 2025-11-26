@@ -235,6 +235,55 @@ export default function ResponseDetailPage({
                 </Card>
               ) : null}
 
+              {/* Результаты скрининга */}
+              {response.screening && (
+                <Card className="mt-6">
+                  <CardHeader>
+                    <CardTitle>Результаты скрининга</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div>
+                      <p className="text-sm text-muted-foreground mb-1">
+                        Оценка
+                      </p>
+                      <p
+                        className={`text-2xl font-bold ${
+                          response.screening.score >= 4
+                            ? "text-green-600"
+                            : response.screening.score >= 3
+                              ? "text-yellow-600"
+                              : "text-red-600"
+                        }`}
+                      >
+                        {response.screening.score}/5
+                      </p>
+                    </div>
+
+                    {response.screening.greeting && (
+                      <div>
+                        <p className="text-sm font-medium mb-2">
+                          Приветственное предложение
+                        </p>
+                        <div className="p-4 rounded-lg border bg-blue-50 dark:bg-blue-950/20">
+                          <p className="text-sm leading-relaxed">
+                            {response.screening.greeting}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    {response.screening.analysis && (
+                      <div>
+                        <p className="text-sm font-medium mb-2">Анализ</p>
+                        <p className="text-sm text-muted-foreground leading-relaxed">
+                          {response.screening.analysis}
+                        </p>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
+
               {/* Контакты */}
               {response.contacts ? (
                 <Card className="mt-6">

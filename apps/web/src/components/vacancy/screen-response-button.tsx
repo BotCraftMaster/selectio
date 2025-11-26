@@ -3,7 +3,6 @@
 import { Button } from "@selectio/ui";
 import { useRealtimeRun } from "@trigger.dev/react-hooks";
 import { Sparkles } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { triggerScreenResponse } from "~/actions/trigger";
 import { ScreeningResultModal } from "./screening-result-modal";

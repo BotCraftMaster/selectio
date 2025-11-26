@@ -25,5 +25,6 @@ export interface VacancyResponse {
     score: number;
     analysis: string | null;
     questions: unknown;
+    greeting: string | null;
   } | null;
 }

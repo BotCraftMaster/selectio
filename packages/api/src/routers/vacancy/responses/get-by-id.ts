@@ -1,8 +1,7 @@
 import { eq } from "@selectio/db";
-import { z } from "zod/v4";
-
-import { protectedProcedure } from "../../../trpc";
 import { vacancyResponse } from "@selectio/db/schema";
+import { z } from "zod/v4";
+import { protectedProcedure } from "../../../trpc";
 
 export const getById = protectedProcedure
   .input(z.object({ id: z.string() }))
@@ -11,6 +10,7 @@ export const getById = protectedProcedure
       where: eq(vacancyResponse.id, input.id),
       with: {
         vacancy: true,
+        screening: true,
       },
     });
   });

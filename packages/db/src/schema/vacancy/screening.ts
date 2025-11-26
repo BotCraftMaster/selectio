@@ -21,6 +21,7 @@ export const responseScreening = pgTable("response_screenings", {
   score: integer("score").notNull(), // Оценка от 1 до 5
   questions: jsonb("questions"), // Массив вопросов для кандидата
   analysis: text("analysis"), // Анализ соответствия резюме вакансии
+  greeting: text("greeting"), // Приветственное предложение для начала диалога
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -31,6 +32,7 @@ export const CreateResponseScreeningSchema = createInsertSchema(
     score: z.number().int().min(1).max(5),
     questions: z.array(z.string()).optional(),
     analysis: z.string().optional(),
+    greeting: z.string().optional(),
   }
 ).omit({
   id: true,
