@@ -46,6 +46,7 @@ export async function screenResponse(responseId: string) {
   await db.insert(responseScreening).values({
     responseId,
     score: result.score,
+    detailedScore: result.detailedScore,
     analysis: result.analysis,
     greeting: result.greeting || null,
     questions: result.questions || [],
@@ -57,7 +58,7 @@ export async function screenResponse(responseId: string) {
     .where(eq(vacancyResponse.id, responseId));
 
   console.log(
-    `✅ Результат скрининга сохранен: оценка ${result.score}/5, вопросов: ${result.questions?.length || 0}`
+    `✅ Результат скрининга сохранен: оценка ${result.score}/5 (${result.detailedScore}/100), вопросов: ${result.questions?.length || 0}`
   );
 
   return result;
@@ -104,12 +105,19 @@ ${response.languages || "Не указаны"}
 ${response.courses || "Не указаны"}
 
 ЗАДАЧА:
-1. Оцени соответствие резюме требованиям по шкале от 1 до 5:
+1. Оцени соответствие резюме требованиям по двум шкалам:
+   
+   a) Общая оценка (score) от 1 до 5:
    - 1: Совершенно не подходит
    - 2: Слабое соответствие
    - 3: Среднее соответствие
    - 4: Хорошее соответствие
    - 5: Отличное соответствие
+   
+   b) Детальная оценка (detailedScore) от 0 до 100:
+   - Более точная оценка для определения победителя среди кандидатов
+   - Учитывай все нюансы: опыт, навыки, образование, языки, мотивацию
+   - Эта оценка поможет ранжировать кандидатов с одинаковым score
 
 2. Напиши краткий анализ (2-3 предложения): что подходит, чего не хватает.
 
@@ -122,6 +130,7 @@ ${response.courses || "Не указаны"}
 
 {
   "score": число от 1 до 5,
+  "detailedScore": число от 0 до 100,
   "analysis": "Краткий анализ соответствия",
   "greeting": "Приветственное предложение для кандидата", // Только если score > 2, иначе пустая строка
   "questions": ["Вопрос 1", "Вопрос 2", "Вопрос 3"] // Только если score > 2, иначе пустой массив

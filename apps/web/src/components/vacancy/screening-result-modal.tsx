@@ -13,6 +13,7 @@ import { CheckCircle2, XCircle } from "lucide-react";
 
 interface ScreeningResult {
   score: number;
+  detailedScore: number;
   analysis: string;
   questions?: string[];
   greeting?: string;
@@ -62,22 +63,44 @@ export function ScreeningResultModal({
             </div>
 
             <div className="px-6 pb-6 space-y-6">
-              <div className="flex items-center justify-between p-4 rounded-lg border bg-muted/50">
-                <div>
-                  <p className="text-sm text-muted-foreground mb-1">Оценка</p>
-                  <p
-                    className={`text-3xl font-bold ${getScoreColor(result.score)}`}
-                  >
-                    {result.score}/5
-                  </p>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between p-4 rounded-lg border bg-muted/50">
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-1">
+                      Общая оценка
+                    </p>
+                    <p
+                      className={`text-3xl font-bold ${getScoreColor(result.score)}`}
+                    >
+                      {result.score}/5
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <Badge
+                      variant={result.score >= 3 ? "default" : "destructive"}
+                      className="text-sm"
+                    >
+                      {getScoreLabel(result.score)}
+                    </Badge>
+                  </div>
                 </div>
-                <div className="text-right">
-                  <Badge
-                    variant={result.score >= 3 ? "default" : "destructive"}
-                    className="text-sm"
-                  >
-                    {getScoreLabel(result.score)}
-                  </Badge>
+
+                <div className="flex items-center justify-between p-4 rounded-lg border bg-primary/5">
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-1">
+                      Детальная оценка
+                    </p>
+                    <p className="text-3xl font-bold text-primary">
+                      {result.detailedScore}/100
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-xs text-muted-foreground">
+                      Для определения
+                      <br />
+                      победителя
+                    </p>
+                  </div>
                 </div>
               </div>
 

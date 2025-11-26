@@ -15,6 +15,7 @@ export const screenResponseTask = task({
       logger.log("✅ Скрининг завершен", {
         responseId: payload.responseId,
         score: result.score,
+        detailedScore: result.detailedScore,
         questionsCount: result.questions?.length || 0,
       });
 

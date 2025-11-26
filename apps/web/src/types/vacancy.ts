@@ -23,6 +23,7 @@ export interface VacancyResponse {
   updatedAt: Date;
   screening?: {
     score: number;
+    detailedScore: number;
     analysis: string | null;
     questions: unknown;
     greeting: string | null;
