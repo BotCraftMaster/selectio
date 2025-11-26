@@ -1,23 +1,13 @@
-import { LangfuseSpanProcessor } from "@langfuse/otel";
-import { NodeTracerProvider } from "@opentelemetry/sdk-trace-node";
+import { registerOTel } from "@vercel/otel";
+import { LangfuseExporter } from "langfuse-vercel";
 
-// Фильтруем ненужные spans (опционально)
-const shouldExportSpan = (span: any) => {
-  // Экспортируем только spans связанные с AI
-  return true;
-};
+export function register() {
+  registerOTel({
+    serviceName: "selectio-jobs",
+    traceExporter: new LangfuseExporter(),
+  });
+}
 
-// Создаем Langfuse span processor
-export const langfuseSpanProcessor = new LangfuseSpanProcessor({
-  shouldExportSpan,
-});
-
-// Настраиваем tracer provider
-const tracerProvider = new NodeTracerProvider({
-  spanProcessors: [langfuseSpanProcessor],
-});
-
-// Регистрируем provider
-tracerProvider.register();
+register();
 
 console.log("✅ Langfuse OpenTelemetry инициализирован");

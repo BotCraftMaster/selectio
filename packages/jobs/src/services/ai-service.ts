@@ -3,7 +3,7 @@ import { generateText } from "ai";
 import type { ResumeScreeningData, ScreeningResult } from "../types/screening";
 import { buildFullScreeningPrompt } from "../utils/resume-formatter";
 import { getVacancyRequirements } from "./screening-prompt-service";
-import "../instrumentation"; // Инициализация Langfuse трассировки
+import "../instrumentation";
 
 /**
  * Выполняет скрининг резюме через DeepSeek AI
