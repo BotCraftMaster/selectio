@@ -1,6 +1,15 @@
 "use client";
 
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
   Button,
   Checkbox,
   Pagination,
@@ -221,20 +230,49 @@ export function ResponseTable({ responses, vacancyId }: ResponseTableProps) {
           <div className="text-sm text-muted-foreground">
             Всего откликов: {responses.length}
           </div>
-          <Button
-            onClick={handleScreenAll}
-            disabled={!accessToken || isProcessingAll}
-            variant="default"
-          >
-            {isProcessingAll ? (
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-            ) : (
-              <Sparkles className="h-4 w-4 mr-2" />
-            )}
-            {isProcessingAll
-              ? "Запуск оценки..."
-              : `Оценить всех (${responses.length})`}
-          </Button>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button
+                disabled={!accessToken || isProcessingAll}
+                variant="default"
+              >
+                {isProcessingAll ? (
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                ) : (
+                  <Sparkles className="h-4 w-4 mr-2" />
+                )}
+                {isProcessingAll
+                  ? "Запуск оценки..."
+                  : `Оценить всех (${responses.length})`}
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>
+                  Подтверждение массовой оценки
+                </AlertDialogTitle>
+                <AlertDialogDescription>
+                  Вы собираетесь запустить оценку для {responses.length}{" "}
+                  {responses.length === 1
+                    ? "отклика"
+                    : responses.length < 5
+                      ? "откликов"
+                      : "откликов"}
+                  . Это может занять некоторое время.
+                  <br />
+                  <br />
+                  Процесс будет выполняться в фоновом режиме. Вы можете
+                  продолжать работу, а результаты появятся автоматически.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Отмена</AlertDialogCancel>
+                <AlertDialogAction onClick={handleScreenAll}>
+                  Запустить оценку
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       )}
 
