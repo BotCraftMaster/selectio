@@ -3,6 +3,7 @@ import { generateText } from "ai";
 import type { ResumeScreeningData, ScreeningResult } from "../types/screening";
 import { buildFullScreeningPrompt } from "../utils/resume-formatter";
 import { getScreeningPrompt } from "./screening-prompt-service";
+import "../instrumentation"; // Инициализация Langfuse трассировки
 
 /**
  * Выполняет скрининг резюме через DeepSeek AI
@@ -33,11 +34,18 @@ export async function screenResumeWithAI(
       `📤 Отправка запроса в DeepSeek (${fullPrompt.length} символов)`
     );
 
-    // Вызываем DeepSeek
+    // Вызываем DeepSeek с включенной телеметрией
     const { text } = await generateText({
       model: deepseek("deepseek-chat"),
       prompt: fullPrompt,
       temperature: 0.3,
+      experimental_telemetry: {
+        isEnabled: true,
+        functionId: "resume-screening",
+        metadata: {
+          vacancyId,
+        },
+      },
     });
 
     console.log(`📥 Получен ответ от DeepSeek`);

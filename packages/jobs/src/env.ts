@@ -6,6 +6,9 @@ export const env = createEnv({
     HH_EMAIL: z.string().email(),
     HH_PASSWORD: z.string().min(1),
     DEEPSEEK_API_KEY: z.string().min(1).optional(),
+    LANGFUSE_SECRET_KEY: z.string().min(1).optional(),
+    LANGFUSE_PUBLIC_KEY: z.string().min(1).optional(),
+    LANGFUSE_BASE_URL: z.string().url().optional(),
   },
   runtimeEnv: process.env,
   skipValidation:

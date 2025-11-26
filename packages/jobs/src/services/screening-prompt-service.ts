@@ -35,9 +35,6 @@ export async function generateScreeningPrompt(
   return prompt;
 }
 
-/**
- * Формирует текст промпта для скрининга резюме
- */
 function buildScreeningPrompt(title: string, description: string): string {
   return `Ты эксперт по подбору персонала. Оцени, насколько резюме кандидата подходит для вакансии:
 
@@ -77,9 +74,6 @@ ${description}
 }`;
 }
 
-/**
- * Получает промпт для скрининга по ID вакансии
- */
 export async function getScreeningPrompt(
   vacancyId: string
 ): Promise<string | null> {
