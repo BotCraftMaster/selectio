@@ -97,14 +97,14 @@ export async function updateVacancyDescription(
       .where(eq(vacancy.id, vacancyId));
     console.log(`✅ Описание вакансии обновлено: ${vacancyId}`);
 
-    // Запускаем задание для генерации промпта скрининга
+    // Запускаем задание для извлечения требований вакансии
     if (description && description.trim()) {
-      console.log(`🎯 Запуск генерации промпта для скрининга: ${vacancyId}`);
+      console.log(`🎯 Запуск извлечения требований вакансии: ${vacancyId}`);
       // Импортируем динамически, чтобы избежать циклических зависимостей
-      const { triggerScreeningPromptGeneration } = await import(
+      const { triggerVacancyRequirementsExtraction } = await import(
         "./trigger-service"
       );
-      await triggerScreeningPromptGeneration(vacancyId, description);
+      await triggerVacancyRequirementsExtraction(vacancyId, description);
     }
   } catch (error) {
     console.error(
@@ -161,15 +161,15 @@ export async function saveVacancyToDb(vacancyData: VacancyData) {
       console.log(`✅ Вакансия создана: ${vacancyData.title}`);
     }
 
-    // Запускаем генерацию промпта, если есть описание
+    // Запускаем извлечение требований, если есть описание
     if (vacancyData.description && vacancyData.description.trim()) {
       console.log(
-        `🎯 Запуск генерации промпта для скрининга: ${vacancyData.id}`
+        `🎯 Запуск извлечения требований вакансии: ${vacancyData.id}`
       );
-      const { triggerScreeningPromptGeneration } = await import(
+      const { triggerVacancyRequirementsExtraction } = await import(
         "./trigger-service"
       );
-      await triggerScreeningPromptGeneration(
+      await triggerVacancyRequirementsExtraction(
         vacancyData.id,
         vacancyData.description
       );

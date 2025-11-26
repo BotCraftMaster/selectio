@@ -1,17 +1,17 @@
 import { tasks } from "@trigger.dev/sdk/v3";
-import type { generateScreeningPromptTask } from "../trigger/generate-screening-prompt";
+import type { extractVacancyRequirementsTask } from "../trigger/generate-screening-prompt";
 
 /**
- * Запускает задание для генерации промпта скрининга резюме
+ * Запускает задание для извлечения требований вакансии через AI
  */
-export async function triggerScreeningPromptGeneration(
+export async function triggerVacancyRequirementsExtraction(
   vacancyId: string,
   description: string
 ): Promise<void> {
   try {
     // В v4 используем tasks.trigger с типом задания и payload
-    const handle = await tasks.trigger<typeof generateScreeningPromptTask>(
-      "generate-screening-prompt",
+    const handle = await tasks.trigger<typeof extractVacancyRequirementsTask>(
+      "extract-vacancy-requirements",
       {
         vacancyId,
         description,

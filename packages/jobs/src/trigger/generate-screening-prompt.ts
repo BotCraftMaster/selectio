@@ -1,32 +1,34 @@
 import { logger, task } from "@trigger.dev/sdk";
-import { generateScreeningPrompt } from "../services/screening-prompt-service";
+import { extractVacancyRequirements } from "../services/screening-prompt-service";
 
-export const generateScreeningPromptTask = task({
-  id: "generate-screening-prompt",
+export const extractVacancyRequirementsTask = task({
+  id: "extract-vacancy-requirements",
   maxDuration: 300,
   run: async (payload: { vacancyId: string; description: string }) => {
-    logger.log("🎯 Генерация промпта для скрининга резюме", {
+    logger.log("🎯 Извлечение требований вакансии через AI", {
       vacancyId: payload.vacancyId,
     });
 
     try {
-      const prompt = await generateScreeningPrompt(
+      const requirements = await extractVacancyRequirements(
         payload.vacancyId,
         payload.description
       );
 
-      logger.log("✅ Промпт успешно сгенерирован", {
+      logger.log("✅ Требования успешно извлечены и сохранены", {
         vacancyId: payload.vacancyId,
-        promptLength: prompt.length,
+        jobTitle: requirements.job_title,
+        mandatoryCount: requirements.mandatory_requirements.length,
+        techStackCount: requirements.tech_stack.length,
       });
 
       return {
         success: true,
         vacancyId: payload.vacancyId,
-        prompt,
+        requirements,
       };
     } catch (error) {
-      logger.error("❌ Ошибка генерации промпта", {
+      logger.error("❌ Ошибка генерации требований", {
         vacancyId: payload.vacancyId,
         error,
       });

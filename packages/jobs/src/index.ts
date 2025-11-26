@@ -9,11 +9,11 @@ export {
 
 // Screening services
 export {
-  generateScreeningPrompt,
-  getScreeningPrompt,
+  extractVacancyRequirements,
+  getVacancyRequirements,
 } from "./services/screening-prompt-service";
 // Trigger tasks
-export { generateScreeningPromptTask } from "./trigger/generate-screening-prompt";
+export { extractVacancyRequirementsTask } from "./trigger/generate-screening-prompt";
 // Types
 export type {
   ResumeScreeningData,

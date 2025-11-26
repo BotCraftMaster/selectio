@@ -2,7 +2,7 @@ import { deepseek } from "@ai-sdk/deepseek";
 import { generateText } from "ai";
 import type { ResumeScreeningData, ScreeningResult } from "../types/screening";
 import { buildFullScreeningPrompt } from "../utils/resume-formatter";
-import { getScreeningPrompt } from "./screening-prompt-service";
+import { getVacancyRequirements } from "./screening-prompt-service";
 import "../instrumentation"; // Инициализация Langfuse трассировки
 
 /**
@@ -19,16 +19,19 @@ export async function screenResumeWithAI(
   console.log(`🤖 Запуск AI скрининга для вакансии ${vacancyId}`);
 
   try {
-    // Получаем промпт вакансии
-    const vacancyPrompt = await getScreeningPrompt(vacancyId);
+    // Получаем требования вакансии
+    const vacancyRequirements = await getVacancyRequirements(vacancyId);
 
-    if (!vacancyPrompt) {
-      console.error(`❌ Промпт для вакансии ${vacancyId} не найден`);
+    if (!vacancyRequirements) {
+      console.error(`❌ Требования для вакансии ${vacancyId} не найдены`);
       return null;
     }
 
     // Формируем полный промпт
-    const fullPrompt = buildFullScreeningPrompt(vacancyPrompt, resumeData);
+    const fullPrompt = buildFullScreeningPrompt(
+      vacancyRequirements,
+      resumeData
+    );
 
     console.log(
       `📤 Отправка запроса в DeepSeek (${fullPrompt.length} символов)`

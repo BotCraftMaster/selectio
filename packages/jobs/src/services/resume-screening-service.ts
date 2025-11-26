@@ -1,6 +1,6 @@
 import type { ResumeScreeningData, ScreeningResult } from "../types/screening";
 import { buildFullScreeningPrompt } from "../utils/resume-formatter";
-import { getScreeningPrompt } from "./screening-prompt-service";
+import { getVacancyRequirements } from "./screening-prompt-service";
 
 /**
  * Подготавливает промпт для скрининга резюме
@@ -13,16 +13,16 @@ export async function prepareScreeningPrompt(
   vacancyId: string,
   resumeData: ResumeScreeningData
 ): Promise<string | null> {
-  // Получаем промпт вакансии
-  const vacancyPrompt = await getScreeningPrompt(vacancyId);
+  // Получаем требования вакансии
+  const vacancyRequirements = await getVacancyRequirements(vacancyId);
 
-  if (!vacancyPrompt) {
-    console.warn(`⚠️ Промпт для вакансии ${vacancyId} не найден`);
+  if (!vacancyRequirements) {
+    console.warn(`⚠️ Требования для вакансии ${vacancyId} не найдены`);
     return null;
   }
 
   // Формируем полный промпт
-  return buildFullScreeningPrompt(vacancyPrompt, resumeData);
+  return buildFullScreeningPrompt(vacancyRequirements, resumeData);
 }
 
 /**

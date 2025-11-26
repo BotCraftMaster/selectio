@@ -1,4 +1,7 @@
-import type { ResumeScreeningData } from "../types/screening";
+import type {
+  ResumeScreeningData,
+  VacancyRequirements,
+} from "../types/screening";
 
 /**
  * Форматирует данные резюме для отправки в промпт скрининга
@@ -40,17 +43,44 @@ export function formatResumeForScreening(
 }
 
 /**
- * Создает полный промпт для скрининга, объединяя промпт вакансии и данные резюме
+ * Создает полный промпт для скрининга, объединяя требования вакансии и данные резюме
  */
 export function buildFullScreeningPrompt(
-  vacancyPrompt: string,
+  requirements: VacancyRequirements,
   resumeData: ResumeScreeningData
 ): string {
   const formattedResume = formatResumeForScreening(resumeData);
 
-  return `${vacancyPrompt}
+  return `Ты эксперт по подбору персонала. Оцени резюме кандидата на соответствие требованиям вакансии.
+
+ВАКАНСИЯ: ${requirements.job_title}
+
+ОПИСАНИЕ: ${requirements.summary}
+
+ОБЯЗАТЕЛЬНЫЕ ТРЕБОВАНИЯ:
+${requirements.mandatory_requirements.map((r, i) => `${i + 1}. ${r}`).join("\n")}
+
+ЖЕЛАТЕЛЬНЫЕ НАВЫКИ:
+${requirements.nice_to_have_skills.map((s, i) => `${i + 1}. ${s}`).join("\n")}
+
+ТЕХНОЛОГИИ: ${requirements.tech_stack.join(", ")}
+
+ОПЫТ: ${requirements.experience_years.description}
+
+ЯЗЫКИ: ${requirements.languages.map((l) => `${l.language} (${l.level})`).join(", ")}
+
+ЛОКАЦИЯ: ${requirements.location_type}
 
 РЕЗЮМЕ КАНДИДАТА:
 
-${formattedResume}`;
+${formattedResume}
+
+ФОРМАТ ОТВЕТА (только JSON):
+{
+  "match_percentage": число от 0 до 100,
+  "recommendation": "invite" | "reject" | "need_info",
+  "strengths": ["сильная сторона 1", "сильная сторона 2"],
+  "weaknesses": ["слабая сторона 1", "слабая сторона 2"],
+  "summary": "краткое резюме"
+}`;
 }
