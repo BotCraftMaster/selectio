@@ -16,12 +16,6 @@ export async function parseResumeExperience(
     timeout: 60000,
   });
 
-  // Дополнительная задержка для загрузки динамического контента
-  await humanDelay(1000, 2000);
-
-  // Имитируем чтение резюме (без движения мыши, чтобы избежать detached frame)
-  await humanDelay(2000, 4000);
-
   let experience = "";
   let languages = "";
   let about = "";
@@ -55,8 +49,6 @@ export async function parseResumeExperience(
 
   // Парсинг языков
   try {
-    await humanDelay(300, 800);
-
     const languagesElement = await page.$(
       'div[data-qa="resume-languages-block"]'
     );
@@ -73,8 +65,6 @@ export async function parseResumeExperience(
 
   // Парсинг информации о себе
   try {
-    await humanDelay(300, 800);
-
     const aboutElement = await page.$('div[data-qa="resume-about-block"]');
     if (aboutElement) {
       const htmlContent = await aboutElement.evaluate(
@@ -87,20 +77,8 @@ export async function parseResumeExperience(
     console.log("⚠️ Не удалось получить информацию о себе из резюме.");
   }
 
-  // Легкий скролл для загрузки остального контента (без humanBrowse чтобы избежать detached frame)
-  try {
-    await page.evaluate(() => {
-      window.scrollBy({ top: 400, behavior: "smooth" });
-    });
-    await humanDelay(1000, 2000);
-  } catch (_e) {
-    // Игнорируем ошибки скролла
-  }
-
   // Парсинг образования
   try {
-    await humanDelay(300, 800);
-
     const educationElement = await page.$(
       'div[data-qa="resume-education-block"]'
     );
@@ -117,8 +95,6 @@ export async function parseResumeExperience(
 
   // Парсинг курсов
   try {
-    await humanDelay(300, 800);
-
     const coursesElement = await page.$(
       'div[data-qa="resume-education-courses-block"]'
     );
@@ -141,19 +117,21 @@ export async function parseResumeExperience(
     try {
       console.log(`📞 Получение контактов: ${contactsUrl}`);
 
-      // Задержка перед запросом контактов (как будто думаем)
-      await humanDelay(1000, 2500);
+      const cookies = await page.browser().cookies();
+      const cookieHeader = cookies
+        .map((c) => `${c.name}=${c.value}`)
+        .join("; ");
+      const userAgent = await page.browser().userAgent();
 
-      contacts = await page.evaluate(async (url: string) => {
-        const response = await fetch(url, {
-          method: "GET",
-          credentials: "include",
-          headers: {
-            Accept: "application/json",
-          },
-        });
-        return await response.json();
-      }, contactsUrl);
+      const response = await fetch(contactsUrl, {
+        method: "GET",
+        headers: {
+          Accept: "application/json",
+          Cookie: cookieHeader,
+          "User-Agent": userAgent,
+        },
+      });
+      contacts = await response.json();
 
       console.log("✅ Контакты получены");
     } catch (e) {
@@ -163,9 +141,6 @@ export async function parseResumeExperience(
   } else {
     console.log("⚠️ Не удалось извлечь ID резюме из URL.");
   }
-
-  // Финальная пауза перед переходом к следующему резюме
-  await humanDelay(1500, 3000);
 
   return { experience, contacts, languages, about, education, courses };
 }

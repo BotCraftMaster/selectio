@@ -92,8 +92,6 @@ async function collectAndSaveResponses(
       break;
     }
 
-    await humanDelay(1000, 2000);
-
     // Проверяем наличие контейнера с откликами
     const hasResponses = await page
       .waitForSelector('div[data-qa="vacancy-real-responses"]', {
@@ -111,7 +109,6 @@ async function collectAndSaveResponses(
 
     // Скроллим для подгрузки
     await humanScroll(page);
-    await humanDelay(1000, 2000);
 
     // Парсим отклики на странице
     const pageResponses = await page.$$eval(
@@ -200,7 +197,6 @@ async function collectAndSaveResponses(
     );
 
     currentPage++;
-    await humanDelay(1500, 3000);
   }
 
   console.log(
@@ -265,15 +261,6 @@ async function parseResponseDetails(
         `\n📊 Парсинг резюме ${i + 1}/${responses.length}: ${response.name}`
       );
 
-      // Случайная задержка между просмотром резюме (имитация человека)
-      if (i > 0) {
-        const delay = randomDelay(3000, 8000);
-        console.log(
-          `⏳ Пауза ${Math.round(delay / 1000)}с перед следующим резюме...`
-        );
-        await new Promise((resolve) => setTimeout(resolve, delay));
-      }
-
       // Парсим детальную информацию резюме
       const experienceData = await parseResumeExperience(page, response.url);
 
@@ -304,7 +291,6 @@ async function parseResponseDetails(
 
       // Пауза после ошибки перед следующей попыткой
       console.log(`⏭️ Переход к следующему резюме...`);
-      await humanDelay(3000, 5000);
     }
   }
 
