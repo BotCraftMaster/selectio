@@ -3,6 +3,7 @@
 import {
   Table,
   TableBody,
+  TableCell,
   TableHead,
   TableHeader,
   TableRow,
@@ -48,13 +49,23 @@ export function ResponseTable({ responses }: ResponseTableProps) {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {responses.map((response) => (
-            <ResponseRow
-              key={response.id}
-              response={response}
-              accessToken={accessToken}
-            />
-          ))}
+          {responses.length === 0 ? (
+            <TableRow>
+              <TableCell colSpan={7} className="h-[200px]">
+                <div className="flex items-center justify-center">
+                  <p className="text-muted-foreground">Нет откликов</p>
+                </div>
+              </TableCell>
+            </TableRow>
+          ) : (
+            responses.map((response) => (
+              <ResponseRow
+                key={response.id}
+                response={response}
+                accessToken={accessToken}
+              />
+            ))
+          )}
         </TableBody>
       </Table>
     </div>

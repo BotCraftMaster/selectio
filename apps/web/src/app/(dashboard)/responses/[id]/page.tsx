@@ -1,4 +1,13 @@
-import { Badge, Card, CardContent, CardHeader, CardTitle } from "@selectio/ui";
+"use client";
+
+import {
+  Badge,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Skeleton,
+} from "@selectio/ui";
 import {
   IconArrowLeft,
   IconBriefcase,
@@ -7,24 +16,59 @@ import {
   IconSchool,
   IconUser,
 } from "@tabler/icons-react";
+import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { use } from "react";
 import { SiteHeader } from "~/components/layout";
-import { api } from "~/trpc/server";
+import { useTRPC } from "~/trpc/react";
 
 interface ResponseDetailPageProps {
   params: Promise<{ id: string }>;
 }
 
-export default async function ResponseDetailPage({
+export default function ResponseDetailPage({
   params,
 }: ResponseDetailPageProps) {
-  const { id } = await params;
-  const caller = await api();
-  const response = await caller.vacancy.responses.getById({ id });
+  const { id } = use(params);
+  const trpc = useTRPC();
+  const { data: response, isLoading } = useQuery(
+    trpc.vacancy.responses.getById.queryOptions({ id })
+  );
+
+  if (isLoading) {
+    return (
+      <>
+        <SiteHeader title="Загрузка..." />
+        <div className="flex flex-1 flex-col">
+          <div className="@container/main flex flex-1 flex-col gap-2">
+            <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
+              <div className="px-4 lg:px-6">
+                <Skeleton className="h-6 w-40 mb-6" />
+                <div className="space-y-6">
+                  <Skeleton className="h-12 w-3/4" />
+                  <Skeleton className="h-32" />
+                  <div className="grid gap-6 md:grid-cols-2">
+                    <Skeleton className="h-48" />
+                    <Skeleton className="h-48" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  }
 
   if (!response) {
-    notFound();
+    return (
+      <>
+        <SiteHeader title="Не найдено" />
+        <div className="flex flex-1 flex-col items-center justify-center">
+          <p className="text-muted-foreground">Отклик не найден</p>
+        </div>
+      </>
+    );
   }
 
   const isNew =

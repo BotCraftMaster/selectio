@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Button,
   Card,
@@ -5,14 +7,16 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  Skeleton,
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
 } from "@selectio/ui";
+import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { use } from "react";
 import { SiteHeader } from "~/components/layout";
 import {
   EmptyResponses,
@@ -22,27 +26,69 @@ import {
   VacancyHeader,
   VacancyStats,
 } from "~/components/vacancy";
-import { api } from "~/trpc/server";
+import { useTRPC } from "~/trpc/react";
 
 interface VacancyDetailPageProps {
   params: Promise<{ id: string }>;
   searchParams: Promise<{ tab?: string }>;
 }
 
-export default async function VacancyDetailPage({
+export default function VacancyDetailPage({
   params,
   searchParams,
 }: VacancyDetailPageProps) {
-  const { id } = await params;
-  const { tab } = await searchParams;
-  const caller = await api();
-  const [vacancy, responses] = await Promise.all([
-    caller.vacancy.getById({ id }),
-    caller.vacancy.responses.list({ vacancyId: id }),
-  ]);
+  const { id } = use(params);
+  const { tab } = use(searchParams);
+  const trpc = useTRPC();
+
+  const { data: vacancy, isLoading: vacancyLoading } = useQuery(
+    trpc.vacancy.getById.queryOptions({ id })
+  );
+  const { data: responses, isLoading: responsesLoading } = useQuery(
+    trpc.vacancy.responses.list.queryOptions({ vacancyId: id })
+  );
+
+  const isLoading = vacancyLoading || responsesLoading;
+
+  if (isLoading) {
+    return (
+      <>
+        <SiteHeader title="Загрузка..." />
+        <div className="flex flex-1 flex-col">
+          <div className="@container/main flex flex-1 flex-col gap-2">
+            <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
+              <div className="px-4 lg:px-6">
+                <Skeleton className="h-10 w-40 mb-4" />
+                <div className="space-y-6">
+                  <Skeleton className="h-10 w-full" />
+                  <div className="rounded-lg border p-6 space-y-6">
+                    <Skeleton className="h-8 w-3/4" />
+                    <div className="grid gap-4 md:grid-cols-4">
+                      <Skeleton className="h-24" />
+                      <Skeleton className="h-24" />
+                      <Skeleton className="h-24" />
+                      <Skeleton className="h-24" />
+                    </div>
+                    <Skeleton className="h-64" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  }
 
   if (!vacancy) {
-    notFound();
+    return (
+      <>
+        <SiteHeader title="Не найдено" />
+        <div className="flex flex-1 flex-col items-center justify-center">
+          <p className="text-muted-foreground">Вакансия не найдена</p>
+        </div>
+      </>
+    );
   }
 
   return (
@@ -65,7 +111,7 @@ export default async function VacancyDetailPage({
                 <TabsList>
                   <TabsTrigger value="overview">Обзор</TabsTrigger>
                   <TabsTrigger value="responses">
-                    Отклики ({responses.length})
+                    Отклики ({responses?.length ?? 0})
                   </TabsTrigger>
                 </TabsList>
 
@@ -105,7 +151,7 @@ export default async function VacancyDetailPage({
                 </TabsContent>
 
                 <TabsContent value="responses" className="space-y-6">
-                  {responses.length === 0 ? (
+                  {!responses || responses.length === 0 ? (
                     <EmptyResponses />
                   ) : (
                     <div className="space-y-4">

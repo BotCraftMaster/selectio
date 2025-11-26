@@ -1,3 +1,5 @@
+"use client";
+
 import {
   HR_SELECTION_STATUS_LABELS,
   RESPONSE_STATUS_LABELS,
@@ -16,21 +18,26 @@ import {
   TableRow,
 } from "@selectio/ui";
 import { IconBriefcase, IconClock, IconUser } from "@tabler/icons-react";
+import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { SiteHeader } from "~/components/layout";
-import { api } from "~/trpc/server";
+import { useTRPC } from "~/trpc/react";
 
-export default async function ResponsesPage() {
-  const caller = await api();
-  const responses = await caller.vacancy.responses.listAll();
+export default function ResponsesPage() {
+  const trpc = useTRPC();
+  const { data: responses, isLoading } = useQuery(
+    trpc.vacancy.responses.listAll.queryOptions()
+  );
 
-  const totalResponses = responses.length;
-  const newResponses = responses.filter(
-    (response) =>
-      new Date(response.createdAt) > new Date(Date.now() - 24 * 60 * 60 * 1000)
-  ).length;
+  const totalResponses = responses?.length ?? 0;
+  const newResponses =
+    responses?.filter(
+      (response) =>
+        new Date(response.createdAt) >
+        new Date(Date.now() - 24 * 60 * 60 * 1000)
+    ).length ?? 0;
   const uniqueVacancies = new Set(
-    responses.map((response) => response.vacancyId)
+    responses?.map((response) => response.vacancyId) ?? []
   ).size;
 
   return (
@@ -89,32 +96,45 @@ export default async function ResponsesPage() {
               </div>
 
               {/* Таблица откликов */}
-              {responses.length === 0 ? (
-                <div className="flex min-h-[400px] items-center justify-center rounded-lg border border-dashed">
-                  <div className="text-center">
-                    <h2 className="text-2xl font-semibold mb-2">
-                      Нет откликов
-                    </h2>
-                    <p className="text-muted-foreground">
-                      Отклики появятся после запуска парсера
-                    </p>
-                  </div>
-                </div>
-              ) : (
-                <div className="rounded-lg border">
-                  <Table>
-                    <TableHeader>
+              <div className="rounded-lg border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Кандидат</TableHead>
+                      <TableHead>Вакансия</TableHead>
+                      <TableHead>Статус</TableHead>
+                      <TableHead>Отбор HR</TableHead>
+                      <TableHead>Дата отклика</TableHead>
+                      <TableHead>Резюме</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {isLoading ? (
                       <TableRow>
-                        <TableHead>Кандидат</TableHead>
-                        <TableHead>Вакансия</TableHead>
-                        <TableHead>Статус</TableHead>
-                        <TableHead>Отбор HR</TableHead>
-                        <TableHead>Дата отклика</TableHead>
-                        <TableHead>Резюме</TableHead>
+                        <TableCell
+                          colSpan={6}
+                          className="h-[400px] text-center"
+                        >
+                          <p className="text-muted-foreground">Загрузка...</p>
+                        </TableCell>
                       </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {responses.map((response) => {
+                    ) : !responses || responses.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={6} className="h-[400px]">
+                          <div className="flex items-center justify-center">
+                            <div className="text-center">
+                              <h2 className="text-2xl font-semibold mb-2">
+                                Нет откликов
+                              </h2>
+                              <p className="text-muted-foreground">
+                                Отклики появятся после запуска парсера
+                              </p>
+                            </div>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      responses.map((response) => {
                         const isNew =
                           new Date(response.createdAt) >
                           new Date(Date.now() - 24 * 60 * 60 * 1000);
@@ -203,11 +223,11 @@ export default async function ResponsesPage() {
                             </TableCell>
                           </TableRow>
                         );
-                      })}
-                    </TableBody>
-                  </Table>
-                </div>
-              )}
+                      })
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
             </div>
           </div>
         </div>

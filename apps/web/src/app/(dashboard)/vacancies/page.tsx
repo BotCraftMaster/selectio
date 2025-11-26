@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Badge,
   Table,
@@ -7,13 +9,16 @@ import {
   TableHeader,
   TableRow,
 } from "@selectio/ui";
+import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { SiteHeader } from "~/components/layout";
-import { api } from "~/trpc/server";
+import { useTRPC } from "~/trpc/react";
 
-export default async function VacanciesPage() {
-  const caller = await api();
-  const vacancies = await caller.vacancy.list();
+export default function VacanciesPage() {
+  const trpc = useTRPC();
+  const { data: vacancies, isLoading } = useQuery(
+    trpc.vacancy.list.queryOptions()
+  );
 
   return (
     <>
@@ -22,33 +27,46 @@ export default async function VacanciesPage() {
         <div className="@container/main flex flex-1 flex-col gap-2">
           <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
             <div className="px-4 lg:px-6">
-              {vacancies.length === 0 ? (
-                <div className="flex min-h-[400px] items-center justify-center rounded-lg border border-dashed">
-                  <div className="text-center">
-                    <h2 className="text-2xl font-semibold mb-2">
-                      Нет вакансий
-                    </h2>
-                    <p className="text-muted-foreground">
-                      Запустите парсер для загрузки вакансий
-                    </p>
-                  </div>
-                </div>
-              ) : (
-                <div className="rounded-lg border">
-                  <Table>
-                    <TableHeader>
+              <div className="rounded-lg border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Название</TableHead>
+                      <TableHead>Регион</TableHead>
+                      <TableHead className="text-right">Просмотры</TableHead>
+                      <TableHead className="text-right">Отклики</TableHead>
+                      <TableHead className="text-right">Новые</TableHead>
+                      <TableHead className="text-right">В работе</TableHead>
+                      <TableHead>Статус</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {isLoading ? (
                       <TableRow>
-                        <TableHead>Название</TableHead>
-                        <TableHead>Регион</TableHead>
-                        <TableHead className="text-right">Просмотры</TableHead>
-                        <TableHead className="text-right">Отклики</TableHead>
-                        <TableHead className="text-right">Новые</TableHead>
-                        <TableHead className="text-right">В работе</TableHead>
-                        <TableHead>Статус</TableHead>
+                        <TableCell
+                          colSpan={7}
+                          className="h-[400px] text-center"
+                        >
+                          <p className="text-muted-foreground">Загрузка...</p>
+                        </TableCell>
                       </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {vacancies.map((vacancy) => (
+                    ) : !vacancies || vacancies.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={7} className="h-[400px]">
+                          <div className="flex items-center justify-center">
+                            <div className="text-center">
+                              <h2 className="text-2xl font-semibold mb-2">
+                                Нет вакансий
+                              </h2>
+                              <p className="text-muted-foreground">
+                                Запустите парсер для загрузки вакансий
+                              </p>
+                            </div>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      vacancies.map((vacancy) => (
                         <TableRow key={vacancy.id}>
                           <TableCell>
                             <Link
@@ -90,11 +108,11 @@ export default async function VacanciesPage() {
                             )}
                           </TableCell>
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              )}
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
             </div>
           </div>
         </div>
