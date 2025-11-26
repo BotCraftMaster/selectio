@@ -1,0 +1,14 @@
+import { z } from "zod";
+
+/**
+ * Zod схема для результата скрининга отклика
+ */
+export const responseScreeningResultSchema = z.object({
+  score: z.number().int().min(1).max(5),
+  analysis: z.string(),
+  questions: z.array(z.string()).optional(),
+});
+
+export type ResponseScreeningResult = z.infer<
+  typeof responseScreeningResultSchema
+>;

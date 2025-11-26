@@ -1,12 +1,12 @@
 export { env } from "./env";
 export { batchScreenResumes, screenResumeWithAI } from "./services/ai-service";
+export { screenResponse } from "./services/response-screening-service";
 export {
   parseScreeningResult,
   prepareScreeningPrompt,
   screenResume,
   validateScreeningResult,
 } from "./services/resume-screening-service";
-
 // Screening services
 export {
   extractVacancyRequirements,
@@ -14,6 +14,7 @@ export {
 } from "./services/screening-prompt-service";
 // Trigger tasks
 export { extractVacancyRequirementsTask } from "./trigger/generate-screening-prompt";
+export { screenResponseTask } from "./trigger/screen-response";
 // Types
 export type {
   ResumeScreeningData,

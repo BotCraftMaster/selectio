@@ -1,0 +1,38 @@
+import {
+  integer,
+  jsonb,
+  pgTable,
+  text,
+  timestamp,
+  uuid,
+} from "drizzle-orm/pg-core";
+import { createInsertSchema } from "drizzle-zod";
+import { z } from "zod/v4";
+import { vacancyResponse } from "./response";
+
+/**
+ * Таблица для результатов скрининга откликов
+ */
+export const responseScreening = pgTable("response_screenings", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  responseId: uuid("response_id")
+    .notNull()
+    .references(() => vacancyResponse.id, { onDelete: "cascade" }),
+  score: integer("score").notNull(), // Оценка от 1 до 5
+  questions: jsonb("questions"), // Массив вопросов для кандидата
+  analysis: text("analysis"), // Анализ соответствия резюме вакансии
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const CreateResponseScreeningSchema = createInsertSchema(
+  responseScreening,
+  {
+    responseId: z.string().uuid(),
+    score: z.number().int().min(1).max(5),
+    questions: z.array(z.string()).optional(),
+    analysis: z.string().optional(),
+  }
+).omit({
+  id: true,
+  createdAt: true,
+});
