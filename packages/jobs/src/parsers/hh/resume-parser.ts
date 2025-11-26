@@ -131,44 +131,50 @@ export async function parseResumeExperience(
 
       if (!phoneLink) {
         console.log("⚠️ Кнопка показа телефона не найдена, пропускаем.");
-        return { experience, contacts, languages, about, education, courses };
-      }
-
-      // Set up request interception to capture the contacts response
-      const contactsPromise = new Promise((resolve, reject) => {
-        const timeout = setTimeout(() => {
-          page.off("response", responseHandler);
-          reject(new Error("Timeout waiting for contacts request"));
-        }, HH_CONFIG.timeouts.selector);
-
-        const responseHandler = async (response: any) => {
-          const url = response.url();
-          if (
-            url.includes(`/resume/contacts/${resumeId}`) &&
-            url.includes("goal=Contacts_Phone")
-          ) {
-            clearTimeout(timeout);
+      } else {
+        // Set up request interception to capture the contacts response
+        const contactsPromise = new Promise((resolve, reject) => {
+          const timeout = setTimeout(() => {
             page.off("response", responseHandler);
-            try {
-              const data = await response.json();
-              resolve(data);
-            } catch (e) {
-              reject(e);
+            reject(new Error("Timeout waiting for contacts request"));
+          }, HH_CONFIG.timeouts.selector);
+
+          const responseHandler = async (response: any) => {
+            const url = response.url();
+            if (
+              url.includes(`/resume/contacts/${resumeId}`) &&
+              url.includes("goal=Contacts_Phone")
+            ) {
+              clearTimeout(timeout);
+              page.off("response", responseHandler);
+              try {
+                const data = await response.json();
+                resolve(data);
+              } catch (e) {
+                reject(e);
+              }
             }
-          }
-        };
+          };
 
-        page.on("response", responseHandler);
-      });
+          page.on("response", responseHandler);
+        });
 
-      // Small delay to mimic human behavior
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      await phoneLink.click();
-      contacts = await contactsPromise;
-      console.log("✅ Контакты получены");
+        // Small delay to mimic human behavior
+        await new Promise((resolve) => setTimeout(resolve, 500));
+        await phoneLink.click();
+
+        try {
+          contacts = await contactsPromise;
+          console.log("✅ Контакты получены");
+        } catch (_e) {
+          console.log("⚠️ Таймаут ожидания контактов, продолжаем без них.");
+        }
+      }
     } catch (e) {
       console.log("⚠️ Не удалось получить контакты.");
-      console.error(e);
+      if (e instanceof Error) {
+        console.log(`   Причина: ${e.message}`);
+      }
     }
   } else if (resumeIdMatch?.[1]) {
     console.log("ℹ️ Парсинг контактов отключен в конфигурации");
