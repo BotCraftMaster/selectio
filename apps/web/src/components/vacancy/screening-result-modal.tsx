@@ -31,8 +31,6 @@ export function ScreeningResultModal({
   result,
   candidateName,
 }: ScreeningResultModalProps) {
-  console.log("ScreeningResultModal render:", { open, result, candidateName });
-
   const getScoreColor = (score: number) => {
     if (score >= 4) return "text-green-600";
     if (score >= 3) return "text-yellow-600";

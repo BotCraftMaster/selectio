@@ -1,10 +1,10 @@
 "use client";
 
 import { Button } from "@selectio/ui";
-import { useRealtimeRun } from "@trigger.dev/react-hooks";
-import { Sparkles } from "lucide-react";
-import { useEffect, useState } from "react";
-import { triggerScreenResponse } from "~/actions/trigger";
+import { useRealtimeTaskTrigger } from "@trigger.dev/react-hooks";
+
+import { Loader2, Sparkles } from "lucide-react";
+import { useState } from "react";
 import { ScreeningResultModal } from "./screening-result-modal";
 
 interface ScreenResponseButtonProps {
@@ -18,32 +18,20 @@ export function ScreenResponseButton({
   accessToken,
   candidateName,
 }: ScreenResponseButtonProps) {
-  const [runId, setRunId] = useState<string | undefined>();
-  const [isTriggering, setIsTriggering] = useState(false);
   const [showModal, setShowModal] = useState(false);
-
-  const { run } = useRealtimeRun(runId, {
+  const { submit, run } = useRealtimeTaskTrigger("screen-response", {
     accessToken,
-    enabled: !!accessToken && !!runId,
   });
 
-  useEffect(() => {
-    if (run?.status === "COMPLETED" && run.output) {
-      setShowModal(true);
-    }
-  }, [run?.status, run?.output]);
-
   const handleClick = async () => {
-    setIsTriggering(true);
-    const result = await triggerScreenResponse(responseId);
-    setIsTriggering(false);
-
-    if (result.success) {
-      setRunId(result.runId);
-    }
+    await submit({ responseId });
   };
 
-  const isRunning = isTriggering || run?.status === "EXECUTING";
+  const isRunning = run?.status === "EXECUTING" || run?.status === "QUEUED";
+
+  if (run?.status === "COMPLETED" && run.output && !showModal) {
+    setShowModal(true);
+  }
 
   return (
     <>
@@ -53,7 +41,11 @@ export function ScreenResponseButton({
         onClick={handleClick}
         disabled={!accessToken || isRunning}
       >
-        <Sparkles className="h-4 w-4 mr-1" />
+        {isRunning ? (
+          <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+        ) : (
+          <Sparkles className="h-4 w-4 mr-1" />
+        )}
         {isRunning ? "Оценка..." : "Оценить"}
       </Button>
 

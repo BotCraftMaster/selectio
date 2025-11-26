@@ -12,6 +12,9 @@ export async function createTriggerPublicToken(taskId: string) {
         write: {
           tasks: [taskId],
         },
+        trigger: {
+          tasks: [taskId],
+        },
       },
       expirationTime: "15m",
     });

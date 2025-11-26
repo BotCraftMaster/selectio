@@ -79,7 +79,7 @@ export function ResponseRow({ response, accessToken }: ResponseRowProps) {
       </TableCell>
       <TableCell className="text-right">
         <div className="flex items-center justify-end gap-2">
-          {response.status === "NEW" && (
+          {response.status === "NEW" && accessToken && (
             <ScreenResponseButton
               responseId={response.id}
               accessToken={accessToken}
