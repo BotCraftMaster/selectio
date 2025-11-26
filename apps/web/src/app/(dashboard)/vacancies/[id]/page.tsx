@@ -17,6 +17,7 @@ import {
   GenerateRequirementsButton,
   VacancyAnalytics,
   VacancyHeader,
+  VacancyRequirements,
   VacancyStats,
 } from "~/components/vacancy";
 import { useTRPC } from "~/trpc/react";
@@ -159,6 +160,11 @@ export default function VacancyDetailPage({
                       </div>
                     )}
                   </div>
+                  {vacancy.requirements ? (
+                    <VacancyRequirements
+                      requirements={vacancy.requirements as unknown}
+                    />
+                  ) : null}
                 </TabsContent>
               </Tabs>
             </div>

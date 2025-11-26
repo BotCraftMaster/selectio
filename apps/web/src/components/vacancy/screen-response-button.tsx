@@ -21,6 +21,7 @@ export function ScreenResponseButton({
   candidateName,
 }: ScreenResponseButtonProps) {
   const [showModal, setShowModal] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const trpc = useTRPC();
   const queryClient = useQueryClient();
 
@@ -29,18 +30,23 @@ export function ScreenResponseButton({
   });
 
   const isRunning = run?.status === "DEQUEUED" || run?.status === "EXECUTING";
+  const isLoading = isSubmitting || isRunning;
 
   useEffect(() => {
     if (run?.status === "COMPLETED" && run.output) {
       console.log("Opening modal with result:", run.output);
       setShowModal(true);
+      setIsSubmitting(false);
       void queryClient.invalidateQueries(
         trpc.vacancy.responses.list.pathFilter()
       );
+    } else if (run?.status === "FAILED" || run?.status === "CANCELED") {
+      setIsSubmitting(false);
     }
   }, [run?.status, run?.output, queryClient, trpc.vacancy.responses.list]);
 
   const handleClick = () => {
+    setIsSubmitting(true);
     submit({ responseId });
   };
 
@@ -50,14 +56,14 @@ export function ScreenResponseButton({
         variant="outline"
         size="sm"
         onClick={handleClick}
-        disabled={!accessToken || isRunning}
+        disabled={!accessToken || isLoading}
       >
-        {isRunning ? (
+        {isLoading ? (
           <Loader2 className="h-4 w-4 mr-1 animate-spin" />
         ) : (
           <Sparkles className="h-4 w-4 mr-1" />
         )}
-        {isRunning ? "Оценка..." : "Оценить"}
+        {isLoading ? "Оценка..." : "Оценить"}
       </Button>
 
       <ScreeningResultModal
