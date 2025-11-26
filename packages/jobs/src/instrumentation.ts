@@ -1,8 +1,8 @@
-import { getNodeAutoInstrumentations } from "@opentelemetry/auto-instrumentations-node";
+import { LangfuseSpanProcessor } from "@langfuse/otel";
 import { NodeSDK } from "@opentelemetry/sdk-node";
-import { LangfuseExporter } from "langfuse-vercel";
 
-export const sdk = new NodeSDK({
-  traceExporter: new LangfuseExporter(),
-  instrumentations: [getNodeAutoInstrumentations()],
+const sdk = new NodeSDK({
+  spanProcessors: [new LangfuseSpanProcessor()],
 });
+
+sdk.start();

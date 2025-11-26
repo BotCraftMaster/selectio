@@ -3,7 +3,6 @@ import { eq } from "@selectio/db";
 import { db } from "@selectio/db/client";
 import { responseScreening, vacancyResponse } from "@selectio/db/schema";
 import { generateText } from "ai";
-import { sdk } from "../instrumentation";
 import { responseScreeningResultSchema } from "../schemas/response-screening.schema";
 import type { VacancyRequirements } from "../types/screening";
 import { extractJsonFromText } from "../utils/json-extractor";
@@ -13,7 +12,6 @@ import { getVacancyRequirements } from "./screening-prompt-service";
  */
 export async function screenResponse(responseId: string) {
   console.log(`🎯 Скрининг отклика ${responseId}`);
-  sdk.start();
   const response = await db.query.vacancyResponse.findFirst({
     where: eq(vacancyResponse.id, responseId),
   });
@@ -45,7 +43,6 @@ export async function screenResponse(responseId: string) {
       },
     },
   });
-  await sdk.shutdown();
   console.log(`📥 Получен ответ от AI`);
 
   const result = parseScreeningResult(text);

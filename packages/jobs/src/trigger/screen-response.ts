@@ -1,5 +1,6 @@
 import { logger, task } from "@trigger.dev/sdk";
 import { screenResponse } from "../services/response-screening-service";
+import "../instrumentation";
 
 export const screenResponseTask = task({
   id: "screen-response",

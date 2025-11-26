@@ -23,3 +23,4 @@ export type {
   ScreeningResult,
 } from "./types/screening";
 export { loadCookies, saveCookies } from "./utils/cookies";
+import "./instrumentation";
