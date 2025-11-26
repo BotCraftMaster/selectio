@@ -2,7 +2,6 @@ import type { Page } from "puppeteer";
 import { stripHtml } from "string-strip-html";
 import type { ResumeExperience } from "../types";
 import { HH_CONFIG } from "./config";
-import { humanDelay } from "./human-behavior";
 
 export async function parseResumeExperience(
   page: Page,
@@ -10,11 +9,13 @@ export async function parseResumeExperience(
 ): Promise<ResumeExperience> {
   console.log(`📄 Переход на страницу резюме: ${url}`);
 
-  // Переходим на страницу резюме
-  await page.goto(url, {
-    waitUntil: "domcontentloaded",
-    timeout: 60000,
-  });
+  // Переходим на страницу резюме, если мы еще не там
+  if (page.url() !== url) {
+    await page.goto(url, {
+      waitUntil: "domcontentloaded",
+      timeout: 60000,
+    });
+  }
 
   let experience = "";
   let languages = "";
@@ -33,9 +34,6 @@ export async function parseResumeExperience(
     );
 
     if (experienceElement) {
-      // Небольшая задержка перед чтением
-      await humanDelay(500, 1500);
-
       const htmlContent = await experienceElement.evaluate(
         (el: HTMLElement) => el.innerHTML
       );
@@ -117,21 +115,19 @@ export async function parseResumeExperience(
     try {
       console.log(`📞 Получение контактов: ${contactsUrl}`);
 
-      const cookies = await page.browser().cookies();
-      const cookieHeader = cookies
-        .map((c) => `${c.name}=${c.value}`)
-        .join("; ");
-      const userAgent = await page.browser().userAgent();
+      // Use page.evaluate to make the request in browser context
+      contacts = await page.evaluate(async (url) => {
+        const response = await fetch(url, {
+          method: "GET",
+          credentials: "include", // Include cookies automatically
+        });
 
-      const response = await fetch(contactsUrl, {
-        method: "GET",
-        headers: {
-          Accept: "application/json",
-          Cookie: cookieHeader,
-          "User-Agent": userAgent,
-        },
-      });
-      contacts = await response.json();
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        return await response.json();
+      }, contactsUrl);
 
       console.log("✅ Контакты получены");
     } catch (e) {

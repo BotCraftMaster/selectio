@@ -15,6 +15,7 @@
     "clean": "git clean -xdf .cache .turbo dist node_modules",
     "dev": "bun run src/index.ts",
     "hh:parse": "bun with-env bun run src/hh-response-parser.ts",
+    "hh:enrich": "bun with-env bun run src/hh-enrich-responses.ts",
     "hh:test": "bun with-env bun run src/test.ts",
     "hh:example": "bun run src/example-with-cookies.ts",
     "format": "prettier --check . --ignore-path ../../.gitignore",

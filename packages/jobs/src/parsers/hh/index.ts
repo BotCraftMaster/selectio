@@ -19,9 +19,8 @@ export async function runHHParser() {
 
   const savedCookies = await loadCookies();
 
-  const startUrl = savedCookies
-    ? HH_CONFIG.urls.vacancies
-    : HH_CONFIG.urls.login;
+  // Всегда начинаем с страницы логина, чтобы проверить актуальность сессии
+  const startUrl = HH_CONFIG.urls.login;
 
   const crawler = new PuppeteerCrawler({
     headless: HH_CONFIG.puppeteer.headless,
@@ -72,13 +71,14 @@ export async function runHHParser() {
 
         if (savedCookies) {
           log.info("🍪 Восстанавливаем сохраненные куки...");
-          await page.setCookie(...(savedCookies as CookieParam[]));
+          await page.browserContext().setCookie(...(savedCookies as any[]));
         }
 
         // Устанавливаем реалистичный User-Agent
-        await page.setUserAgent(
-          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-        );
+        await page.setUserAgent({
+          userAgent:
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        });
 
         // Устанавливаем viewport как у обычного пользователя
         await page.setViewport({
