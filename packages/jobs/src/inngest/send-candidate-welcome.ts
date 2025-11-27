@@ -1,6 +1,10 @@
 import { db } from "@selectio/db";
 import { eq } from "@selectio/db";
-import { telegramConversation, vacancyResponse } from "@selectio/db/schema";
+import {
+  responseScreening,
+  telegramConversation,
+  vacancyResponse,
+} from "@selectio/db/schema";
 import { sendMessageByUsername } from "@selectio/telegram-bot";
 import { generateWelcomeMessage } from "../services/candidate-welcome-service";
 import { inngest } from "./client";
@@ -98,6 +102,13 @@ export const sendCandidateWelcomeFunction = inngest.createFunction(
     if (result.chatId) {
       const chatId = result.chatId;
       await step.run("save-conversation", async () => {
+        // Получаем скрининг для определения количества вопросов
+        const screening = await db.query.responseScreening.findFirst({
+          where: eq(vacancyResponse.id, responseId),
+        });
+
+        const questions = (screening?.questions as string[]) || [];
+
         await db
           .insert(telegramConversation)
           .values({
@@ -108,6 +119,8 @@ export const sendCandidateWelcomeFunction = inngest.createFunction(
               responseId,
               vacancyId: response.vacancyId,
               username,
+              totalQuestions: questions.length,
+              questionAnswers: [],
             }),
           })
           .onConflictDoUpdate({
@@ -119,6 +132,8 @@ export const sendCandidateWelcomeFunction = inngest.createFunction(
                 responseId,
                 vacancyId: response.vacancyId,
                 username,
+                totalQuestions: questions.length,
+                questionAnswers: [],
               }),
             },
           });

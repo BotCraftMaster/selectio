@@ -95,17 +95,60 @@ bot.on("message:voice", async (ctx) => {
       "audio/ogg"
     );
 
+    // Парсим metadata для отслеживания прогресса ответов на вопросы
+    let metadata: any = {};
+    try {
+      metadata = conversation.metadata ? JSON.parse(conversation.metadata) : {};
+    } catch (e) {
+      console.error("Ошибка парсинга metadata:", e);
+    }
+
+    const questionAnswers = metadata.questionAnswers || [];
+    const totalQuestions = metadata.totalQuestions || 0;
+
     await db.insert(telegramMessage).values({
       conversationId: conversation.id,
       sender: "CANDIDATE",
       contentType: "VOICE",
-      content: "Голосовое сообщение",
+      content: `Ответ на вопрос ${questionAnswers.length + 1}`,
       fileId,
       voiceDuration: voice.duration.toString(),
       telegramMessageId: ctx.message.message_id.toString(),
     });
 
-    await ctx.reply("Голосовое сообщение получено и сохранено.");
+    // Обновляем прогресс ответов
+    if (totalQuestions > 0 && questionAnswers.length < totalQuestions) {
+      questionAnswers.push({
+        questionNumber: questionAnswers.length + 1,
+        fileId,
+        duration: voice.duration,
+        answeredAt: new Date().toISOString(),
+      });
+
+      metadata.questionAnswers = questionAnswers;
+
+      await db
+        .update(telegramConversation)
+        .set({ metadata: JSON.stringify(metadata) })
+        .where(eq(telegramConversation.id, conversation.id));
+
+      const remainingQuestions = totalQuestions - questionAnswers.length;
+
+      if (remainingQuestions > 0) {
+        await ctx.reply(
+          `✅ Отлично! Ответ на вопрос ${questionAnswers.length} получен.\n\n` +
+            `Осталось вопросов: ${remainingQuestions}\n\n` +
+            `Пожалуйста, ответьте на следующий вопрос голосовым сообщением.`
+        );
+      } else {
+        await ctx.reply(
+          `🎉 Спасибо! Вы ответили на все вопросы.\n\n` +
+            `Мы внимательно изучим ваши ответы и свяжемся с вами в ближайшее время.`
+        );
+      }
+    } else {
+      await ctx.reply("Голосовое сообщение получено и сохранено.");
+    }
   } catch (error) {
     console.error("Ошибка при обработке голосового сообщения:", error);
     await ctx.reply("Произошла ошибка при обработке голосового сообщения.");
