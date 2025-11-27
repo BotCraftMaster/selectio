@@ -1,4 +1,4 @@
-import { env } from "@selectio/config";
+import { getIntegrationCredentials } from "@selectio/db";
 import { PuppeteerCrawler } from "crawlee";
 import puppeteer from "puppeteer-extra";
 import StealthPlugin from "puppeteer-extra-plugin-stealth";
@@ -15,12 +15,12 @@ export async function runHHParser(
   userId: string,
   options?: { skipResponses?: boolean }
 ) {
-  const email = env.HH_EMAIL;
-  const password = env.HH_PASSWORD;
-
-  if (!email || !password) {
-    throw new Error("HH_EMAIL и HH_PASSWORD должны быть установлены");
+  const credentials = await getIntegrationCredentials(userId, "hh");
+  if (!credentials?.email || !credentials?.password) {
+    throw new Error("HH credentials не найдены в интеграциях");
   }
+
+  const { email, password } = credentials;
 
   console.log("🚀 Запуск парсера hh.ru...");
   console.log(`📧 Email: ${email}`);
