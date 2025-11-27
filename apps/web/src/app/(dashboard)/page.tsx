@@ -4,6 +4,7 @@ import {
   DashboardStats,
   RecentResponses,
   ResponsesChart,
+  TopResponses,
 } from "~/components/dashboard";
 import { SiteHeader } from "~/components/layout";
 
@@ -20,6 +21,9 @@ export default async function Page() {
             <div className="grid gap-4 px-4 lg:px-6 md:grid-cols-2">
               <RecentResponses />
               <ActiveVacancies />
+            </div>
+            <div className="px-4 lg:px-6">
+              <TopResponses />
             </div>
             <div className="px-4 lg:px-6">
               <ResponsesChart />

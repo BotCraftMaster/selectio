@@ -4,3 +4,4 @@ export { DashboardStats } from "./dashboard-stats";
 export { RecentResponses } from "./recent-responses";
 export { ResponsesChart } from "./responses-chart";
 export { SectionCards } from "./section-cards";
+export { TopResponses } from "./top-responses";
