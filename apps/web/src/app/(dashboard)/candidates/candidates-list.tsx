@@ -121,7 +121,7 @@ export function CandidatesList() {
                 </div>
               </div>
 
-              <Link href={`/candidates/${response.id}/chat`}>
+              <Link href={`/chat/${response.id}`}>
                 <Button variant="outline" size="sm">
                   <MessageCircle className="h-4 w-4 mr-2" />
                   Открыть чат
