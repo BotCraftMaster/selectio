@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@selectio/ui";
-import { Bell, Circle, Globe, Monitor, User } from "lucide-react";
+import { Bell, Building2, Circle, Globe, Monitor, User } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -15,6 +15,11 @@ const sidebarNavItems = [
     title: "Аккаунт",
     href: "/settings",
     icon: Circle,
+  },
+  {
+    title: "Компания",
+    href: "/settings/company",
+    icon: Building2,
   },
   {
     title: "Интеграции",
