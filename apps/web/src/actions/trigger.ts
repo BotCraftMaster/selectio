@@ -78,3 +78,17 @@ export async function triggerScreenAllResponses(vacancyId: string) {
     };
   }
 }
+
+export async function triggerUpdateVacancies() {
+  try {
+    const { inngest } = await import("@selectio/jobs");
+    await inngest.send({
+      name: "vacancy/update.active",
+      data: {},
+    });
+    return { success: true as const };
+  } catch (error) {
+    console.error("Failed to trigger update-vacancies:", error);
+    return { success: false as const, error: "Failed to trigger update" };
+  }
+}

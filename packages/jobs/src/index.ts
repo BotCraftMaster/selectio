@@ -9,6 +9,7 @@ export {
 } from "./inngest";
 export {
   triggerResponseScreening,
+  triggerVacanciesUpdate,
   triggerVacancyRequirementsExtraction as triggerVacancyRequirementsExtractionInngest,
   triggerVacancyResponsesRefresh,
 } from "./services/inngest-service";

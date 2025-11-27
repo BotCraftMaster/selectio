@@ -1,5 +1,5 @@
-import { inngest } from "./client";
 import { runHHParser } from "../parsers/hh";
+import { inngest } from "./client";
 
 /**
  * Inngest function for updating active vacancies

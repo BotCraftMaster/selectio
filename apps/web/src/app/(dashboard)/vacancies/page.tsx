@@ -2,6 +2,7 @@
 
 import {
   Badge,
+  Button,
   Table,
   TableBody,
   TableCell,
@@ -11,6 +12,8 @@ import {
 } from "@selectio/ui";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
+import { useState } from "react";
+import { triggerUpdateVacancies } from "~/actions/trigger";
 import { SiteHeader } from "~/components/layout";
 import { useTRPC } from "~/trpc/react";
 
@@ -19,6 +22,21 @@ export default function VacanciesPage() {
   const { data: vacancies, isLoading } = useQuery(
     trpc.vacancy.list.queryOptions()
   );
+  const [isUpdating, setIsUpdating] = useState(false);
+
+  const handleUpdate = async () => {
+    setIsUpdating(true);
+    try {
+      const result = await triggerUpdateVacancies();
+      if (result.success) {
+        alert("Обновление вакансий запущено");
+      } else {
+        alert("Ошибка при запуске обновления");
+      }
+    } finally {
+      setIsUpdating(false);
+    }
+  };
 
   return (
     <>
@@ -27,6 +45,11 @@ export default function VacanciesPage() {
         <div className="@container/main flex flex-1 flex-col gap-2">
           <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
             <div className="px-4 lg:px-6">
+              <div className="mb-4 flex justify-end">
+                <Button onClick={handleUpdate} disabled={isUpdating}>
+                  {isUpdating ? "Обновление..." : "Обновить"}
+                </Button>
+              </div>
               <div className="rounded-lg border">
                 <Table>
                   <TableHeader>
