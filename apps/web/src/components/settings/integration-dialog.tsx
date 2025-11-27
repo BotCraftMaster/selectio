@@ -1,9 +1,14 @@
 "use client";
 
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Button,
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
   Input,
-  Label,
   Select,
   SelectContent,
   SelectItem,
@@ -15,9 +20,14 @@ import {
   SheetFooter,
   SheetHeader,
   SheetTitle,
+  toast,
 } from "@selectio/ui";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { AVAILABLE_INTEGRATIONS } from "~/lib/integrations";
 import { useTRPC } from "~/trpc/react";
 
 interface IntegrationDialogProps {
@@ -26,7 +36,14 @@ interface IntegrationDialogProps {
   editingType: string | null;
 }
 
-import { AVAILABLE_INTEGRATIONS } from "~/lib/integrations";
+const integrationFormSchema = z.object({
+  type: z.string(),
+  name: z.string().optional(),
+  email: z.string().email("Некорректный email"),
+  password: z.string().min(1, "Пароль обязателен"),
+});
+
+type IntegrationFormValues = z.infer<typeof integrationFormSchema>;
 
 const INTEGRATION_TYPES = AVAILABLE_INTEGRATIONS.map((int) => ({
   value: int.type,
@@ -41,144 +58,185 @@ export function IntegrationDialog({
 }: IntegrationDialogProps) {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
+  const [showPassword, setShowPassword] = useState(false);
 
-  const [type, setType] = useState(editingType || "hh");
-  const [name, setName] = useState("");
-  const [credentials, setCredentials] = useState<Record<string, string>>({});
-
-  const createMutation = useMutation({
-    mutationFn: (data: {
-      type: string;
-      name: string;
-      credentials: Record<string, string>;
-    }) => trpc.integration.create.mutate(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: trpc.integration.list.queryKey(),
-      });
-      handleClose();
+  const form = useForm<IntegrationFormValues>({
+    resolver: zodResolver(integrationFormSchema),
+    defaultValues: {
+      type: editingType || "hh",
+      name: "",
+      email: "",
+      password: "",
     },
   });
 
+  const selectedType = INTEGRATION_TYPES.find(
+    (t) => t.value === form.watch("type")
+  );
+
+  useEffect(() => {
+    if (editingType) {
+      form.setValue("type", editingType);
+    }
+  }, [editingType, form]);
+
+  const createMutation = useMutation(
+    trpc.integration.create.mutationOptions({
+      onSuccess: () => {
+        toast.success("Интеграция успешно создана");
+        queryClient.invalidateQueries({
+          queryKey: trpc.integration.list.queryKey(),
+        });
+        handleClose();
+      },
+      onError: (err) => {
+        toast.error(err.message || "Не удалось создать интеграцию");
+      },
+    })
+  );
+
   const handleClose = () => {
-    setType("hh");
-    setName("");
-    setCredentials({});
+    form.reset();
+    setShowPassword(false);
     onClose();
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    const selectedType = INTEGRATION_TYPES.find((t) => t.value === type);
-    if (!selectedType) return;
-
-    // Проверяем что все поля заполнены
-    const allFieldsFilled = selectedType.fields.every((field) =>
-      credentials[field]?.trim()
-    );
-
-    if (!allFieldsFilled) {
-      alert("Заполните все поля");
-      return;
-    }
-
+  const onSubmit = (data: IntegrationFormValues) => {
     createMutation.mutate({
-      type,
-      name: name || selectedType.label,
-      credentials,
+      type: data.type,
+      name: data.name || selectedType?.label || "",
+      credentials: {
+        email: data.email,
+        password: data.password,
+      },
     });
   };
-
-  const selectedType = INTEGRATION_TYPES.find((t) => t.value === type);
 
   return (
     <Sheet open={open} onOpenChange={(open: boolean) => !open && handleClose()}>
       <SheetContent className="sm:max-w-md">
-        <form onSubmit={handleSubmit} className="flex flex-col h-full gap-6">
-          <SheetHeader className="space-y-3">
-            <SheetTitle>
-              {editingType ? "Редактировать" : "Добавить"} интеграцию
-            </SheetTitle>
-            <SheetDescription>
-              Подключите внешний сервис для автоматизации работы
-            </SheetDescription>
-          </SheetHeader>
+        <Form {...form}>
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="flex flex-col h-full gap-6"
+          >
+            <SheetHeader className="space-y-3">
+              <SheetTitle>
+                {editingType ? "Редактировать" : "Добавить"} интеграцию
+              </SheetTitle>
+              <SheetDescription>
+                Подключите внешний сервис для автоматизации работы
+              </SheetDescription>
+            </SheetHeader>
 
-          <div className="space-y-5 flex-1 overflow-y-auto pr-1">
-            <div className="space-y-3">
-              <Label htmlFor="type">Тип интеграции</Label>
-              <Select
-                value={type}
-                onValueChange={setType}
-                disabled={!!editingType}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {INTEGRATION_TYPES.map((t) => (
-                    <SelectItem key={t.value} value={t.value}>
-                      {t.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            <div className="space-y-5 flex-1 overflow-y-auto pr-1 mx-5">
+              <FormField
+                control={form.control}
+                name="type"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Тип интеграции</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                      disabled={!!editingType}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {INTEGRATION_TYPES.map((t) => (
+                          <SelectItem key={t.value} value={t.value}>
+                            {t.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-            <div className="space-y-3">
-              <Label htmlFor="name">Название (опционально)</Label>
-              <Input
-                id="name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder={selectedType?.label}
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Название (опционально)</FormLabel>
+                    <Input placeholder={selectedType?.label} {...field} />
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email</FormLabel>
+                    <Input
+                      type="email"
+                      placeholder="your@email.com"
+                      {...field}
+                    />
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Пароль</FormLabel>
+                    <div className="relative">
+                      <Input
+                        type={showPassword ? "text" : "password"}
+                        placeholder="••••••••"
+                        className="pr-10"
+                        {...field}
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                        onClick={() => setShowPassword(!showPassword)}
+                      >
+                        {showPassword ? (
+                          <EyeOff className="h-4 w-4 text-muted-foreground" />
+                        ) : (
+                          <Eye className="h-4 w-4 text-muted-foreground" />
+                        )}
+                      </Button>
+                    </div>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
             </div>
 
-            {selectedType?.fields.map((field) => (
-              <div key={field} className="space-y-3">
-                <Label htmlFor={field}>
-                  {field === "email"
-                    ? "Email"
-                    : field === "password"
-                      ? "Пароль"
-                      : field}
-                </Label>
-                <Input
-                  id={field}
-                  type={field === "password" ? "password" : "text"}
-                  value={credentials[field] || ""}
-                  onChange={(e) =>
-                    setCredentials((prev) => ({
-                      ...prev,
-                      [field]: e.target.value,
-                    }))
-                  }
-                  required
-                />
-              </div>
-            ))}
-          </div>
-
-          <SheetFooter className="gap-3 sm:gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleClose}
-              className="flex-1 sm:flex-none"
-            >
-              Отмена
-            </Button>
-            <Button
-              type="submit"
-              disabled={createMutation.isPending}
-              className="flex-1 sm:flex-none"
-            >
-              {createMutation.isPending ? "Сохранение..." : "Сохранить"}
-            </Button>
-          </SheetFooter>
-        </form>
+            <SheetFooter className="gap-3 sm:gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleClose}
+                className="flex-1 sm:flex-none"
+              >
+                Отмена
+              </Button>
+              <Button
+                type="submit"
+                disabled={createMutation.isPending}
+                className="flex-1 sm:flex-none"
+              >
+                {createMutation.isPending ? "Сохранение..." : "Сохранить"}
+              </Button>
+            </SheetFooter>
+          </form>
+        </Form>
       </SheetContent>
     </Sheet>
   );
