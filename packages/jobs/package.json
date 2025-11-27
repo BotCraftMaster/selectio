@@ -15,7 +15,7 @@
     "clean": "git clean -xdf .cache .turbo dist node_modules",
     "dev": "bun with-env bun run src/inngest/server.ts",
     "dev:trigger": "bun with-env trigger dev",
-    "dev:inngest": "bunx inngest-cli@latest dev -u http://localhost:8000/api/inngest",
+    "dev:inngest": "npx inngest-cli@latest dev -u http://localhost:8000/api/inngest",
     "hh:parse": "bun with-env bun run src/hh-response-parser.ts",
     "hh:enrich": "bun with-env bun run src/hh-enrich-responses.ts",
     "hh:test": "bun with-env bun run src/test.ts",
