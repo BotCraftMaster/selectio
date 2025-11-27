@@ -122,3 +122,33 @@ export async function triggerCandidateWelcome(
     throw error;
   }
 }
+
+/**
+ * Triggers telegram message send job via Inngest
+ */
+export async function triggerTelegramMessageSend(
+  messageId: string,
+  chatId: string,
+  content: string,
+): Promise<void> {
+  try {
+    await inngest.send({
+      name: "telegram/message.send",
+      data: {
+        messageId,
+        chatId,
+        content,
+      },
+    });
+
+    console.log(
+      `✅ Inngest event sent for telegram message: ${messageId} to chat: ${chatId}`,
+    );
+  } catch (error) {
+    console.error(
+      `❌ Ошибка отправки Inngest события для отправки сообщения ${messageId}:`,
+      error,
+    );
+    throw error;
+  }
+}

@@ -1,9 +1,8 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import { Button } from "@selectio/ui";
-import { Smile, Paperclip, Mic, Send } from "lucide-react";
-import { cn } from "@selectio/ui";
+import { Button, cn } from "@selectio/ui";
+import { Mic, Paperclip, Send, Smile } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 
 interface ChatInputProps {
   onSendMessage: (message: string) => void;

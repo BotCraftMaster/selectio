@@ -1,5 +1,12 @@
+import {
+  CreateTelegramMessageSchema,
+  db,
+  eq,
+  telegramConversation,
+  telegramMessage,
+} from "@selectio/db";
+import { inngest } from "@selectio/jobs/client";
 import { z } from "zod/v4";
-import { db, telegramMessage, CreateTelegramMessageSchema } from "@selectio/db";
 import { createTRPCRouter, protectedProcedure } from "../../trpc";
 
 export const sendMessageRouter = createTRPCRouter({
@@ -23,8 +30,28 @@ export const sendMessageRouter = createTRPCRouter({
         })
         .returning();
 
-      // TODO: Отправить сообщение в Telegram через бота
-      // await telegramBot.sendMessage(chatId, message.content);
+      if (!message) {
+        throw new Error("Failed to create message");
+      }
+
+      // Получаем chatId из conversation
+      const conversation = await db.query.telegramConversation.findFirst({
+        where: eq(telegramConversation.id, input.conversationId),
+      });
+
+      if (!conversation) {
+        throw new Error("Conversation not found");
+      }
+
+      // Отправляем событие в Inngest для отправки сообщения в Telegram
+      await inngest.send({
+        name: "telegram/message.send",
+        data: {
+          messageId: message.id,
+          chatId: conversation.chatId,
+          content: message.content,
+        },
+      });
 
       return message;
     }),

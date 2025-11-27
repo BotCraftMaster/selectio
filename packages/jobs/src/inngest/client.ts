@@ -4,6 +4,7 @@ import {
   candidateWelcomeBatchDataSchema,
   candidateWelcomeDataSchema,
   responseScreenDataSchema,
+  telegramMessageSendDataSchema,
   vacancyRequirementsExtractDataSchema,
   vacancyResponsesRefreshDataSchema,
   vacancyUpdateActiveDataSchema,
@@ -21,5 +22,6 @@ export const inngest = new Inngest({
     "vacancy/responses.refresh": vacancyResponsesRefreshDataSchema,
     "candidate/welcome": candidateWelcomeDataSchema,
     "candidate/welcome.batch": candidateWelcomeBatchDataSchema,
+    "telegram/message.send": telegramMessageSendDataSchema,
   }),
 });

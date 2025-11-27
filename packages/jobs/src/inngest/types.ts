@@ -40,6 +40,13 @@ export const candidateWelcomeBatchDataSchema = z.object({
     .min(1, "At least one response ID is required"),
 });
 
+// Schema for telegram message send event data
+export const telegramMessageSendDataSchema = z.object({
+  messageId: z.string().min(1, "Message ID is required"),
+  chatId: z.string().min(1, "Chat ID is required"),
+  content: z.string().min(1, "Content is required"),
+});
+
 /**
  * Inngest event schemas using Zod
  * Each event must have a 'data' field containing the payload
@@ -63,6 +70,9 @@ export const inngestEventSchemas = {
   "candidate/welcome.batch": {
     data: candidateWelcomeBatchDataSchema,
   },
+  "telegram/message.send": {
+    data: telegramMessageSendDataSchema,
+  },
 };
 
 /**
@@ -83,4 +93,7 @@ export type CandidateWelcomePayload = z.infer<
 >;
 export type CandidateWelcomeBatchPayload = z.infer<
   typeof candidateWelcomeBatchDataSchema
+>;
+export type TelegramMessageSendPayload = z.infer<
+  typeof telegramMessageSendDataSchema
 >;
