@@ -1,7 +1,7 @@
+import { getIntegrationCredentials } from "@acme/db";
 import { PuppeteerCrawler } from "crawlee";
 import puppeteer from "puppeteer-extra";
 import StealthPlugin from "puppeteer-extra-plugin-stealth";
-import { env } from "../../env";
 import { loadCookies, performLogin } from "./auth";
 import { HH_CONFIG } from "./config";
 import { parseResponses } from "./response-parser";
@@ -12,13 +12,19 @@ puppeteer.use(StealthPlugin());
  * Парсит только новые отклики для конкретной вакансии
  * Не парсит саму вакансию, только обновляет список откликов
  */
-export async function refreshVacancyResponses(vacancyId: string) {
-  const email = env.HH_EMAIL;
-  const password = env.HH_PASSWORD;
-
+export async function refreshVacancyResponses(
+  vacancyId: string,
+  userId: string
+) {
   console.log(`🔄 Обновление откликов для вакансии ${vacancyId}...`);
 
-  const savedCookies = await loadCookies();
+  const credentials = await getIntegrationCredentials(userId, "hh");
+  if (!credentials?.email || !credentials?.password) {
+    throw new Error("HH credentials не найдены в интеграциях");
+  }
+
+  const { email, password } = credentials;
+  const savedCookies = await loadCookies(userId, "hh");
   const startUrl = HH_CONFIG.urls.login;
 
   const crawler = new PuppeteerCrawler({
@@ -91,7 +97,7 @@ export async function refreshVacancyResponses(vacancyId: string) {
         const loginInput = await page.$('input[type="text"][name="username"]');
 
         if (loginInput) {
-          await performLogin(page, log, email, password);
+          await performLogin(page, log, userId, email, password);
         } else {
           log.info("✅ Форма входа не найдена. Похоже, мы уже авторизованы.");
         }
