@@ -1,0 +1,141 @@
+import { and, count, eq, gte, isNull, sql } from "@selectio/db";
+import { responseScreening, vacancyResponse } from "@selectio/db/schema";
+import { protectedProcedure } from "../../trpc";
+
+export const getDashboardStats = protectedProcedure.query(async ({ ctx }) => {
+  const userVacancies = await ctx.db.query.vacancy.findMany({
+    orderBy: (vacancy, { desc }) => [desc(vacancy.createdAt)],
+  });
+
+  const vacancyIds = userVacancies.map((v) => v.id);
+
+  if (vacancyIds.length === 0) {
+    return {
+      totalVacancies: 0,
+      activeVacancies: 0,
+      totalResponses: 0,
+      processedResponses: 0,
+      highScoreResponses: 0,
+      topScoreResponses: 0,
+      avgScore: 0,
+      newResponses: 0,
+    };
+  }
+
+  const totalVacancies = userVacancies.length;
+  const activeVacancies = userVacancies.filter((v) => v.isActive).length;
+
+  const totalResponsesResult = await ctx.db
+    .select({ count: count() })
+    .from(vacancyResponse)
+    .where(
+      sql`${vacancyResponse.vacancyId} IN (${sql.join(
+        vacancyIds.map((id) => sql`${id}`),
+        sql`, `
+      )})`
+    );
+
+  const totalResponses = totalResponsesResult[0]?.count ?? 0;
+
+  const processedResponsesResult = await ctx.db
+    .select({ count: count() })
+    .from(vacancyResponse)
+    .innerJoin(
+      responseScreening,
+      eq(vacancyResponse.id, responseScreening.responseId)
+    )
+    .where(
+      sql`${vacancyResponse.vacancyId} IN (${sql.join(
+        vacancyIds.map((id) => sql`${id}`),
+        sql`, `
+      )})`
+    );
+
+  const processedResponses = processedResponsesResult[0]?.count ?? 0;
+
+  const highScoreResponsesResult = await ctx.db
+    .select({ count: count() })
+    .from(vacancyResponse)
+    .innerJoin(
+      responseScreening,
+      eq(vacancyResponse.id, responseScreening.responseId)
+    )
+    .where(
+      and(
+        sql`${vacancyResponse.vacancyId} IN (${sql.join(
+          vacancyIds.map((id) => sql`${id}`),
+          sql`, `
+        )})`,
+        gte(responseScreening.score, 3)
+      )
+    );
+
+  const highScoreResponses = highScoreResponsesResult[0]?.count ?? 0;
+
+  const topScoreResponsesResult = await ctx.db
+    .select({ count: count() })
+    .from(vacancyResponse)
+    .innerJoin(
+      responseScreening,
+      eq(vacancyResponse.id, responseScreening.responseId)
+    )
+    .where(
+      and(
+        sql`${vacancyResponse.vacancyId} IN (${sql.join(
+          vacancyIds.map((id) => sql`${id}`),
+          sql`, `
+        )})`,
+        gte(responseScreening.score, 4)
+      )
+    );
+
+  const topScoreResponses = topScoreResponsesResult[0]?.count ?? 0;
+
+  const avgScoreResult = await ctx.db
+    .select({
+      avg: sql<number>`COALESCE(AVG(${responseScreening.score}), 0)`,
+    })
+    .from(vacancyResponse)
+    .innerJoin(
+      responseScreening,
+      eq(vacancyResponse.id, responseScreening.responseId)
+    )
+    .where(
+      sql`${vacancyResponse.vacancyId} IN (${sql.join(
+        vacancyIds.map((id) => sql`${id}`),
+        sql`, `
+      )})`
+    );
+
+  const avgScore = avgScoreResult[0]?.avg ?? 0;
+
+  const newResponsesResult = await ctx.db
+    .select({ count: count() })
+    .from(vacancyResponse)
+    .leftJoin(
+      responseScreening,
+      eq(vacancyResponse.id, responseScreening.responseId)
+    )
+    .where(
+      and(
+        sql`${vacancyResponse.vacancyId} IN (${sql.join(
+          vacancyIds.map((id) => sql`${id}`),
+          sql`, `
+        )})`,
+        isNull(responseScreening.id)
+      )
+    );
+
+  const newResponses = newResponsesResult[0]?.count ?? 0;
+
+  return {
+    totalVacancies,
+    activeVacancies,
+    totalResponses,
+    processedResponses,
+    highScoreResponses,
+    topScoreResponses,
+    avgScore: Math.round(avgScore * 10) / 10,
+    newResponses,
+  };
+});
