@@ -1,7 +1,7 @@
 import { db } from "@selectio/db/client";
 import { vacancy } from "@selectio/db/schema";
 import { eq } from "drizzle-orm";
-import { runHHParser } from "../parsers/hh";
+import { refreshVacancyResponses } from "../parsers/hh";
 import { inngest } from "./client";
 
 /**
@@ -22,7 +22,6 @@ export const refreshVacancyResponsesFunction = inngest.createFunction(
     return await step.run("parse-vacancy-responses", async () => {
       console.log(`🚀 Запуск обновления откликов для вакансии ${vacancyId}`);
 
-      // Проверяем существование вакансии
       const vacancyData = await db.query.vacancy.findFirst({
         where: eq(vacancy.id, vacancyId),
       });
@@ -32,8 +31,7 @@ export const refreshVacancyResponsesFunction = inngest.createFunction(
       }
 
       try {
-        // Запускаем парсер только для откликов (вакансии не обновляем)
-        await runHHParser({ skipResponses: false });
+        await refreshVacancyResponses(vacancyId);
 
         console.log(`✅ Отклики для вакансии ${vacancyId} обновлены успешно`);
         return { success: true, vacancyId };

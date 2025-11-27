@@ -5,22 +5,20 @@ import { env } from "../../env";
 import { loadCookies, performLogin } from "./auth";
 import { HH_CONFIG } from "./config";
 import { parseResponses } from "./response-parser";
-import { parseVacancies } from "./vacancy-parser";
 
 puppeteer.use(StealthPlugin());
 
-export { refreshVacancyResponses } from "./refresh-responses";
-
-export async function runHHParser(options?: { skipResponses?: boolean }) {
+/**
+ * Парсит только новые отклики для конкретной вакансии
+ * Не парсит саму вакансию, только обновляет список откликов
+ */
+export async function refreshVacancyResponses(vacancyId: string) {
   const email = env.HH_EMAIL;
   const password = env.HH_PASSWORD;
 
-  console.log("🚀 Запуск парсера hh.ru...");
-  console.log(`📧 Email: ${email}`);
+  console.log(`🔄 Обновление откликов для вакансии ${vacancyId}...`);
 
   const savedCookies = await loadCookies();
-
-  // Всегда начинаем с страницы логина, чтобы проверить актуальность сессии
   const startUrl = HH_CONFIG.urls.login;
 
   const crawler = new PuppeteerCrawler({
@@ -36,29 +34,23 @@ export async function runHHParser(options?: { skipResponses?: boolean }) {
     },
     preNavigationHooks: [
       async ({ page, log }) => {
-        // Скрываем признаки автоматизации
         await page.evaluateOnNewDocument(() => {
-          // Переопределяем navigator.webdriver
           Object.defineProperty(navigator, "webdriver", {
             get: () => false,
           });
 
-          // Добавляем реалистичные плагины
           Object.defineProperty(navigator, "plugins", {
             get: () => [1, 2, 3, 4, 5],
           });
 
-          // Добавляем языки
           Object.defineProperty(navigator, "languages", {
             get: () => ["ru-RU", "ru", "en-US", "en"],
           });
 
-          // Скрываем автоматизацию Chrome
           (window as any).chrome = {
             runtime: {},
           };
 
-          // Переопределяем permissions
           const originalQuery = window.navigator.permissions.query;
           window.navigator.permissions.query = (
             parameters: PermissionDescriptor
@@ -75,13 +67,11 @@ export async function runHHParser(options?: { skipResponses?: boolean }) {
           await page.browserContext().setCookie(...(savedCookies as any[]));
         }
 
-        // Устанавливаем реалистичный User-Agent
         await page.setUserAgent({
           userAgent:
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
         });
 
-        // Устанавливаем viewport как у обычного пользователя
         await page.setViewport({
           width: 1920,
           height: 1080,
@@ -106,65 +96,18 @@ export async function runHHParser(options?: { skipResponses?: boolean }) {
           log.info("✅ Форма входа не найдена. Похоже, мы уже авторизованы.");
         }
 
-        const vacancies = await parseVacancies(page);
+        // Формируем URL для откликов конкретной вакансии
+        const responsesUrl = `https://hh.ru/employer/vacancyresponses?vacancyId=${vacancyId}`;
 
-        // Если запрошено только обновление вакансий, пропускаем обработку откликов
-        if (options?.skipResponses) {
-          log.info("⏭️ Пропуск обработки откликов (skipResponses=true)");
-        } else {
-          // Последовательная обработка откликов для каждой вакансии
-          for (let i = 0; i < vacancies.length; i++) {
-            const vacancy = vacancies[i];
-            if (!vacancy?.responsesUrl) {
-              log.info(
-                `⏭️ Пропуск вакансии ${i + 1}/${vacancies.length}: нет откликов`
-              );
-              continue;
-            }
-
-            try {
-              const fullUrl = new URL(
-                vacancy.responsesUrl,
-                HH_CONFIG.urls.baseUrl
-              ).href;
-
-              // Задержка между обработкой вакансий
-              if (i > 0) {
-                const delay = Math.floor(Math.random() * 5000) + 3000;
-                log.info(
-                  `⏳ Пауза ${Math.round(delay / 1000)}с перед следующей вакансией...`
-                );
-                await new Promise((resolve) => setTimeout(resolve, delay));
-              }
-
-              log.info(
-                `\n📋 Обработка вакансии ${i + 1}/${vacancies.length}: ${vacancy.title}`
-              );
-              await parseResponses(page, fullUrl, vacancy.id);
-              log.info(
-                `✅ Вакансия ${i + 1}/${vacancies.length} обработана успешно`
-              );
-            } catch (error) {
-              const errorMessage =
-                error instanceof Error ? error.message : String(error);
-              log.error(
-                `❌ Ошибка обработки вакансии ${vacancy.title}: ${errorMessage}`
-              );
-
-              // Продолжаем работу со следующей вакансией
-              log.info(`⏭️ Переход к следующей вакансии...`);
-
-              // Дополнительная пауза после ошибки
-              await new Promise((resolve) => setTimeout(resolve, 5000));
-            }
-          }
-        }
+        log.info(`📋 Парсинг откликов для вакансии ${vacancyId}...`);
+        await parseResponses(page, responsesUrl, vacancyId);
+        log.info(`✅ Отклики для вакансии ${vacancyId} обновлены успешно`);
 
         await new Promise((resolve) =>
           setTimeout(resolve, HH_CONFIG.delays.afterParsing)
         );
 
-        console.log("\n✨ Парсинг успешно завершен!");
+        console.log("\n✨ Обновление откликов завершено!");
       } catch (error) {
         if (error instanceof Error) {
           log.error(error.message);

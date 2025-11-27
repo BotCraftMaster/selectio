@@ -20,14 +20,15 @@ import {
   TableHeader,
   TableRow,
 } from "@selectio/ui";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   ArrowDown,
   ArrowUp,
   ArrowUpDown,
   Loader2,
+  RefreshCw,
   Sparkles,
 } from "lucide-react";
-import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { createTriggerPublicToken } from "~/actions/trigger";
 import { useTRPC } from "~/trpc/react";
@@ -62,6 +63,7 @@ export function ResponseTable({ responses, vacancyId }: ResponseTableProps) {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isProcessing, setIsProcessing] = useState(false);
   const [isProcessingAll, setIsProcessingAll] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const trpc = useTRPC();
   const queryClient = useQueryClient();
@@ -223,6 +225,41 @@ export function ResponseTable({ responses, vacancyId }: ResponseTableProps) {
     }
   };
 
+  const handleRefreshResponses = async () => {
+    if (!accessToken) return;
+
+    setIsRefreshing(true);
+
+    try {
+      const res = await fetch("/api/trigger/refresh-vacancy-responses", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({ vacancyId }),
+      });
+
+      const data = await res.json();
+
+      if (!data.success) {
+        console.error("Failed to trigger refresh:", data.error);
+        return;
+      }
+
+      console.log("Запущено обновление откликов для вакансии");
+
+      // Обновляем данные через некоторое время
+      setTimeout(() => {
+        void queryClient.invalidateQueries(
+          trpc.vacancy.responses.list.pathFilter()
+        );
+      }, 3000);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
   return (
     <div className="space-y-4">
       {responses.length > 0 && (
@@ -230,49 +267,63 @@ export function ResponseTable({ responses, vacancyId }: ResponseTableProps) {
           <div className="text-sm text-muted-foreground">
             Всего откликов: {responses.length}
           </div>
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button
-                disabled={!accessToken || isProcessingAll}
-                variant="default"
-              >
-                {isProcessingAll ? (
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                ) : (
-                  <Sparkles className="h-4 w-4 mr-2" />
-                )}
-                {isProcessingAll
-                  ? "Запуск оценки..."
-                  : `Оценить всех (${responses.length})`}
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>
-                  Подтверждение массовой оценки
-                </AlertDialogTitle>
-                <AlertDialogDescription>
-                  Вы собираетесь запустить оценку для {responses.length}{" "}
-                  {responses.length === 1
-                    ? "отклика"
-                    : responses.length < 5
-                      ? "откликов"
-                      : "откликов"}
-                  . Это может занять некоторое время.
-                  <br />
-                  <br />
-                  Процесс будет выполняться в фоновом режиме. Вы можете
-                  продолжать работу, а результаты появятся автоматически.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Отмена</AlertDialogCancel>
-                <AlertDialogAction onClick={handleScreenAll}>
-                  Запустить оценку
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+          <div className="flex gap-2">
+            <Button
+              onClick={handleRefreshResponses}
+              disabled={!accessToken || isRefreshing}
+              variant="outline"
+            >
+              {isRefreshing ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <RefreshCw className="h-4 w-4 mr-2" />
+              )}
+              {isRefreshing ? "Обновление..." : "Получить новые отклики"}
+            </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  disabled={!accessToken || isProcessingAll}
+                  variant="default"
+                >
+                  {isProcessingAll ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <Sparkles className="h-4 w-4 mr-2" />
+                  )}
+                  {isProcessingAll
+                    ? "Запуск оценки..."
+                    : `Оценить всех (${responses.length})`}
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>
+                    Подтверждение массовой оценки
+                  </AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Вы собираетесь запустить оценку для {responses.length}{" "}
+                    {responses.length === 1
+                      ? "отклика"
+                      : responses.length < 5
+                        ? "откликов"
+                        : "откликов"}
+                    . Это может занять некоторое время.
+                    <br />
+                    <br />
+                    Процесс будет выполняться в фоновом режиме. Вы можете
+                    продолжать работу, а результаты появятся автоматически.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Отмена</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleScreenAll}>
+                    Запустить оценку
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
         </div>
       )}
 

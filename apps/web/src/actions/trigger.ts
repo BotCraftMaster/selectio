@@ -92,3 +92,19 @@ export async function triggerUpdateVacancies() {
     return { success: false as const, error: "Failed to trigger update" };
   }
 }
+
+export async function triggerRefreshVacancyResponses(vacancyId: string) {
+  try {
+    const { inngest } = await import("@selectio/jobs/client");
+    await inngest.send({
+      name: "vacancy/responses.refresh",
+      data: {
+        vacancyId: vacancyId,
+      },
+    });
+    return { success: true as const };
+  } catch (error) {
+    console.error("Failed to trigger refresh-vacancy-responses:", error);
+    return { success: false as const, error: "Failed to trigger refresh" };
+  }
+}

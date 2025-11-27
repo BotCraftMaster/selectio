@@ -15,7 +15,6 @@ import { use } from "react";
 import { SiteHeader } from "~/components/layout";
 import {
   GenerateRequirementsButton,
-  RefreshResponsesButton,
   VacancyAnalytics,
   VacancyHeader,
   VacancyRequirements,
@@ -118,7 +117,6 @@ export default function VacancyDetailPage({
                       </Link>
                     </TabsTrigger>
                   </TabsList>
-                  <RefreshResponsesButton vacancyId={id} />
                 </div>
 
                 <TabsContent value="overview" className="space-y-6">
