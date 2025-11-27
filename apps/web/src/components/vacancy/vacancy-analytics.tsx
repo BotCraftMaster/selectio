@@ -191,7 +191,7 @@ export function VacancyRequirements({
 
   if (!isValidRequirements(requirements)) {
     return (
-      <div className="rounded-lg border p-6 space-y-4">
+      <div className="rounded-lg border bg-linear-to-t from-primary/5 to-card dark:bg-card p-6 shadow-xs space-y-4">
         <h2 className="text-xl font-semibold">Сгенерированные требования</h2>
         <details className="mt-4">
           <summary className="cursor-pointer text-sm text-muted-foreground hover:text-foreground transition-colors">
@@ -206,20 +206,23 @@ export function VacancyRequirements({
   }
 
   return (
-    <div className="rounded-lg border p-6 space-y-4">
+    <div className="rounded-lg border bg-linear-to-t from-primary/5 to-card dark:bg-card p-6 shadow-xs space-y-6">
       <h2 className="text-xl font-semibold">Сгенерированные требования</h2>
 
-      <div className="space-y-4">
+      <div className="grid gap-6 md:grid-cols-2">
         {requirements.map((requirement, index) => (
-          <div key={`${requirement.category}-${index}`} className="space-y-2">
-            <h3 className="text-lg font-medium text-primary">
+          <div
+            key={`${requirement.category}-${index}`}
+            className="space-y-3 rounded-lg border bg-card/50 p-4"
+          >
+            <h3 className="text-lg font-semibold text-primary">
               {requirement.category}
             </h3>
-            <ul className="space-y-1.5 pl-5">
+            <ul className="space-y-2 pl-5">
               {requirement.items.map((item, itemIndex) => (
                 <li
                   key={`${requirement.category}-${index}-${itemIndex}`}
-                  className="text-sm text-muted-foreground list-disc"
+                  className="text-sm text-muted-foreground list-disc leading-relaxed"
                 >
                   {item}
                 </li>
@@ -229,7 +232,7 @@ export function VacancyRequirements({
         ))}
       </div>
 
-      <details className="mt-4">
+      <details className="pt-4 border-t">
         <summary className="cursor-pointer text-sm text-muted-foreground hover:text-foreground transition-colors">
           Показать JSON
         </summary>

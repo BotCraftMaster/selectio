@@ -130,7 +130,7 @@ export default function VacancyDetailPage({
                     />
                   )}
 
-                  <div className="rounded-lg border p-6 space-y-6">
+                  <div className="rounded-lg border bg-linear-to-t from-primary/5 to-card dark:bg-card p-6 shadow-xs space-y-6">
                     <VacancyHeader
                       title={vacancy.title}
                       region={vacancy.region}
@@ -146,16 +146,18 @@ export default function VacancyDetailPage({
                     />
 
                     {vacancy.description && (
-                      <div className="space-y-2">
+                      <div className="space-y-4 pt-4 border-t">
                         <div className="flex items-center justify-between">
-                          <h2 className="text-xl font-semibold">Описание</h2>
+                          <h2 className="text-xl font-semibold">
+                            Описание вакансии
+                          </h2>
                           <GenerateRequirementsButton
                             vacancyId={vacancy.id}
                             description={vacancy.description}
                           />
                         </div>
-                        <div className="prose prose-sm max-w-none">
-                          <p className="whitespace-pre-wrap text-sm">
+                        <div className="prose prose-sm max-w-none dark:prose-invert">
+                          <p className="whitespace-pre-wrap text-sm leading-relaxed text-muted-foreground">
                             {vacancy.description}
                           </p>
                         </div>
