@@ -62,7 +62,7 @@ export const sendCandidateWelcomeFunction = inngest.createFunction(
           });
           throw error;
         }
-      }
+      },
     );
 
     const result = await step.run("send-telegram-message", async () => {
@@ -74,7 +74,7 @@ export const sendCandidateWelcomeFunction = inngest.createFunction(
       try {
         const sendResult = await sendMessageByUsername(
           username,
-          welcomeMessage
+          welcomeMessage,
         );
 
         if (!sendResult.success) {
@@ -149,5 +149,5 @@ export const sendCandidateWelcomeFunction = inngest.createFunction(
       chatId: result.chatId,
       messageSent: true,
     };
-  }
+  },
 );

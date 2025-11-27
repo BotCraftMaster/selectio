@@ -22,7 +22,7 @@ export async function checkVacancyExists(vacancyId: string): Promise<boolean> {
  * Проверяет, есть ли у вакансии описание
  */
 export async function hasVacancyDescription(
-  vacancyId: string
+  vacancyId: string,
 ): Promise<boolean> {
   try {
     const existingVacancy = await db.query.vacancy.findFirst({
@@ -77,7 +77,7 @@ export async function saveBasicVacancy(vacancyData: VacancyData) {
   } catch (error) {
     console.error(
       `❌ Ошибка сохранения базовой информации для ${vacancyData.title}:`,
-      error
+      error,
     );
     throw error; // Пробрасываем ошибку для обработки на верхнем уровне
   }
@@ -88,7 +88,7 @@ export async function saveBasicVacancy(vacancyData: VacancyData) {
  */
 export async function updateVacancyDescription(
   vacancyId: string,
-  description: string
+  description: string,
 ) {
   try {
     await db
@@ -109,7 +109,7 @@ export async function updateVacancyDescription(
   } catch (error) {
     console.error(
       `❌ Ошибка обновления описания вакансии ${vacancyId}:`,
-      error
+      error,
     );
     throw error; // Пробрасываем ошибку для обработки на верхнем уровне
   }
@@ -164,14 +164,14 @@ export async function saveVacancyToDb(vacancyData: VacancyData) {
     // Запускаем извлечение требований, если есть описание
     if (vacancyData.description && vacancyData.description.trim()) {
       console.log(
-        `🎯 Запуск извлечения требований вакансии: ${vacancyData.id}`
+        `🎯 Запуск извлечения требований вакансии: ${vacancyData.id}`,
       );
       const { triggerVacancyRequirementsExtraction } = await import(
         "./trigger-service"
       );
       await triggerVacancyRequirementsExtraction(
         vacancyData.id,
-        vacancyData.description
+        vacancyData.description,
       );
     }
   } catch (error) {

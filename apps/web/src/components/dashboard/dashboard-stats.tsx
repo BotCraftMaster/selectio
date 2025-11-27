@@ -17,7 +17,7 @@ export function DashboardStats() {
   const trpc = useTRPC();
 
   const { data: stats, isLoading } = useQuery(
-    trpc.vacancy.getDashboardStats.queryOptions()
+    trpc.vacancy.getDashboardStats.queryOptions(),
   );
 
   if (isLoading || !stats) {

@@ -7,7 +7,7 @@ export const sendMessageRouter = createTRPCRouter({
     .input(
       CreateTelegramMessageSchema.extend({
         sender: z.literal("ADMIN"), // Только админ может отправлять через этот endpoint
-      })
+      }),
     )
     .mutation(async ({ input }) => {
       const [message] = await db

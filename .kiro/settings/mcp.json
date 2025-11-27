@@ -2,9 +2,7 @@
   "mcpServers": {
     "fetch": {
       "command": "uvx",
-      "args": [
-        "mcp-server-fetch"
-      ],
+      "args": ["mcp-server-fetch"],
       "env": {},
       "disabled": true,
       "autoApprove": []
@@ -19,10 +17,7 @@
       ],
       "env": {},
       "disabled": false,
-      "autoApprove": [
-        "resolve-library-id",
-        "get-library-docs"
-      ]
+      "autoApprove": ["resolve-library-id", "get-library-docs"]
     }
   }
 }

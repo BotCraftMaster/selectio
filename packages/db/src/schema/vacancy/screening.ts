@@ -35,7 +35,7 @@ export const CreateResponseScreeningSchema = createInsertSchema(
     questions: z.array(z.string()).optional(),
     analysis: z.string().optional(),
     greeting: z.string().optional(),
-  }
+  },
 ).omit({
   id: true,
   createdAt: true,

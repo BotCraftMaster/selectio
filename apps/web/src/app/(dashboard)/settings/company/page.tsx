@@ -8,7 +8,7 @@ import { useTRPC } from "~/trpc/react";
 export default function SettingsCompanyPage() {
   const trpc = useTRPC();
   const { data: company, isLoading } = useQuery(
-    trpc.company.get.queryOptions()
+    trpc.company.get.queryOptions(),
   );
 
   if (isLoading) {

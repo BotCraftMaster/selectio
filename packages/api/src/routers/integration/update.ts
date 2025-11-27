@@ -10,12 +10,12 @@ export const updateIntegration = protectedProcedure
       credentials: z.record(z.string(), z.string()).optional(),
       metadata: z.record(z.string(), z.any()).optional(),
       isActive: z.string().optional(),
-    })
+    }),
   )
   .mutation(async ({ ctx, input }) => {
     const existing = await getUserIntegrations(ctx.session.user.id);
     const integration = existing.find(
-      (i: (typeof existing)[number]) => i.type === input.type
+      (i: (typeof existing)[number]) => i.type === input.type,
     );
 
     if (!integration) {

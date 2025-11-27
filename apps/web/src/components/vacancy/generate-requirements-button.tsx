@@ -25,7 +25,7 @@ export function GenerateRequirementsButton({
       onError: () => {
         toast.error("Ошибка запуска генерации");
       },
-    })
+    }),
   );
 
   const handleGenerate = () => {

@@ -19,7 +19,7 @@ export function TopResponses() {
   const trpc = useTRPC();
 
   const { data: responses, isLoading } = useQuery(
-    trpc.vacancy.responses.listAll.queryOptions()
+    trpc.vacancy.responses.listAll.queryOptions(),
   );
 
   // Фильтруем отклики с оценками и сортируем по убыванию

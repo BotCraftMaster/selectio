@@ -86,7 +86,7 @@ export function ChatInput({
             "flex-1 bg-transparent resize-none outline-none",
             "text-[15px] leading-[1.4] max-h-[120px]",
             "placeholder:text-gray-400 dark:placeholder:text-gray-500",
-            "disabled:opacity-50 disabled:cursor-not-allowed"
+            "disabled:opacity-50 disabled:cursor-not-allowed",
           )}
         />
       </div>
@@ -110,7 +110,7 @@ export function ChatInput({
             "shrink-0 h-11 w-11 rounded-full",
             isRecording
               ? "bg-red-500 hover:bg-red-600 text-white"
-              : "text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+              : "text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200",
           )}
           onMouseDown={() => setIsRecording(true)}
           onMouseUp={() => setIsRecording(false)}

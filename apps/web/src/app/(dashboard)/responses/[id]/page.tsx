@@ -33,7 +33,7 @@ export default function ResponseDetailPage({
   const { id } = use(params);
   const trpc = useTRPC();
   const { data: response, isLoading } = useQuery(
-    trpc.vacancy.responses.getById.queryOptions({ id })
+    trpc.vacancy.responses.getById.queryOptions({ id }),
   );
 
   if (isLoading) {
@@ -116,7 +116,7 @@ export default function ResponseDetailPage({
                             year: "numeric",
                             hour: "2-digit",
                             minute: "2-digit",
-                          }
+                          },
                         )}
                       </div>
                     </div>

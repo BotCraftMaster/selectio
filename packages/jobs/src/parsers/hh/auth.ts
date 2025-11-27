@@ -7,7 +7,7 @@ export async function performLogin(
   log: Log,
   userId: string,
   email: string,
-  password: string
+  password: string,
 ) {
   log.info("🔍 Поиск поля email...");
   await page.waitForSelector('input[type="text"][name="username"]', {
@@ -56,7 +56,7 @@ export async function performLogin(
     });
   } catch (_e) {
     log.info(
-      "⚠️ Тайм-аут ожидания навигации. Проверяем, прошли ли мы дальше..."
+      "⚠️ Тайм-аут ожидания навигации. Проверяем, прошли ли мы дальше...",
     );
   }
 

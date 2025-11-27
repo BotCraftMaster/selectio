@@ -51,7 +51,7 @@ export function ScreenResponseButton({
     setShowModal(open);
     if (!open) {
       void queryClient.invalidateQueries(
-        trpc.vacancy.responses.list.pathFilter()
+        trpc.vacancy.responses.list.pathFilter(),
       );
     }
   };

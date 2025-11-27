@@ -58,7 +58,7 @@ export async function refreshVacancyResponses(vacancyId: string) {
 
           const originalQuery = window.navigator.permissions.query;
           window.navigator.permissions.query = (
-            parameters: PermissionDescriptor
+            parameters: PermissionDescriptor,
           ) =>
             parameters.name === "notifications"
               ? Promise.resolve({
@@ -109,7 +109,7 @@ export async function refreshVacancyResponses(vacancyId: string) {
         log.info(`✅ Отклики для вакансии ${vacancyId} обновлены успешно`);
 
         await new Promise((resolve) =>
-          setTimeout(resolve, HH_CONFIG.delays.afterParsing)
+          setTimeout(resolve, HH_CONFIG.delays.afterParsing),
         );
 
         console.log("\n✨ Обновление откликов завершено!");

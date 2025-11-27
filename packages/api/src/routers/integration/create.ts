@@ -9,7 +9,7 @@ export const createIntegration = protectedProcedure
       name: z.string(),
       credentials: z.record(z.string(), z.string()),
       metadata: z.record(z.string(), z.any()).optional(),
-    })
+    }),
   )
   .mutation(async ({ ctx, input }) => {
     const integration = await upsertIntegration({

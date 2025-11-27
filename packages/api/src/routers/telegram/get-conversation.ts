@@ -10,7 +10,7 @@ export const getConversationRouter = createTRPCRouter({
         .object({
           vacancyId: z.string().optional(),
         })
-        .optional()
+        .optional(),
     )
     .query(async ({ input }) => {
       const conversations = await db.query.telegramConversation.findMany({

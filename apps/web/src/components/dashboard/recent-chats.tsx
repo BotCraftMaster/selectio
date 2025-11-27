@@ -14,7 +14,7 @@ export function RecentChats() {
     });
 
   const { data: recentMessages = [], isPending } = useQuery(
-    recentMessagesQueryOptions
+    recentMessagesQueryOptions,
   );
 
   // Группируем по беседам и берем последнее сообщение из каждой

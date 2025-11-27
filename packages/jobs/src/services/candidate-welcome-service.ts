@@ -12,7 +12,7 @@ import { generateText } from "../lib/ai-client";
  */
 export async function generateWelcomeMessage(responseId: string) {
   console.log(
-    `👋 Генерация приветственного сообщения для отклика ${responseId}`
+    `👋 Генерация приветственного сообщения для отклика ${responseId}`,
   );
 
   const response = await db.query.vacancyResponse.findFirst({
@@ -82,7 +82,7 @@ interface ResponseWithVacancy {
 function buildWelcomePrompt(
   response: ResponseWithVacancy,
   screening: typeof responseScreening.$inferSelect | undefined,
-  company: typeof companySettings.$inferSelect | undefined
+  company: typeof companySettings.$inferSelect | undefined,
 ): string {
   const companyName = company?.name || "наша компания";
   const companyDescription = company?.description || "";

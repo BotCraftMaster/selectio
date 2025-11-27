@@ -14,7 +14,7 @@ export async function POST(request: Request) {
     if (!vacancyId || typeof vacancyId !== "string") {
       return NextResponse.json(
         { error: "vacancyId is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -32,7 +32,7 @@ export async function POST(request: Request) {
     console.error("Error in refresh-vacancy-responses API:", error);
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

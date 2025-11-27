@@ -11,7 +11,7 @@ import { getVacancyRequirements } from "./screening-prompt-service";
  */
 export async function prepareScreeningPrompt(
   vacancyId: string,
-  resumeData: ResumeScreeningData
+  resumeData: ResumeScreeningData,
 ): Promise<string | null> {
   // Получаем требования вакансии
   const vacancyRequirements = await getVacancyRequirements(vacancyId);
@@ -32,7 +32,7 @@ export async function prepareScreeningPrompt(
  * @returns Структурированный результат скрининга
  */
 export function parseScreeningResult(
-  aiResponse: string | ScreeningResult
+  aiResponse: string | ScreeningResult,
 ): ScreeningResult {
   if (typeof aiResponse === "string") {
     try {
@@ -84,7 +84,7 @@ export function validateScreeningResult(result: ScreeningResult): boolean {
  */
 export async function screenResume(
   vacancyId: string,
-  resumeData: ResumeScreeningData
+  resumeData: ResumeScreeningData,
 ): Promise<string | null> {
   console.log(`🔍 Подготовка скрининга резюме для вакансии ${vacancyId}`);
 

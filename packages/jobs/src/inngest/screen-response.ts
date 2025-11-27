@@ -42,5 +42,5 @@ export const screenResponseFunction = inngest.createFunction(
         throw error;
       }
     });
-  }
+  },
 );

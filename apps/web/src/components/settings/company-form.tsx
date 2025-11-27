@@ -47,7 +47,7 @@ export function CompanyForm({
       onError: (err) => {
         toast.error(err.message || "Не удалось обновить компанию");
       },
-    })
+    }),
   );
 
   function onSubmit(data: CompanyFormValues) {

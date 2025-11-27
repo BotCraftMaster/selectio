@@ -5,13 +5,13 @@ import { uploadFile as uploadToS3 } from "@selectio/lib";
 export async function uploadFile(
   fileBuffer: Buffer,
   fileName: string,
-  mimeType: string
+  mimeType: string,
 ): Promise<string> {
   const key = await uploadToS3(
     fileBuffer,
     fileName,
     mimeType,
-    "telegram-voices"
+    "telegram-voices",
   );
 
   const [fileRecord] = await db

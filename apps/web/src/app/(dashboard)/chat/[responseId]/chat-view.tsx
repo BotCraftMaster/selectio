@@ -63,7 +63,7 @@ export function ChatView({ conversationId }: { conversationId: string }) {
     });
 
   const { mutate: sendMessage, isPending: isSending } = useMutation(
-    sendMessageMutationOptions
+    sendMessageMutationOptions,
   );
 
   const handleSendMessage = () => {

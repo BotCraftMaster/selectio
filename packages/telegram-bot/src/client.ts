@@ -6,7 +6,7 @@ const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || "";
 
 if (!API_ID || !API_HASH || !BOT_TOKEN) {
   throw new Error(
-    "TELEGRAM_API_ID, TELEGRAM_API_HASH и TELEGRAM_BOT_TOKEN должны быть установлены"
+    "TELEGRAM_API_ID, TELEGRAM_API_HASH и TELEGRAM_BOT_TOKEN должны быть установлены",
   );
 }
 
@@ -42,7 +42,7 @@ export async function initClient() {
  */
 export async function sendMessageByUsername(
   username: string,
-  text: string
+  text: string,
 ): Promise<{ success: boolean; message: string; chatId?: string }> {
   try {
     await initClient();
@@ -73,7 +73,7 @@ export async function sendMessageByUsername(
  * Проверить существование пользователя по username
  */
 export async function checkUsername(
-  username: string
+  username: string,
 ): Promise<{ exists: boolean; chatId?: string }> {
   try {
     await initClient();

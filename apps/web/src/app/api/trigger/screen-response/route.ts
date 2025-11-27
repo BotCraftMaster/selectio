@@ -14,7 +14,7 @@ export async function POST(request: Request) {
     if (!responseId || typeof responseId !== "string") {
       return NextResponse.json(
         { error: "responseId is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -29,7 +29,7 @@ export async function POST(request: Request) {
     console.error("Error in screen-response API:", error);
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

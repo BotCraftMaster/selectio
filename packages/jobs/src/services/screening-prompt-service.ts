@@ -11,7 +11,7 @@ import { extractJsonFromText } from "../utils/json-extractor";
  */
 export async function extractVacancyRequirements(
   vacancyId: string,
-  description: string
+  description: string,
 ): Promise<VacancyRequirements> {
   console.log(`🎯 Генерация требований для вакансии ${vacancyId}`);
 
@@ -88,7 +88,7 @@ ${description}
 }
 
 export async function getVacancyRequirements(
-  vacancyId: string
+  vacancyId: string,
 ): Promise<VacancyRequirements | null> {
   const vacancyData = await db.query.vacancy.findFirst({
     where: eq(vacancy.id, vacancyId),

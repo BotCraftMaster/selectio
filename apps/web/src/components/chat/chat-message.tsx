@@ -50,7 +50,7 @@ export function ChatMessage({
     <div
       className={cn(
         "flex gap-2 mb-1 animate-in fade-in-50 slide-in-from-bottom-1 duration-200",
-        isOutgoing && "flex-row-reverse"
+        isOutgoing && "flex-row-reverse",
       )}
     >
       {/* Avatar */}
@@ -68,7 +68,7 @@ export function ChatMessage({
       <div
         className={cn(
           "flex flex-col max-w-[70%] min-w-[120px]",
-          isOutgoing && "items-end"
+          isOutgoing && "items-end",
         )}
       >
         {/* Sender name (only for incoming messages) */}
@@ -84,7 +84,7 @@ export function ChatMessage({
             "relative rounded-2xl px-3 py-2 shadow-sm",
             isOutgoing
               ? "bg-teal-500 text-white rounded-tr-sm"
-              : "bg-white dark:bg-gray-800 rounded-tl-sm"
+              : "bg-white dark:bg-gray-800 rounded-tl-sm",
           )}
         >
           <p className="text-[15px] leading-[1.4] whitespace-pre-wrap break-words">
@@ -95,7 +95,7 @@ export function ChatMessage({
           <div
             className={cn(
               "flex items-center gap-1 mt-1 justify-end",
-              isOutgoing ? "text-white/70" : "text-gray-500 dark:text-gray-400"
+              isOutgoing ? "text-white/70" : "text-gray-500 dark:text-gray-400",
             )}
           >
             <span className="text-[11px] leading-none">

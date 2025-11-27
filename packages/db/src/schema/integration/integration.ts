@@ -19,18 +19,19 @@ export const integration = pgTable("integrations", {
   credentials: jsonb("credentials").notNull().$type<Record<string, string>>(),
 
   // Cookies для сохранения сессии
-  cookies: jsonb("cookies").$type<
-    Array<{
-      name: string;
-      value: string;
-      domain?: string;
-      path?: string;
-      expires?: number;
-      httpOnly?: boolean;
-      secure?: boolean;
-      sameSite?: "Strict" | "Lax" | "None";
-    }>
-  >(),
+  cookies:
+    jsonb("cookies").$type<
+      Array<{
+        name: string;
+        value: string;
+        domain?: string;
+        path?: string;
+        expires?: number;
+        httpOnly?: boolean;
+        secure?: boolean;
+        sameSite?: "Strict" | "Lax" | "None";
+      }>
+    >(),
 
   // Дополнительные метаданные
   metadata: jsonb("metadata").$type<Record<string, any>>(),

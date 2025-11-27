@@ -20,7 +20,7 @@ export const sendCandidateWelcomeBatchFunction = inngest.createFunction(
   { event: "candidate/welcome.batch" },
   async ({ events, step }) => {
     console.log(
-      `🚀 Запуск массовой отправки приветствий для ${events.length} событий`
+      `🚀 Запуск массовой отправки приветствий для ${events.length} событий`,
     );
 
     // Собираем все responseIds из всех событий
@@ -49,7 +49,7 @@ export const sendCandidateWelcomeBatchFunction = inngest.createFunction(
     const skippedCount = responses.length - responsesWithUsername.length;
 
     console.log(
-      `📤 Отклики с username: ${responsesWithUsername.length}, пропущено: ${skippedCount}`
+      `📤 Отклики с username: ${responsesWithUsername.length}, пропущено: ${skippedCount}`,
     );
 
     // Обрабатываем каждый отклик
@@ -68,7 +68,7 @@ export const sendCandidateWelcomeBatchFunction = inngest.createFunction(
 
             const sendResult = await sendMessageByUsername(
               username,
-              welcomeMessage
+              welcomeMessage,
             );
 
             if (!sendResult.success) {
@@ -104,7 +104,7 @@ export const sendCandidateWelcomeBatchFunction = inngest.createFunction(
             }
 
             console.log(
-              `✅ Приветствие отправлено: ${response.id} (@${response.telegramUsername})`
+              `✅ Приветствие отправлено: ${response.id} (@${response.telegramUsername})`,
             );
 
             return {
@@ -116,7 +116,7 @@ export const sendCandidateWelcomeBatchFunction = inngest.createFunction(
           } catch (error) {
             console.error(
               `❌ Ошибка отправки приветствия для ${response.id}:`,
-              error
+              error,
             );
             return {
               responseId: response.id,
@@ -126,14 +126,14 @@ export const sendCandidateWelcomeBatchFunction = inngest.createFunction(
             };
           }
         });
-      })
+      }),
     );
 
     const successful = results.filter((r) => r.status === "fulfilled").length;
     const failed = results.filter((r) => r.status === "rejected").length;
 
     console.log(
-      `✅ Завершено: успешно ${successful}, ошибок ${failed}, пропущено ${skippedCount}`
+      `✅ Завершено: успешно ${successful}, ошибок ${failed}, пропущено ${skippedCount}`,
     );
 
     return {
@@ -143,5 +143,5 @@ export const sendCandidateWelcomeBatchFunction = inngest.createFunction(
       failed,
       skipped: skippedCount,
     };
-  }
+  },
 );

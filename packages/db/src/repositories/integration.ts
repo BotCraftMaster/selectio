@@ -57,7 +57,7 @@ export async function upsertIntegration(data: NewIntegration) {
 export async function saveCookiesForIntegration(
   userId: string,
   type: string,
-  cookies: Cookie[]
+  cookies: Cookie[],
 ) {
   const existing = await getIntegration(userId, type);
 
@@ -80,7 +80,7 @@ export async function saveCookiesForIntegration(
  */
 export async function loadCookiesForIntegration(
   userId: string,
-  type: string
+  type: string,
 ): Promise<Cookie[] | null> {
   const result = await getIntegration(userId, type);
 
@@ -96,7 +96,7 @@ export async function loadCookiesForIntegration(
  */
 export async function getIntegrationCredentials(
   userId: string,
-  type: string
+  type: string,
 ): Promise<Record<string, string> | null> {
   const result = await getIntegration(userId, type);
   if (!result?.credentials) {

@@ -36,10 +36,10 @@ export default function VacancyDetailPage({
   const trpc = useTRPC();
 
   const { data: vacancy, isLoading: vacancyLoading } = useQuery(
-    trpc.vacancy.getById.queryOptions({ id })
+    trpc.vacancy.getById.queryOptions({ id }),
   );
   const { data: responses, isLoading: responsesLoading } = useQuery(
-    trpc.vacancy.responses.list.queryOptions({ vacancyId: id })
+    trpc.vacancy.responses.list.queryOptions({ vacancyId: id }),
   );
   const { data: analytics } = useQuery({
     ...trpc.vacancy.getAnalytics.queryOptions({ vacancyId: id }),

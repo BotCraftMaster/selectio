@@ -21,5 +21,5 @@ const server = Bun.serve({
 
 console.log(`🚀 Inngest server listening on ${server.hostname}:${server.port}`);
 console.log(
-  `📡 Inngest endpoint: http://${server.hostname}:${server.port}/api/inngest`
+  `📡 Inngest endpoint: http://${server.hostname}:${server.port}/api/inngest`,
 );

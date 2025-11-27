@@ -38,10 +38,10 @@ export const refreshVacancyResponsesFunction = inngest.createFunction(
       } catch (error) {
         console.error(
           `❌ Ошибка при обновлении откликов вакансии ${vacancyId}:`,
-          error
+          error,
         );
         throw error;
       }
     });
-  }
+  },
 );

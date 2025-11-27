@@ -151,24 +151,20 @@ export function ResponseTable({ responses, vacancyId }: ResponseTableProps) {
     return sortedResponses.slice(startIndex, endIndex);
   }, [sortedResponses, currentPage]);
 
-  const newResponses = useMemo(
-    () => paginatedResponses.filter((r) => r.status === "NEW"),
-    [paginatedResponses]
-  );
-
-  const allNewSelected =
-    newResponses.length > 0 && newResponses.every((r) => selectedIds.has(r.id));
+  const allSelected =
+    paginatedResponses.length > 0 &&
+    paginatedResponses.every((r) => selectedIds.has(r.id));
 
   const handleSelectAll = () => {
-    if (allNewSelected) {
+    if (allSelected) {
       const newSelected = new Set(selectedIds);
-      for (const r of newResponses) {
+      for (const r of paginatedResponses) {
         newSelected.delete(r.id);
       }
       setSelectedIds(newSelected);
     } else {
       const newSelected = new Set(selectedIds);
-      for (const r of newResponses) {
+      for (const r of paginatedResponses) {
         newSelected.add(r.id);
       }
       setSelectedIds(newSelected);
@@ -206,7 +202,7 @@ export function ResponseTable({ responses, vacancyId }: ResponseTableProps) {
       await Promise.all(promises);
 
       await queryClient.invalidateQueries(
-        trpc.vacancy.responses.list.pathFilter()
+        trpc.vacancy.responses.list.pathFilter(),
       );
 
       setSelectedIds(new Set());
@@ -238,13 +234,13 @@ export function ResponseTable({ responses, vacancyId }: ResponseTableProps) {
       }
 
       console.log(
-        `Запущена пакетная оценка ${data.count} откликов (batch ID: ${data.batchId})`
+        `Запущена пакетная оценка ${data.count} откликов (batch ID: ${data.batchId})`,
       );
 
       // Обновляем данные через некоторое время, чтобы дать триггерам время выполниться
       setTimeout(() => {
         void queryClient.invalidateQueries(
-          trpc.vacancy.responses.list.pathFilter()
+          trpc.vacancy.responses.list.pathFilter(),
         );
       }, 2000);
     } finally {
@@ -279,7 +275,7 @@ export function ResponseTable({ responses, vacancyId }: ResponseTableProps) {
       // Обновляем данные через некоторое время
       setTimeout(() => {
         void queryClient.invalidateQueries(
-          trpc.vacancy.responses.list.pathFilter()
+          trpc.vacancy.responses.list.pathFilter(),
         );
       }, 3000);
     } finally {
@@ -310,7 +306,7 @@ export function ResponseTable({ responses, vacancyId }: ResponseTableProps) {
       }
 
       console.log(
-        `Запущена массовая отправка приветствий для ${data.count} откликов`
+        `Запущена массовая отправка приветствий для ${data.count} откликов`,
       );
 
       setSelectedIds(new Set());
@@ -431,9 +427,9 @@ export function ResponseTable({ responses, vacancyId }: ResponseTableProps) {
             <TableRow>
               <TableHead className="w-12">
                 <Checkbox
-                  checked={allNewSelected}
+                  checked={allSelected}
                   onCheckedChange={handleSelectAll}
-                  disabled={newResponses.length === 0}
+                  disabled={paginatedResponses.length === 0}
                 />
               </TableHead>
               <TableHead>Кандидат</TableHead>

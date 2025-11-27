@@ -32,7 +32,7 @@ import { useTRPC } from "~/trpc/react";
 export default function ResponsesPage() {
   const trpc = useTRPC();
   const { data: responses, isLoading } = useQuery(
-    trpc.vacancy.responses.listAll.queryOptions()
+    trpc.vacancy.responses.listAll.queryOptions(),
   );
   const [screeningFilter, setScreeningFilter] =
     useState<ScreeningFilter>("all");
@@ -62,10 +62,10 @@ export default function ResponsesPage() {
     responses?.filter(
       (response) =>
         new Date(response.createdAt) >
-        new Date(Date.now() - 24 * 60 * 60 * 1000)
+        new Date(Date.now() - 24 * 60 * 60 * 1000),
     ).length ?? 0;
   const uniqueVacancies = new Set(
-    responses?.map((response) => response.vacancyId) ?? []
+    responses?.map((response) => response.vacancyId) ?? [],
   ).size;
 
   return (
@@ -251,7 +251,7 @@ export default function ResponsesPage() {
                                   year: "numeric",
                                   hour: "2-digit",
                                   minute: "2-digit",
-                                }
+                                },
                               )}
                             </TableCell>
                             <TableCell>

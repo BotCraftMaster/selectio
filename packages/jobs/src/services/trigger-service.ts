@@ -6,7 +6,7 @@ import type { extractVacancyRequirementsTask } from "../trigger/extract-vacancy-
  */
 export async function triggerVacancyRequirementsExtraction(
   vacancyId: string,
-  description: string
+  description: string,
 ): Promise<void> {
   try {
     // В v4 используем tasks.trigger с типом задания и payload
@@ -15,14 +15,14 @@ export async function triggerVacancyRequirementsExtraction(
       {
         vacancyId,
         description,
-      }
+      },
     );
 
     console.log(`✅ Задание запущено: ${handle.id}`);
   } catch (error) {
     console.error(
       `❌ Ошибка запуска задания генерации промпта для ${vacancyId}:`,
-      error
+      error,
     );
     // Не пробрасываем ошибку, чтобы не блокировать основной процесс
   }

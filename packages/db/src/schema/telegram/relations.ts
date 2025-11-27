@@ -7,7 +7,7 @@ export const telegramConversationRelations = relations(
   telegramConversation,
   ({ many }) => ({
     messages: many(telegramMessage),
-  })
+  }),
 );
 
 export const telegramMessageRelations = relations(
@@ -21,5 +21,5 @@ export const telegramMessageRelations = relations(
       fields: [telegramMessage.fileId],
       references: [file.id],
     }),
-  })
+  }),
 );

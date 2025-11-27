@@ -20,7 +20,7 @@ export const getResponsesChartData = protectedProcedure.query(
       where: (response, { and, inArray, gte }) =>
         and(
           inArray(response.vacancyId, vacancyIds),
-          gte(response.createdAt, ninetyDaysAgo)
+          gte(response.createdAt, ninetyDaysAgo),
         ),
       with: {
         screening: true,
@@ -77,5 +77,5 @@ export const getResponsesChartData = protectedProcedure.query(
     }
 
     return result;
-  }
+  },
 );

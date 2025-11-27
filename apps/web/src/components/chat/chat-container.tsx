@@ -36,7 +36,7 @@ export function ChatContainer({
   useEffect(() => {
     if (scrollAreaRef.current) {
       const scrollContainer = scrollAreaRef.current.querySelector(
-        "[data-radix-scroll-area-viewport]"
+        "[data-radix-scroll-area-viewport]",
       );
       if (scrollContainer) {
         scrollContainer.scrollTop = scrollContainer.scrollHeight;
@@ -63,7 +63,7 @@ export function ChatContainer({
       groups[date].push(message);
       return groups;
     },
-    {} as Record<string, ChatMessageProps[]>
+    {} as Record<string, ChatMessageProps[]>,
   );
 
   const getDateLabel = (dateStr: string) => {
@@ -77,7 +77,7 @@ export function ChatContainer({
     <div
       className={cn(
         "flex flex-col h-full bg-[#0f1419] dark:bg-[#0f1419]",
-        className
+        className,
       )}
     >
       {/* Header */}

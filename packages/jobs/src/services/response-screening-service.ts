@@ -58,7 +58,7 @@ export async function screenResponse(responseId: string) {
     .where(eq(vacancyResponse.id, responseId));
 
   console.log(
-    `✅ Результат скрининга сохранен: оценка ${result.score}/5 (${result.detailedScore}/100), вопросов: ${result.questions?.length || 0}`
+    `✅ Результат скрининга сохранен: оценка ${result.score}/5 (${result.detailedScore}/100), вопросов: ${result.questions?.length || 0}`,
   );
 
   return result;
@@ -66,7 +66,7 @@ export async function screenResponse(responseId: string) {
 
 function buildScreeningPrompt(
   response: typeof vacancyResponse.$inferSelect,
-  requirements: VacancyRequirements
+  requirements: VacancyRequirements,
 ): string {
   return `Ты — эксперт по подбору персонала. Оцени соответствие резюме кандидата требованиям вакансии.
 

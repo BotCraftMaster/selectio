@@ -14,7 +14,7 @@ export default function IntegrationsPage() {
   const [editingType, setEditingType] = useState<string | null>(null);
 
   const { data: integrations, isLoading } = useQuery(
-    trpc.integration.list.queryOptions()
+    trpc.integration.list.queryOptions(),
   );
 
   const handleEdit = (type: string) => {
@@ -41,7 +41,7 @@ export default function IntegrationsPage() {
       <div className="grid gap-4">
         {AVAILABLE_INTEGRATIONS.map((availableIntegration) => {
           const existingIntegration = integrations?.find(
-            (i) => i.type === availableIntegration.type
+            (i) => i.type === availableIntegration.type,
           );
 
           return (

@@ -16,7 +16,7 @@ interface ResponseWithId extends ResponseData {
 export async function parseResponses(
   page: Page,
   url: string,
-  vacancyId: string
+  vacancyId: string,
 ): Promise<ResponseData[]> {
   // Извлекаем vacancyId из URL если он там есть
   const urlObj = new URL(url, HH_CONFIG.urls.baseUrl);
@@ -29,7 +29,7 @@ export async function parseResponses(
   const allResponses = await collectAndSaveResponses(
     page,
     urlVacancyId,
-    vacancyId
+    vacancyId,
   );
 
   if (allResponses.length === 0) {
@@ -45,7 +45,7 @@ export async function parseResponses(
     await filterResponsesNeedingDetails(allResponses);
 
   console.log(
-    `✅ Откликов требующих парсинга деталей: ${responsesNeedingDetails.length}`
+    `✅ Откликов требующих парсинга деталей: ${responsesNeedingDetails.length}`,
   );
 
   if (responsesNeedingDetails.length === 0) {
@@ -58,7 +58,7 @@ export async function parseResponses(
   await parseResponseDetails(page, responsesNeedingDetails, vacancyId);
 
   console.log(
-    `\n🎉 Парсинг завершен! Обработано откликов: ${responsesNeedingDetails.length}`
+    `\n🎉 Парсинг завершен! Обработано откликов: ${responsesNeedingDetails.length}`,
   );
 
   return allResponses;
@@ -70,7 +70,7 @@ export async function parseResponses(
 async function collectAndSaveResponses(
   page: Page,
   vacancyId: string,
-  vacancyIdForSave: string
+  vacancyIdForSave: string,
 ): Promise<ResponseWithId[]> {
   const allResponses: ResponseWithId[] = [];
   let currentPage = 0;
@@ -102,7 +102,7 @@ async function collectAndSaveResponses(
 
     if (!hasResponses) {
       console.log(
-        `⚠️ Контейнер с откликами не найден на странице ${currentPage}`
+        `⚠️ Контейнер с откликами не найден на странице ${currentPage}`,
       );
       break;
     }
@@ -118,7 +118,7 @@ async function collectAndSaveResponses(
           const link = el.querySelector('a[data-qa*="serp-item__title"]');
           const url = link ? link.getAttribute("href") : "";
           const nameEl = el.querySelector(
-            'span[data-qa="resume-serp__resume-fullname"]'
+            'span[data-qa="resume-serp__resume-fullname"]',
           );
           const name = nameEl ? nameEl.textContent?.trim() : "";
 
@@ -136,7 +136,7 @@ async function collectAndSaveResponses(
             resumeId,
           };
         });
-      }
+      },
     );
 
     if (pageResponses.length === 0) {
@@ -145,7 +145,7 @@ async function collectAndSaveResponses(
     }
 
     console.log(
-      `✅ Страница ${currentPage}: найдено ${pageResponses.length} откликов`
+      `✅ Страница ${currentPage}: найдено ${pageResponses.length} откликов`,
     );
 
     // Обрабатываем и сохраняем отклики с текущей страницы
@@ -168,7 +168,7 @@ async function collectAndSaveResponses(
             vacancyIdForSave,
             response.resumeId,
             response.url,
-            response.name
+            response.name,
           );
 
           if (saved) {
@@ -180,7 +180,7 @@ async function collectAndSaveResponses(
           pageErrors++;
           console.error(
             `❌ Ошибка сохранения отклика ${response.name}:`,
-            error
+            error,
           );
           // Продолжаем работу со следующим откликом
         }
@@ -193,14 +193,14 @@ async function collectAndSaveResponses(
     totalSkipped += pageSkipped;
 
     console.log(
-      `💾 Страница ${currentPage}: сохранено ${pageSaved}, пропущено ${pageSkipped}${pageErrors > 0 ? `, ошибок ${pageErrors}` : ""}`
+      `💾 Страница ${currentPage}: сохранено ${pageSaved}, пропущено ${pageSkipped}${pageErrors > 0 ? `, ошибок ${pageErrors}` : ""}`,
     );
 
     currentPage++;
   }
 
   console.log(
-    `\n✅ Итого: собрано ${allResponses.length}, сохранено новых ${totalSaved}, пропущено (уже в базе) ${totalSkipped}`
+    `\n✅ Итого: собрано ${allResponses.length}, сохранено новых ${totalSaved}, пропущено (уже в базе) ${totalSkipped}`,
   );
 
   return allResponses;
@@ -210,7 +210,7 @@ async function collectAndSaveResponses(
  * ЭТАП 2: Фильтрует отклики, которым нужна детальная информация
  */
 async function filterResponsesNeedingDetails(
-  responses: ResponseWithId[]
+  responses: ResponseWithId[],
 ): Promise<ResponseWithId[]> {
   const responsesNeedingDetails: ResponseWithId[] = [];
 
@@ -224,11 +224,11 @@ async function filterResponsesNeedingDetails(
       if (!hasDetails) {
         responsesNeedingDetails.push(response);
         console.log(
-          `📝 Требуется парсинг ${i + 1}/${responses.length}: ${response.name}`
+          `📝 Требуется парсинг ${i + 1}/${responses.length}: ${response.name}`,
         );
       } else {
         console.log(
-          `✅ Детали есть ${i + 1}/${responses.length}: ${response.name}`
+          `✅ Детали есть ${i + 1}/${responses.length}: ${response.name}`,
         );
       }
     } catch (error) {
@@ -247,7 +247,7 @@ async function filterResponsesNeedingDetails(
 async function parseResponseDetails(
   page: Page,
   responses: ResponseWithId[],
-  vacancyId: string
+  vacancyId: string,
 ): Promise<void> {
   let successCount = 0;
   let errorCount = 0;
@@ -258,7 +258,7 @@ async function parseResponseDetails(
 
     try {
       console.log(
-        `\n📊 Парсинг резюме ${i + 1}/${responses.length}: ${response.name}`
+        `\n📊 Парсинг резюме ${i + 1}/${responses.length}: ${response.name}`,
       );
 
       // Парсим детальную информацию резюме
@@ -286,7 +286,7 @@ async function parseResponseDetails(
         error instanceof Error ? error.message : String(error);
       console.error(
         `❌ Ошибка парсинга резюме ${response.name}:`,
-        errorMessage
+        errorMessage,
       );
 
       // Пауза после ошибки перед следующей попыткой
@@ -295,6 +295,6 @@ async function parseResponseDetails(
   }
 
   console.log(
-    `\n📊 Итого парсинг резюме: успешно ${successCount}, ошибок ${errorCount}`
+    `\n📊 Итого парсинг резюме: успешно ${successCount}, ошибок ${errorCount}`,
   );
 }

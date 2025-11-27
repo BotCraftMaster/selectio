@@ -64,7 +64,7 @@ export function decrypt(encryptedData: string): string {
  * Шифрует объект credentials
  */
 export function encryptCredentials(
-  credentials: Record<string, string>
+  credentials: Record<string, string>,
 ): Record<string, string> {
   const encrypted: Record<string, string> = {};
 
@@ -79,7 +79,7 @@ export function encryptCredentials(
  * Расшифровывает объект credentials
  */
 export function decryptCredentials(
-  encryptedCredentials: Record<string, string>
+  encryptedCredentials: Record<string, string>,
 ): Record<string, string> {
   const decrypted: Record<string, string> = {};
 

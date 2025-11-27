@@ -2,7 +2,7 @@
  * Извлекает JSON из текста с различными стратегиями парсинга
  */
 export function extractJsonFromText(
-  text: string
+  text: string,
 ): Record<string, unknown> | null {
   if (!text) return null;
 

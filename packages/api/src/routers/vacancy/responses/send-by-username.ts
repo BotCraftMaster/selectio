@@ -9,7 +9,7 @@ export const sendByUsername = protectedProcedure
     z.object({
       responseId: z.string(),
       username: z.string().min(1, "Username обязателен"),
-    })
+    }),
   )
   .mutation(async ({ ctx, input }) => {
     const { responseId, username } = input;

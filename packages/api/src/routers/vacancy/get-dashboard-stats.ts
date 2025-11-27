@@ -31,8 +31,8 @@ export const getDashboardStats = protectedProcedure.query(async ({ ctx }) => {
     .where(
       sql`${vacancyResponse.vacancyId} IN (${sql.join(
         vacancyIds.map((id) => sql`${id}`),
-        sql`, `
-      )})`
+        sql`, `,
+      )})`,
     );
 
   const totalResponses = totalResponsesResult[0]?.count ?? 0;
@@ -42,13 +42,13 @@ export const getDashboardStats = protectedProcedure.query(async ({ ctx }) => {
     .from(vacancyResponse)
     .innerJoin(
       responseScreening,
-      eq(vacancyResponse.id, responseScreening.responseId)
+      eq(vacancyResponse.id, responseScreening.responseId),
     )
     .where(
       sql`${vacancyResponse.vacancyId} IN (${sql.join(
         vacancyIds.map((id) => sql`${id}`),
-        sql`, `
-      )})`
+        sql`, `,
+      )})`,
     );
 
   const processedResponses = processedResponsesResult[0]?.count ?? 0;
@@ -58,16 +58,16 @@ export const getDashboardStats = protectedProcedure.query(async ({ ctx }) => {
     .from(vacancyResponse)
     .innerJoin(
       responseScreening,
-      eq(vacancyResponse.id, responseScreening.responseId)
+      eq(vacancyResponse.id, responseScreening.responseId),
     )
     .where(
       and(
         sql`${vacancyResponse.vacancyId} IN (${sql.join(
           vacancyIds.map((id) => sql`${id}`),
-          sql`, `
+          sql`, `,
         )})`,
-        gte(responseScreening.score, 3)
-      )
+        gte(responseScreening.score, 3),
+      ),
     );
 
   const highScoreResponses = highScoreResponsesResult[0]?.count ?? 0;
@@ -77,16 +77,16 @@ export const getDashboardStats = protectedProcedure.query(async ({ ctx }) => {
     .from(vacancyResponse)
     .innerJoin(
       responseScreening,
-      eq(vacancyResponse.id, responseScreening.responseId)
+      eq(vacancyResponse.id, responseScreening.responseId),
     )
     .where(
       and(
         sql`${vacancyResponse.vacancyId} IN (${sql.join(
           vacancyIds.map((id) => sql`${id}`),
-          sql`, `
+          sql`, `,
         )})`,
-        gte(responseScreening.score, 4)
-      )
+        gte(responseScreening.score, 4),
+      ),
     );
 
   const topScoreResponses = topScoreResponsesResult[0]?.count ?? 0;
@@ -98,13 +98,13 @@ export const getDashboardStats = protectedProcedure.query(async ({ ctx }) => {
     .from(vacancyResponse)
     .innerJoin(
       responseScreening,
-      eq(vacancyResponse.id, responseScreening.responseId)
+      eq(vacancyResponse.id, responseScreening.responseId),
     )
     .where(
       sql`${vacancyResponse.vacancyId} IN (${sql.join(
         vacancyIds.map((id) => sql`${id}`),
-        sql`, `
-      )})`
+        sql`, `,
+      )})`,
     );
 
   const avgScore = avgScoreResult[0]?.avg ?? 0;
@@ -114,16 +114,16 @@ export const getDashboardStats = protectedProcedure.query(async ({ ctx }) => {
     .from(vacancyResponse)
     .leftJoin(
       responseScreening,
-      eq(vacancyResponse.id, responseScreening.responseId)
+      eq(vacancyResponse.id, responseScreening.responseId),
     )
     .where(
       and(
         sql`${vacancyResponse.vacancyId} IN (${sql.join(
           vacancyIds.map((id) => sql`${id}`),
-          sql`, `
+          sql`, `,
         )})`,
-        isNull(responseScreening.id)
-      )
+        isNull(responseScreening.id),
+      ),
     );
 
   const newResponses = newResponsesResult[0]?.count ?? 0;

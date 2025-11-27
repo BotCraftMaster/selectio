@@ -5,7 +5,7 @@ import { HH_CONFIG } from "./config";
 
 export async function parseResumeExperience(
   page: Page,
-  url: string
+  url: string,
 ): Promise<ResumeExperience> {
   console.log(`📄 Переход на страницу резюме: ${url}`);
 
@@ -40,12 +40,12 @@ export async function parseResumeExperience(
       'div[data-qa="resume-experience-block"]',
       {
         timeout: HH_CONFIG.timeouts.selector,
-      }
+      },
     );
 
     if (experienceElement) {
       const htmlContent = await experienceElement.evaluate(
-        (el: HTMLElement) => el.innerHTML
+        (el: HTMLElement) => el.innerHTML,
       );
 
       const { result } = stripHtml(htmlContent);
@@ -58,11 +58,11 @@ export async function parseResumeExperience(
   // Парсинг языков
   try {
     const languagesElement = await page.$(
-      'div[data-qa="resume-languages-block"]'
+      'div[data-qa="resume-languages-block"]',
     );
     if (languagesElement) {
       const htmlContent = await languagesElement.evaluate(
-        (el: HTMLElement) => el.innerHTML
+        (el: HTMLElement) => el.innerHTML,
       );
       const { result } = stripHtml(htmlContent);
       languages = result.trim();
@@ -76,7 +76,7 @@ export async function parseResumeExperience(
     const aboutElement = await page.$('div[data-qa="resume-about-block"]');
     if (aboutElement) {
       const htmlContent = await aboutElement.evaluate(
-        (el: HTMLElement) => el.innerHTML
+        (el: HTMLElement) => el.innerHTML,
       );
       const { result } = stripHtml(htmlContent);
       about = result.trim();
@@ -88,11 +88,11 @@ export async function parseResumeExperience(
   // Парсинг образования
   try {
     const educationElement = await page.$(
-      'div[data-qa="resume-education-block"]'
+      'div[data-qa="resume-education-block"]',
     );
     if (educationElement) {
       const htmlContent = await educationElement.evaluate(
-        (el: HTMLElement) => el.innerHTML
+        (el: HTMLElement) => el.innerHTML,
       );
       const { result } = stripHtml(htmlContent);
       education = result.trim();
@@ -104,11 +104,11 @@ export async function parseResumeExperience(
   // Парсинг курсов
   try {
     const coursesElement = await page.$(
-      'div[data-qa="resume-education-courses-block"]'
+      'div[data-qa="resume-education-courses-block"]',
     );
     if (coursesElement) {
       const htmlContent = await coursesElement.evaluate(
-        (el: HTMLElement) => el.innerHTML
+        (el: HTMLElement) => el.innerHTML,
       );
       const { result } = stripHtml(htmlContent);
       courses = result.trim();
@@ -126,7 +126,7 @@ export async function parseResumeExperience(
 
       // Check if the phone button exists first
       const phoneLink = await page.$(
-        'a[data-qa="response-resume_show-phone-number"]'
+        'a[data-qa="response-resume_show-phone-number"]',
       );
 
       if (!phoneLink) {

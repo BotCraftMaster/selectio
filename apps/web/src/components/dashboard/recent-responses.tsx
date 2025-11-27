@@ -19,7 +19,7 @@ export function RecentResponses() {
   const trpc = useTRPC();
 
   const { data: responses, isLoading } = useQuery(
-    trpc.vacancy.responses.listAll.queryOptions()
+    trpc.vacancy.responses.listAll.queryOptions(),
   );
 
   const recentResponses = responses?.slice(0, 5) ?? [];

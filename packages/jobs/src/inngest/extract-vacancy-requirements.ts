@@ -22,7 +22,7 @@ export const extractVacancyRequirementsFunction = inngest.createFunction(
       try {
         const requirements = await extractVacancyRequirements(
           vacancyId,
-          description
+          description,
         );
 
         console.log("✅ Требования успешно извлечены и сохранены", {
@@ -45,5 +45,5 @@ export const extractVacancyRequirementsFunction = inngest.createFunction(
         throw error;
       }
     });
-  }
+  },
 );

@@ -72,12 +72,6 @@ export function ChatList() {
 
         {/* Фильтр по вакансиям */}
         <div className="flex items-center gap-2">
-          <label
-            htmlFor="vacancy-filter"
-            className="text-sm text-muted-foreground"
-          >
-            Вакансия:
-          </label>
           <select
             id="vacancy-filter"
             value={selectedVacancyId}
@@ -114,7 +108,7 @@ export function ChatList() {
             try {
               const metadata = JSON.parse(conversation.metadata);
               const vacancy = vacancies.find(
-                (v) => v.id === metadata.vacancyId
+                (v) => v.id === metadata.vacancyId,
               );
               vacancyTitle = vacancy?.title;
             } catch {

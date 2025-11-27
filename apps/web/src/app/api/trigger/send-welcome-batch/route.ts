@@ -14,7 +14,7 @@ export async function POST(request: Request) {
     if (!Array.isArray(responseIds) || responseIds.length === 0) {
       return NextResponse.json(
         { error: "responseIds array is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -32,7 +32,7 @@ export async function POST(request: Request) {
     console.error("Error in send-welcome-batch API:", error);
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

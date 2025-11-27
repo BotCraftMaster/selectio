@@ -24,7 +24,7 @@ async function setupBrowser(): Promise<Browser> {
 
 async function setupPage(
   browser: Browser,
-  savedCookies: any[] | null
+  savedCookies: any[] | null,
 ): Promise<Page> {
   const page = await browser.newPage();
 
@@ -58,7 +58,7 @@ async function setupPage(
   }
 
   await page.setUserAgent(
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
   );
 
   await page.setViewport({
@@ -74,7 +74,7 @@ async function checkAndPerformLogin(
   page: Page,
   userId: string,
   email: string,
-  password: string
+  password: string,
 ) {
   console.log("🔐 Проверка авторизации...");
 
@@ -115,7 +115,7 @@ export async function runEnricher(userId: string) {
   // Получаем список откликов без деталей
   const responsesToEnrich = await getResponsesWithoutDetails();
   console.log(
-    `📋 Найдено ${responsesToEnrich.length} откликов без детальной информации`
+    `📋 Найдено ${responsesToEnrich.length} откликов без детальной информации`,
   );
 
   if (responsesToEnrich.length === 0) {
@@ -147,7 +147,7 @@ export async function runEnricher(userId: string) {
         await new Promise((resolve) => setTimeout(resolve, delay));
 
         console.log(
-          `📊 [${i + 1}/${responsesToEnrich.length}] Парсинг резюме: ${candidateName}`
+          `📊 [${i + 1}/${responsesToEnrich.length}] Парсинг резюме: ${candidateName}`,
         );
 
         const experienceData = await parseResumeExperience(page, resumeUrl);

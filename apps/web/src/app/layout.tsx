@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(
     env.VERCEL_ENV === "production"
       ? "https://selectio-web.vercel.app"
-      : "http://localhost:3000"
+      : "http://localhost:3000",
   ),
   title: "Selectio - Автоматизация работы с вакансиями HH.ru",
   description:
@@ -48,7 +48,7 @@ export default function RootLayout(props: { children: React.ReactNode }) {
         className={cn(
           "bg-background text-foreground min-h-screen font-sans antialiased",
           geistSans.variable,
-          geistMono.variable
+          geistMono.variable,
         )}
       >
         <ThemeProvider>

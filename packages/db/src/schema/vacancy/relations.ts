@@ -18,5 +18,5 @@ export const vacancyResponseRelations = relations(
       fields: [vacancyResponse.id],
       references: [responseScreening.responseId],
     }),
-  })
+  }),
 );

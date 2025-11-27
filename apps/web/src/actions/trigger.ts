@@ -62,7 +62,7 @@ export async function triggerScreenAllResponses(vacancyId: string) {
       "screen-response",
       responses.map((response) => ({
         payload: { responseId: response.id },
-      }))
+      })),
     );
 
     return {

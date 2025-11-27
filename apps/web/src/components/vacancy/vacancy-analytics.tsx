@@ -184,7 +184,7 @@ export function VacancyRequirements({
           "category" in item &&
           "items" in item &&
           typeof item.category === "string" &&
-          Array.isArray(item.items)
+          Array.isArray(item.items),
       )
     );
   };

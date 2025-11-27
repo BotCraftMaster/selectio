@@ -41,7 +41,7 @@ export function IntegrationCard({
           queryKey: trpc.integration.list.queryKey(),
         });
       },
-    })
+    }),
   );
 
   const isActive = integration?.isActive === "true";

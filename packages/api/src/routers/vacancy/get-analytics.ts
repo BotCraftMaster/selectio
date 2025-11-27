@@ -20,7 +20,7 @@ export const getAnalytics = protectedProcedure
       .from(vacancyResponse)
       .innerJoin(
         responseScreening,
-        eq(vacancyResponse.id, responseScreening.responseId)
+        eq(vacancyResponse.id, responseScreening.responseId),
       )
       .where(eq(vacancyResponse.vacancyId, input.vacancyId));
 
@@ -32,13 +32,13 @@ export const getAnalytics = protectedProcedure
       .from(vacancyResponse)
       .innerJoin(
         responseScreening,
-        eq(vacancyResponse.id, responseScreening.responseId)
+        eq(vacancyResponse.id, responseScreening.responseId),
       )
       .where(
         and(
           eq(vacancyResponse.vacancyId, input.vacancyId),
-          gte(responseScreening.score, 3)
-        )
+          gte(responseScreening.score, 3),
+        ),
       );
 
     const highScoreResponses = highScoreResponsesResult[0]?.count ?? 0;
@@ -49,13 +49,13 @@ export const getAnalytics = protectedProcedure
       .from(vacancyResponse)
       .innerJoin(
         responseScreening,
-        eq(vacancyResponse.id, responseScreening.responseId)
+        eq(vacancyResponse.id, responseScreening.responseId),
       )
       .where(
         and(
           eq(vacancyResponse.vacancyId, input.vacancyId),
-          gte(responseScreening.score, 4)
-        )
+          gte(responseScreening.score, 4),
+        ),
       );
 
     const topScoreResponses = topScoreResponsesResult[0]?.count ?? 0;
@@ -68,7 +68,7 @@ export const getAnalytics = protectedProcedure
       .from(vacancyResponse)
       .innerJoin(
         responseScreening,
-        eq(vacancyResponse.id, responseScreening.responseId)
+        eq(vacancyResponse.id, responseScreening.responseId),
       )
       .where(eq(vacancyResponse.vacancyId, input.vacancyId));
 

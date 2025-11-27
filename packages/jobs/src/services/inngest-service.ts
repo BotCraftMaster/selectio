@@ -5,7 +5,7 @@ import { inngest } from "../inngest/client";
  */
 export async function triggerVacancyRequirementsExtraction(
   vacancyId: string,
-  description: string
+  description: string,
 ): Promise<void> {
   try {
     await inngest.send({
@@ -20,7 +20,7 @@ export async function triggerVacancyRequirementsExtraction(
   } catch (error) {
     console.error(
       `❌ Ошибка отправки Inngest события для ${vacancyId}:`,
-      error
+      error,
     );
     // Не пробрасываем ошибку, чтобы не блокировать основной процесс
   }
@@ -30,7 +30,7 @@ export async function triggerVacancyRequirementsExtraction(
  * Triggers response screening job via Inngest
  */
 export async function triggerResponseScreening(
-  responseId: string
+  responseId: string,
 ): Promise<void> {
   try {
     await inngest.send({
@@ -44,7 +44,7 @@ export async function triggerResponseScreening(
   } catch (error) {
     console.error(
       `❌ Ошибка отправки Inngest события для ${responseId}:`,
-      error
+      error,
     );
     // Не пробрасываем ошибку, чтобы не блокировать основной процесс
   }
@@ -64,7 +64,7 @@ export async function triggerVacanciesUpdate(): Promise<void> {
   } catch (error) {
     console.error(
       `❌ Ошибка отправки Inngest события для обновления вакансий:`,
-      error
+      error,
     );
   }
 }
@@ -73,7 +73,7 @@ export async function triggerVacanciesUpdate(): Promise<void> {
  * Triggers vacancy responses refresh job via Inngest
  */
 export async function triggerVacancyResponsesRefresh(
-  vacancyId: string
+  vacancyId: string,
 ): Promise<void> {
   try {
     await inngest.send({
@@ -84,12 +84,12 @@ export async function triggerVacancyResponsesRefresh(
     });
 
     console.log(
-      `✅ Inngest event sent for vacancy responses refresh: ${vacancyId}`
+      `✅ Inngest event sent for vacancy responses refresh: ${vacancyId}`,
     );
   } catch (error) {
     console.error(
       `❌ Ошибка отправки Inngest события для обновления откликов вакансии ${vacancyId}:`,
-      error
+      error,
     );
     throw error;
   }
@@ -100,7 +100,7 @@ export async function triggerVacancyResponsesRefresh(
  */
 export async function triggerCandidateWelcome(
   responseId: string,
-  username: string
+  username: string,
 ): Promise<void> {
   try {
     await inngest.send({
@@ -112,12 +112,12 @@ export async function triggerCandidateWelcome(
     });
 
     console.log(
-      `✅ Inngest event sent for candidate welcome to @${username} (response: ${responseId})`
+      `✅ Inngest event sent for candidate welcome to @${username} (response: ${responseId})`,
     );
   } catch (error) {
     console.error(
       `❌ Ошибка отправки Inngest события для приветствия кандидата ${responseId}:`,
-      error
+      error,
     );
     throw error;
   }

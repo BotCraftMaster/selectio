@@ -22,7 +22,7 @@ export const getMessagesRouter = createTRPCRouter({
     .input(
       z.object({
         limit: z.number().min(1).max(100).default(10),
-      })
+      }),
     )
     .query(async ({ input }) => {
       const messages = await db.query.telegramMessage.findMany({

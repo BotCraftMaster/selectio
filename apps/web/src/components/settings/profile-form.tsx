@@ -43,7 +43,7 @@ export function ProfileForm({
       onError: (err) => {
         toast.error(err.message || "Failed to update profile");
       },
-    })
+    }),
   );
 
   function onSubmit(data: ProfileFormValues) {

@@ -71,7 +71,7 @@ export function IntegrationDialog({
   });
 
   const selectedType = INTEGRATION_TYPES.find(
-    (t) => t.value === form.watch("type")
+    (t) => t.value === form.watch("type"),
   );
 
   useEffect(() => {
@@ -92,7 +92,7 @@ export function IntegrationDialog({
       onError: (err) => {
         toast.error(err.message || "Не удалось создать интеграцию");
       },
-    })
+    }),
   );
 
   const handleClose = () => {

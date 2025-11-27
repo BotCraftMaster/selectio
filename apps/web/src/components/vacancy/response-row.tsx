@@ -25,12 +25,10 @@ export function ResponseRow({
   isSelected = false,
   onSelect,
 }: ResponseRowProps) {
-  const canSelect = response.status === "NEW";
-
   return (
     <TableRow>
       <TableCell>
-        {canSelect && onSelect ? (
+        {onSelect ? (
           <Checkbox
             checked={isSelected}
             onCheckedChange={() => onSelect(response.id)}

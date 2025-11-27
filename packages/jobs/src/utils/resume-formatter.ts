@@ -7,7 +7,7 @@ import type {
  * Форматирует данные резюме для отправки в промпт скрининга
  */
 export function formatResumeForScreening(
-  resumeData: ResumeScreeningData
+  resumeData: ResumeScreeningData,
 ): string {
   const sections: string[] = [];
 
@@ -47,7 +47,7 @@ export function formatResumeForScreening(
  */
 export function buildFullScreeningPrompt(
   requirements: VacancyRequirements,
-  resumeData: ResumeScreeningData
+  resumeData: ResumeScreeningData,
 ): string {
   const formattedResume = formatResumeForScreening(resumeData);
 

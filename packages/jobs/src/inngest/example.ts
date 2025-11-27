@@ -23,7 +23,7 @@ async function main() {
     - Experience with PostgreSQL
     - Familiarity with Docker and Kubernetes
     - Good communication skills in English
-    `
+    `,
   );
 
   // Example 2: Trigger response screening
@@ -32,7 +32,7 @@ async function main() {
 
   console.log("\n✅ All events sent successfully!");
   console.log(
-    "\n💡 Make sure the Inngest dev server is running: bun run dev:inngest"
+    "\n💡 Make sure the Inngest dev server is running: bun run dev:inngest",
   );
 }
 

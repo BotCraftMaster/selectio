@@ -28,5 +28,5 @@ export const updateVacanciesFunction = inngest.createFunction(
         throw error;
       }
     });
-  }
+  },
 );

@@ -45,7 +45,7 @@ export function ResponseActions({
         console.error("Ошибка отправки сообщения:", error);
         toast.error("Ошибка отправки сообщения");
       },
-    })
+    }),
   );
 
   const handleRate = () => {

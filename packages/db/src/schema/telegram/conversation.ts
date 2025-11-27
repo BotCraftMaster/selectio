@@ -35,7 +35,7 @@ export const CreateTelegramConversationSchema = createInsertSchema(
     candidateName: z.string().max(500).optional(),
     status: z.enum(["ACTIVE", "COMPLETED", "CANCELLED"]).default("ACTIVE"),
     metadata: z.string().optional(),
-  }
+  },
 ).omit({
   id: true,
   createdAt: true,

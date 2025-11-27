@@ -12,7 +12,7 @@ export const extractVacancyRequirementsTask = task({
     try {
       const requirements = await extractVacancyRequirements(
         payload.vacancyId,
-        payload.description
+        payload.description,
       );
 
       logger.log("✅ Требования успешно извлечены и сохранены", {

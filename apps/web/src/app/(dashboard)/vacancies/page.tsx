@@ -21,7 +21,7 @@ import { useTRPC } from "~/trpc/react";
 export default function VacanciesPage() {
   const trpc = useTRPC();
   const { data: vacancies, isLoading } = useQuery(
-    trpc.vacancy.list.queryOptions()
+    trpc.vacancy.list.queryOptions(),
   );
   const [isUpdating, setIsUpdating] = useState(false);
 

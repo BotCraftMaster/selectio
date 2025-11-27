@@ -55,7 +55,7 @@ export function ResponsesChart() {
   }, [isMobile]);
 
   const { data: chartData, isLoading } = useQuery(
-    trpc.vacancy.getResponsesChartData.queryOptions()
+    trpc.vacancy.getResponsesChartData.queryOptions(),
   );
 
   const filteredData = React.useMemo(() => {

@@ -9,7 +9,7 @@ export const sendWelcome = protectedProcedure
     z.object({
       responseId: z.string(),
       chatId: z.string(),
-    })
+    }),
   )
   .mutation(async ({ ctx, input }) => {
     const { responseId, chatId } = input;

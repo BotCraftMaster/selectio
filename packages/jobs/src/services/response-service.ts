@@ -23,7 +23,7 @@ export async function saveBasicResponse(
   vacancyId: string,
   resumeId: string,
   resumeUrl: string,
-  candidateName: string
+  candidateName: string,
 ): Promise<boolean> {
   try {
     const existingResponse = await db.query.vacancyResponse.findFirst({
@@ -53,7 +53,7 @@ export async function saveBasicResponse(
   } catch (error) {
     console.error(
       `❌ Ошибка сохранения базовой информации для ${candidateName}:`,
-      error
+      error,
     );
     throw error; // Пробрасываем ошибку для обработки на верхнем уровне
   }
@@ -99,7 +99,7 @@ export async function updateResponseDetails(response: SaveResponseData) {
   } catch (error) {
     console.error(
       `❌ Ошибка обновления детальной информации для ${response.candidateName}:`,
-      error
+      error,
     );
     throw error; // Пробрасываем ошибку для обработки на верхнем уровне
   }
@@ -113,7 +113,7 @@ export async function getResponsesWithoutDetails() {
     return await db.query.vacancyResponse.findMany({
       where: or(
         isNull(vacancyResponse.experience),
-        eq(vacancyResponse.experience, "")
+        eq(vacancyResponse.experience, ""),
       ),
     });
   } catch (error) {

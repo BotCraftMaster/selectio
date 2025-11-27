@@ -67,7 +67,7 @@ export function ChatHeader({
               ? "text-blue-500"
               : onlineStatus === "typing"
                 ? "text-blue-500"
-                : "text-gray-500 dark:text-gray-400"
+                : "text-gray-500 dark:text-gray-400",
           )}
         >
           {statusText[onlineStatus]}

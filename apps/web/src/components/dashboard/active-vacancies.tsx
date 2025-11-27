@@ -17,7 +17,7 @@ export function ActiveVacancies() {
   const trpc = useTRPC();
 
   const { data: vacancies, isLoading } = useQuery(
-    trpc.vacancy.list.queryOptions()
+    trpc.vacancy.list.queryOptions(),
   );
 
   const activeVacancies =

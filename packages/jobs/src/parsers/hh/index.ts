@@ -13,7 +13,7 @@ export { refreshVacancyResponses } from "./refresh-responses";
 
 export async function runHHParser(
   userId: string,
-  options?: { skipResponses?: boolean }
+  options?: { skipResponses?: boolean },
 ) {
   const credentials = await getIntegrationCredentials(userId, "hh");
   if (!credentials?.email || !credentials?.password) {
@@ -68,7 +68,7 @@ export async function runHHParser(
           // Переопределяем permissions
           const originalQuery = window.navigator.permissions.query;
           window.navigator.permissions.query = (
-            parameters: PermissionDescriptor
+            parameters: PermissionDescriptor,
           ) =>
             parameters.name === "notifications"
               ? Promise.resolve({
@@ -124,7 +124,7 @@ export async function runHHParser(
             const vacancy = vacancies[i];
             if (!vacancy?.responsesUrl) {
               log.info(
-                `⏭️ Пропуск вакансии ${i + 1}/${vacancies.length}: нет откликов`
+                `⏭️ Пропуск вакансии ${i + 1}/${vacancies.length}: нет откликов`,
               );
               continue;
             }
@@ -132,30 +132,30 @@ export async function runHHParser(
             try {
               const fullUrl = new URL(
                 vacancy.responsesUrl,
-                HH_CONFIG.urls.baseUrl
+                HH_CONFIG.urls.baseUrl,
               ).href;
 
               // Задержка между обработкой вакансий
               if (i > 0) {
                 const delay = Math.floor(Math.random() * 5000) + 3000;
                 log.info(
-                  `⏳ Пауза ${Math.round(delay / 1000)}с перед следующей вакансией...`
+                  `⏳ Пауза ${Math.round(delay / 1000)}с перед следующей вакансией...`,
                 );
                 await new Promise((resolve) => setTimeout(resolve, delay));
               }
 
               log.info(
-                `\n📋 Обработка вакансии ${i + 1}/${vacancies.length}: ${vacancy.title}`
+                `\n📋 Обработка вакансии ${i + 1}/${vacancies.length}: ${vacancy.title}`,
               );
               await parseResponses(page, fullUrl, vacancy.id);
               log.info(
-                `✅ Вакансия ${i + 1}/${vacancies.length} обработана успешно`
+                `✅ Вакансия ${i + 1}/${vacancies.length} обработана успешно`,
               );
             } catch (error) {
               const errorMessage =
                 error instanceof Error ? error.message : String(error);
               log.error(
-                `❌ Ошибка обработки вакансии ${vacancy.title}: ${errorMessage}`
+                `❌ Ошибка обработки вакансии ${vacancy.title}: ${errorMessage}`,
               );
 
               // Продолжаем работу со следующей вакансией
@@ -168,7 +168,7 @@ export async function runHHParser(
         }
 
         await new Promise((resolve) =>
-          setTimeout(resolve, HH_CONFIG.delays.afterParsing)
+          setTimeout(resolve, HH_CONFIG.delays.afterParsing),
         );
 
         console.log("\n✨ Парсинг успешно завершен!");
