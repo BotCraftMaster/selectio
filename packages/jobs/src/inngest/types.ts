@@ -27,6 +27,12 @@ export const vacancyResponsesRefreshDataSchema = z.object({
   vacancyId: z.string().min(1, "Vacancy ID is required"),
 });
 
+// Schema for candidate welcome message event data
+export const candidateWelcomeDataSchema = z.object({
+  responseId: z.string().min(1, "Response ID is required"),
+  chatId: z.string().min(1, "Chat ID is required"),
+});
+
 /**
  * Inngest event schemas using Zod
  * Each event must have a 'data' field containing the payload
@@ -44,6 +50,9 @@ export const inngestEventSchemas = {
   "vacancy/responses.refresh": {
     data: vacancyResponsesRefreshDataSchema,
   },
+  "candidate/welcome": {
+    data: candidateWelcomeDataSchema,
+  },
 };
 
 /**
@@ -58,4 +67,7 @@ export type VacancyUpdateActivePayload = z.infer<
 >;
 export type VacancyResponsesRefreshPayload = z.infer<
   typeof vacancyResponsesRefreshDataSchema
+>;
+export type CandidateWelcomePayload = z.infer<
+  typeof candidateWelcomeDataSchema
 >;

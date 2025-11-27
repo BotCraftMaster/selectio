@@ -5,8 +5,11 @@ export {
   inngestFunctions,
   refreshVacancyResponsesFunction,
   screenResponseFunction,
+  sendCandidateWelcomeFunction,
 } from "./inngest";
+export { generateWelcomeMessage } from "./services/candidate-welcome-service";
 export {
+  triggerCandidateWelcome,
   triggerResponseScreening,
   triggerVacanciesUpdate,
   triggerVacancyRequirementsExtraction as triggerVacancyRequirementsExtractionInngest,

@@ -1,6 +1,7 @@
 import { realtimeMiddleware } from "@inngest/realtime/middleware";
 import { EventSchemas, Inngest } from "inngest";
 import {
+  candidateWelcomeDataSchema,
   responseScreenDataSchema,
   vacancyRequirementsExtractDataSchema,
   vacancyResponsesRefreshDataSchema,
@@ -17,5 +18,6 @@ export const inngest = new Inngest({
     "response/screen": responseScreenDataSchema,
     "vacancy/update.active": vacancyUpdateActiveDataSchema,
     "vacancy/responses.refresh": vacancyResponsesRefreshDataSchema,
+    "candidate/welcome": candidateWelcomeDataSchema,
   }),
 });

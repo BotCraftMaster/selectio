@@ -94,3 +94,29 @@ export async function triggerVacancyResponsesRefresh(
     throw error;
   }
 }
+
+/**
+ * Triggers candidate welcome message job via Inngest
+ */
+export async function triggerCandidateWelcome(
+  responseId: string,
+  chatId: string
+): Promise<void> {
+  try {
+    await inngest.send({
+      name: "candidate/welcome",
+      data: {
+        responseId,
+        chatId,
+      },
+    });
+
+    console.log(`✅ Inngest event sent for candidate welcome: ${responseId}`);
+  } catch (error) {
+    console.error(
+      `❌ Ошибка отправки Inngest события для приветствия кандидата ${responseId}:`,
+      error
+    );
+    throw error;
+  }
+}
