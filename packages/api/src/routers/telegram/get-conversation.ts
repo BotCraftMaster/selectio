@@ -4,19 +4,40 @@ import { db, telegramConversation, telegramMessage } from "@selectio/db";
 import { createTRPCRouter, protectedProcedure } from "../../trpc";
 
 export const getConversationRouter = createTRPCRouter({
-  getAll: protectedProcedure.query(async () => {
-    const conversations = await db.query.telegramConversation.findMany({
-      orderBy: [desc(telegramConversation.updatedAt)],
-      with: {
-        messages: {
-          orderBy: [desc(telegramMessage.createdAt)],
-          limit: 1,
+  getAll: protectedProcedure
+    .input(
+      z
+        .object({
+          vacancyId: z.string().optional(),
+        })
+        .optional()
+    )
+    .query(async ({ input }) => {
+      const conversations = await db.query.telegramConversation.findMany({
+        orderBy: [desc(telegramConversation.updatedAt)],
+        with: {
+          messages: {
+            orderBy: [desc(telegramMessage.createdAt)],
+            limit: 1,
+          },
         },
-      },
-    });
+      });
 
-    return conversations;
-  }),
+      // Если указан vacancyId, фильтруем по нему
+      if (input?.vacancyId) {
+        return conversations.filter((conv) => {
+          if (!conv.metadata) return false;
+          try {
+            const metadata = JSON.parse(conv.metadata);
+            return metadata.vacancyId === input.vacancyId;
+          } catch {
+            return false;
+          }
+        });
+      }
+
+      return conversations;
+    }),
 
   getById: protectedProcedure
     .input(z.object({ id: z.string().uuid() }))

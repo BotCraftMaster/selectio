@@ -7,13 +7,22 @@ import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
 import { usePathname } from "next/navigation";
+import { useState } from "react";
 
 export function ChatList() {
   const trpc = useTRPC();
   const pathname = usePathname();
+  const [selectedVacancyId, setSelectedVacancyId] = useState<string>("");
 
+  // Получаем список вакансий для фильтра
+  const vacanciesQueryOptions = trpc.vacancy.list.queryOptions();
+  const { data: vacancies = [] } = useQuery(vacanciesQueryOptions);
+
+  // Получаем чаты с учетом фильтра
   const conversationsQueryOptions =
-    trpc.telegram.conversation.getAll.queryOptions();
+    trpc.telegram.conversation.getAll.queryOptions({
+      vacancyId: selectedVacancyId || undefined,
+    });
   const {
     data: conversations = [],
     isPending,
@@ -58,8 +67,31 @@ export function ChatList() {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="border-b px-4 py-3">
+      <div className="border-b px-4 py-3 space-y-3">
         <h1 className="text-xl font-semibold">Чаты</h1>
+
+        {/* Фильтр по вакансиям */}
+        <div className="flex items-center gap-2">
+          <label
+            htmlFor="vacancy-filter"
+            className="text-sm text-muted-foreground"
+          >
+            Вакансия:
+          </label>
+          <select
+            id="vacancy-filter"
+            value={selectedVacancyId}
+            onChange={(e) => setSelectedVacancyId(e.target.value)}
+            className="flex-1 h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+          >
+            <option value="">Все вакансии</option>
+            {vacancies.map((vacancy) => (
+              <option key={vacancy.id} value={vacancy.id}>
+                {vacancy.title}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
       <div className="flex-1 overflow-y-auto">
@@ -75,6 +107,20 @@ export function ChatList() {
             : "??";
 
           const isActive = pathname === `/chat/${conversation.id}`;
+
+          // Получаем vacancyId из metadata
+          let vacancyTitle = null;
+          if (conversation.metadata) {
+            try {
+              const metadata = JSON.parse(conversation.metadata);
+              const vacancy = vacancies.find(
+                (v) => v.id === metadata.vacancyId
+              );
+              vacancyTitle = vacancy?.title;
+            } catch {
+              // ignore
+            }
+          }
 
           return (
             <Link key={conversation.id} href={`/chat/${conversation.id}`}>
@@ -98,6 +144,12 @@ export function ChatList() {
                       </span>
                     )}
                   </div>
+
+                  {vacancyTitle && (
+                    <p className="text-xs text-teal-600 mb-1 truncate">
+                      {vacancyTitle}
+                    </p>
+                  )}
 
                   {lastMessage && (
                     <p className="text-sm text-muted-foreground truncate">

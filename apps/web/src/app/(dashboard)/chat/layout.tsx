@@ -7,10 +7,10 @@ export default function ChatLayout({
 }) {
   return (
     <div className="flex h-[calc(100vh-4rem)]">
-      <div className="w-80 border-r">
+      <div className="w-80 border-r h-full overflow-hidden">
         <ChatList />
       </div>
-      <div className="flex-1">{children}</div>
+      <div className="flex-1 h-full overflow-hidden">{children}</div>
     </div>
   );
 }
