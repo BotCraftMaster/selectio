@@ -15,6 +15,7 @@ import { use } from "react";
 import { SiteHeader } from "~/components/layout";
 import {
   GenerateRequirementsButton,
+  RefreshResponsesButton,
   VacancyAnalytics,
   VacancyHeader,
   VacancyRequirements,
@@ -106,16 +107,19 @@ export default function VacancyDetailPage({
               </div>
 
               <Tabs defaultValue={tab || "overview"} className="space-y-6">
-                <TabsList>
-                  <TabsTrigger value="overview" asChild>
-                    <Link href={`/vacancies/${id}`}>Обзор</Link>
-                  </TabsTrigger>
-                  <TabsTrigger value="responses" asChild>
-                    <Link href={`/vacancies/${id}/responses`}>
-                      Отклики ({responses?.length ?? 0})
-                    </Link>
-                  </TabsTrigger>
-                </TabsList>
+                <div className="flex items-center justify-between">
+                  <TabsList>
+                    <TabsTrigger value="overview" asChild>
+                      <Link href={`/vacancies/${id}`}>Обзор</Link>
+                    </TabsTrigger>
+                    <TabsTrigger value="responses" asChild>
+                      <Link href={`/vacancies/${id}/responses`}>
+                        Отклики ({responses?.length ?? 0})
+                      </Link>
+                    </TabsTrigger>
+                  </TabsList>
+                  <RefreshResponsesButton vacancyId={id} />
+                </div>
 
                 <TabsContent value="overview" className="space-y-6">
                   {analytics && (

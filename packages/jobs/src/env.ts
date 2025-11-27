@@ -3,12 +3,13 @@ import { z } from "zod/v4";
 
 export const env = createEnv({
   server: {
-    HH_EMAIL: z.string().email(),
+    HH_EMAIL: z.email(),
     HH_PASSWORD: z.string().min(1),
     DEEPSEEK_API_KEY: z.string().min(1).optional(),
     LANGFUSE_SECRET_KEY: z.string().min(1).optional(),
     LANGFUSE_PUBLIC_KEY: z.string().min(1).optional(),
-    LANGFUSE_BASE_URL: z.string().url().optional(),
+    LANGFUSE_BASE_URL: z.url().optional(),
+    PORT: z.string().optional().default("8000").transform(Number),
   },
   runtimeEnv: process.env,
   skipValidation:

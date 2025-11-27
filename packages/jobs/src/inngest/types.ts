@@ -19,12 +19,30 @@ export const responseScreenDataSchema = z.object({
  * Inngest event schemas using Zod
  * Each event must have a 'data' field containing the payload
  */
+// Schema for vacancy update active event data
+export const vacancyUpdateActiveDataSchema = z.object({});
+
+// Schema for vacancy responses refresh event data
+export const vacancyResponsesRefreshDataSchema = z.object({
+  vacancyId: z.string().min(1, "Vacancy ID is required"),
+});
+
+/**
+ * Inngest event schemas using Zod
+ * Each event must have a 'data' field containing the payload
+ */
 export const inngestEventSchemas = {
   "vacancy/requirements.extract": {
     data: vacancyRequirementsExtractDataSchema,
   },
   "response/screen": {
     data: responseScreenDataSchema,
+  },
+  "vacancy/update.active": {
+    data: vacancyUpdateActiveDataSchema,
+  },
+  "vacancy/responses.refresh": {
+    data: vacancyResponsesRefreshDataSchema,
   },
 };
 
@@ -35,3 +53,9 @@ export type VacancyRequirementsExtractPayload = z.infer<
   typeof vacancyRequirementsExtractDataSchema
 >;
 export type ResponseScreenPayload = z.infer<typeof responseScreenDataSchema>;
+export type VacancyUpdateActivePayload = z.infer<
+  typeof vacancyUpdateActiveDataSchema
+>;
+export type VacancyResponsesRefreshPayload = z.infer<
+  typeof vacancyResponsesRefreshDataSchema
+>;

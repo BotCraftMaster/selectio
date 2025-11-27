@@ -1,5 +1,4 @@
 import { PuppeteerCrawler } from "crawlee";
-import type { CookieParam } from "puppeteer";
 import puppeteer from "puppeteer-extra";
 import StealthPlugin from "puppeteer-extra-plugin-stealth";
 import { env } from "../../env";
@@ -10,7 +9,7 @@ import { parseVacancies } from "./vacancy-parser";
 
 puppeteer.use(StealthPlugin());
 
-export async function runHHParser() {
+export async function runHHParser(options?: { skipResponses?: boolean }) {
   const email = env.HH_EMAIL;
   const password = env.HH_PASSWORD;
 
@@ -107,50 +106,55 @@ export async function runHHParser() {
 
         const vacancies = await parseVacancies(page);
 
-        // Последовательная обработка откликов для каждой вакансии
-        for (let i = 0; i < vacancies.length; i++) {
-          const vacancy = vacancies[i];
-          if (!vacancy?.responsesUrl) {
-            log.info(
-              `⏭️ Пропуск вакансии ${i + 1}/${vacancies.length}: нет откликов`
-            );
-            continue;
-          }
-
-          try {
-            const fullUrl = new URL(
-              vacancy.responsesUrl,
-              HH_CONFIG.urls.baseUrl
-            ).href;
-
-            // Задержка между обработкой вакансий
-            if (i > 0) {
-              const delay = Math.floor(Math.random() * 5000) + 3000;
+        // Если запрошено только обновление вакансий, пропускаем обработку откликов
+        if (options?.skipResponses) {
+          log.info("⏭️ Пропуск обработки откликов (skipResponses=true)");
+        } else {
+          // Последовательная обработка откликов для каждой вакансии
+          for (let i = 0; i < vacancies.length; i++) {
+            const vacancy = vacancies[i];
+            if (!vacancy?.responsesUrl) {
               log.info(
-                `⏳ Пауза ${Math.round(delay / 1000)}с перед следующей вакансией...`
+                `⏭️ Пропуск вакансии ${i + 1}/${vacancies.length}: нет откликов`
               );
-              await new Promise((resolve) => setTimeout(resolve, delay));
+              continue;
             }
 
-            log.info(
-              `\n📋 Обработка вакансии ${i + 1}/${vacancies.length}: ${vacancy.title}`
-            );
-            await parseResponses(page, fullUrl, vacancy.id);
-            log.info(
-              `✅ Вакансия ${i + 1}/${vacancies.length} обработана успешно`
-            );
-          } catch (error) {
-            const errorMessage =
-              error instanceof Error ? error.message : String(error);
-            log.error(
-              `❌ Ошибка обработки вакансии ${vacancy.title}: ${errorMessage}`
-            );
+            try {
+              const fullUrl = new URL(
+                vacancy.responsesUrl,
+                HH_CONFIG.urls.baseUrl
+              ).href;
 
-            // Продолжаем работу со следующей вакансией
-            log.info(`⏭️ Переход к следующей вакансии...`);
+              // Задержка между обработкой вакансий
+              if (i > 0) {
+                const delay = Math.floor(Math.random() * 5000) + 3000;
+                log.info(
+                  `⏳ Пауза ${Math.round(delay / 1000)}с перед следующей вакансией...`
+                );
+                await new Promise((resolve) => setTimeout(resolve, delay));
+              }
 
-            // Дополнительная пауза после ошибки
-            await new Promise((resolve) => setTimeout(resolve, 5000));
+              log.info(
+                `\n📋 Обработка вакансии ${i + 1}/${vacancies.length}: ${vacancy.title}`
+              );
+              await parseResponses(page, fullUrl, vacancy.id);
+              log.info(
+                `✅ Вакансия ${i + 1}/${vacancies.length} обработана успешно`
+              );
+            } catch (error) {
+              const errorMessage =
+                error instanceof Error ? error.message : String(error);
+              log.error(
+                `❌ Ошибка обработки вакансии ${vacancy.title}: ${errorMessage}`
+              );
+
+              // Продолжаем работу со следующей вакансией
+              log.info(`⏭️ Переход к следующей вакансии...`);
+
+              // Дополнительная пауза после ошибки
+              await new Promise((resolve) => setTimeout(resolve, 5000));
+            }
           }
         }
 

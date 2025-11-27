@@ -23,7 +23,7 @@ export const HH_CONFIG = {
     parseContacts: true, // Включить/выключить парсинг контактов (отключено из-за 403)
   },
   puppeteer: {
-    headless: false,
+    headless: true,
     args: [
       "--no-sandbox",
       "--disable-setuid-sandbox",
@@ -33,6 +33,6 @@ export const HH_CONFIG = {
       "--window-size=1920,1080",
     ] as string[],
     ignoreDefaultArgs: ["--enable-automation"] as string[],
-    slowMo: 100, // Увеличена задержка между действиями
+    slowMo: 100,
   },
 };
