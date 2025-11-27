@@ -81,7 +81,7 @@ export async function triggerScreenAllResponses(vacancyId: string) {
 
 export async function triggerUpdateVacancies() {
   try {
-    const { inngest } = await import("@selectio/jobs");
+    const { inngest } = await import("@selectio/jobs/client");
     await inngest.send({
       name: "vacancy/update.active",
       data: {},
