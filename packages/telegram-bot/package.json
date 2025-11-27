@@ -1,0 +1,31 @@
+{
+  "name": "@selectio/telegram-bot",
+  "private": true,
+  "type": "module",
+  "version": "0.1.0",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc",
+    "clean": "git clean -xdf .cache .turbo dist node_modules",
+    "dev": "bun with-env bun run src/index.ts",
+    "typecheck": "tsc --noEmit --emitDeclarationOnly false",
+    "with-env": "dotenv -e ../../.env --"
+  },
+  "dependencies": {
+    "@selectio/db": "workspace:*",
+    "@selectio/lib": "workspace:*",
+    "grammy": "^1.36.0"
+  },
+  "devDependencies": {
+    "@selectio/tsconfig": "workspace:*",
+    "@types/bun": "1.3.3",
+    "@types/node": "24.10.1",
+    "typescript": "5.9.3"
+  }
+}
