@@ -1,7 +1,7 @@
 import { env } from "@selectio/config";
+import { eq } from "@selectio/db";
 import { db } from "@selectio/db/client";
 import { telegramConversation, telegramMessage } from "@selectio/db/schema";
-import { eq } from "drizzle-orm";
 import { Bot } from "grammy";
 
 const TELEGRAM_BOT_TOKEN = env.TELEGRAM_BOT_TOKEN;

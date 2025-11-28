@@ -6,4 +6,3 @@ console.log("Telegram bot запущен");
 
 export { bot, sendMessage } from "./bot";
 export { checkUsername, initClient, sendMessageByUsername } from "./client";
-export { transcribeAudio } from "./transcription";
