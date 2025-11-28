@@ -113,7 +113,7 @@ export default function VacancyDetailPage({
                     </TabsTrigger>
                     <TabsTrigger value="responses" asChild>
                       <Link href={`/vacancies/${id}/responses`}>
-                        Отклики ({responses?.length ?? 0})
+                        Отклики ({responses?.total ?? 0})
                       </Link>
                     </TabsTrigger>
                   </TabsList>
