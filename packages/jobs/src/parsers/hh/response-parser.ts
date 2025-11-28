@@ -80,8 +80,8 @@ async function collectAndSaveResponses(
   while (true) {
     const pageUrl =
       currentPage === 0
-        ? `https://hh.ru/employer/vacancyresponses?vacancyId=${vacancyId}`
-        : `https://hh.ru/employer/vacancyresponses?vacancyId=${vacancyId}&page=${currentPage}`;
+        ? `https://hh.ru/employer/vacancyresponses?vacancyId=${vacancyId}&order=DATE`
+        : `https://hh.ru/employer/vacancyresponses?vacancyId=${vacancyId}&page=${currentPage}&order=DATE`;
 
     console.log(`📄 Страница ${currentPage}: ${pageUrl}`);
 

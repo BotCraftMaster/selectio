@@ -37,4 +37,5 @@ export interface SaveResponseData {
   about: string;
   education: string;
   courses: string;
+  telegramUsername?: string | null;
 }

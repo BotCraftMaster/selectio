@@ -92,6 +92,7 @@ export async function updateResponseDetails(response: SaveResponseData) {
         about: response.about,
         education: response.education,
         courses: response.courses,
+        telegramUsername: response.telegramUsername,
       })
       .where(eq(vacancyResponse.resumeId, response.resumeId));
 

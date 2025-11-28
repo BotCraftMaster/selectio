@@ -102,7 +102,7 @@ export async function refreshVacancyResponses(vacancyId: string) {
         }
 
         // Формируем URL для откликов конкретной вакансии
-        const responsesUrl = `https://hh.ru/employer/vacancyresponses?vacancyId=${vacancyId}`;
+        const responsesUrl = `https://hh.ru/employer/vacancyresponses?vacancyId=${vacancyId}&order=DATE`;
 
         log.info(`📋 Парсинг откликов для вакансии ${vacancyId}...`);
         await parseResponses(page, responsesUrl, vacancyId);

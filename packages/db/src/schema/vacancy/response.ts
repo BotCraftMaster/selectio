@@ -79,3 +79,5 @@ export const CreateVacancyResponseSchema = createInsertSchema(vacancyResponse, {
   createdAt: true,
   updatedAt: true,
 });
+
+export type VacancyResponse = typeof vacancyResponse.$inferSelect;

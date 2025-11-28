@@ -7,6 +7,7 @@ import {
   getResponsesWithoutDetails,
   updateResponseDetails,
 } from "../../services/response-service";
+import { extractTelegramUsername } from "../../services/telegram-username-service";
 import { loadCookies, performLogin, saveCookies } from "./auth";
 import { HH_CONFIG } from "./config";
 import { parseResumeExperience } from "./resume-parser";
@@ -152,6 +153,20 @@ export async function runEnricher(userId: string) {
 
         const experienceData = await parseResumeExperience(page, resumeUrl);
 
+        // Extract Telegram username from contacts if available
+        let telegramUsername: string | null = null;
+        if (experienceData.contacts) {
+          console.log(`🔍 Извлечение Telegram username из контактов...`);
+          telegramUsername = await extractTelegramUsername(
+            experienceData.contacts,
+          );
+          if (telegramUsername) {
+            console.log(`✅ Найден Telegram username: @${telegramUsername}`);
+          } else {
+            console.log(`ℹ️ Telegram username не найден в контактах`);
+          }
+        }
+
         await updateResponseDetails({
           vacancyId,
           resumeId,
@@ -163,6 +178,7 @@ export async function runEnricher(userId: string) {
           about: experienceData.about,
           education: experienceData.education,
           courses: experienceData.courses,
+          telegramUsername,
         });
 
         console.log(`✅ Данные обновлены для: ${candidateName}`);
