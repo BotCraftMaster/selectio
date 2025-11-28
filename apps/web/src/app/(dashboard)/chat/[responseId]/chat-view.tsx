@@ -266,19 +266,30 @@ export function ChatView({ conversationId }: { conversationId: string }) {
                 {responseData.screening.score !== null && (
                   <div>
                     <p className="text-xs text-muted-foreground mb-1">Оценка</p>
-                    <div className="flex items-center gap-2">
-                      <div className="flex-1 bg-muted rounded-full h-2">
-                        <div
-                          className="bg-teal-500 h-2 rounded-full"
-                          style={{
-                            width: `${responseData.screening.score}%`,
-                          }}
-                        />
-                      </div>
-                      <span className="text-sm font-semibold">
-                        {responseData.screening.score}%
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-2xl font-bold text-teal-600">
+                        {responseData.screening.score}
+                      </span>
+                      <span className="text-sm text-muted-foreground">
+                        из 5
                       </span>
                     </div>
+                    {responseData.screening.detailedScore !== null &&
+                      responseData.screening.detailedScore !== undefined && (
+                        <div className="flex items-center gap-2">
+                          <div className="flex-1 bg-muted rounded-full h-2">
+                            <div
+                              className="bg-teal-500 h-2 rounded-full transition-all"
+                              style={{
+                                width: `${responseData.screening.detailedScore}%`,
+                              }}
+                            />
+                          </div>
+                          <span className="text-sm font-semibold">
+                            {responseData.screening.detailedScore}%
+                          </span>
+                        </div>
+                      )}
                   </div>
                 )}
                 {responseData.screening.analysis && (
