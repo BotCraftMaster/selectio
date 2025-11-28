@@ -16,11 +16,13 @@ import {
   IconSend,
   IconStar,
 } from "@tabler/icons-react";
-import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
-import { triggerRefreshSingleResume } from "~/actions/trigger";
-import { useTRPC } from "~/trpc/react";
+import {
+  triggerRefreshSingleResume,
+  triggerScreenResponse,
+  triggerSendWelcome,
+} from "~/actions/trigger";
 
 interface ResponseActionsProps {
   responseId: string;
@@ -35,36 +37,26 @@ export function ResponseActions({
   resumeUrl,
   candidateName,
   telegramUsername,
-  hasGreeting = false,
 }: ResponseActionsProps) {
-  const trpc = useTRPC();
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isSendingWelcome, setIsSendingWelcome] = useState(false);
+  const [isRating, setIsRating] = useState(false);
 
-  const sendByUsernameMutation = useMutation(
-    trpc.vacancy.responses.sendByUsername.mutationOptions({
-      onSuccess: () => {
-        toast.success("Сообщение отправлено в Telegram!");
-      },
-      onError: (error: unknown) => {
-        console.error("Ошибка отправки сообщения:", error);
-        toast.error("Ошибка отправки сообщения");
-      },
-    }),
-  );
-
-  const handleRate = () => {
-    console.log("Оценить кандидата:", responseId);
-  };
-
-  const handleSendGreeting = () => {
-    if (!telegramUsername) {
-      toast.error("У кандидата не указан Telegram username");
-      return;
+  const handleRate = async () => {
+    setIsRating(true);
+    try {
+      const result = await triggerScreenResponse(responseId);
+      if (!result.success) {
+        toast.error("Не удалось запустить оценку");
+        return;
+      }
+      toast.success("Оценка кандидата запущена");
+    } catch (error) {
+      console.error("Ошибка оценки кандидата:", error);
+      toast.error("Ошибка оценки кандидата");
+    } finally {
+      setIsRating(false);
     }
-    sendByUsernameMutation.mutate({
-      responseId,
-      username: telegramUsername,
-    });
   };
 
   const handleOpenResume = () => {
@@ -93,6 +85,28 @@ export function ResponseActions({
     }
   };
 
+  const handleSendWelcomeMessage = async () => {
+    if (!telegramUsername) {
+      toast.error("У кандидата не указан Telegram username");
+      return;
+    }
+
+    setIsSendingWelcome(true);
+    try {
+      const result = await triggerSendWelcome(responseId, telegramUsername);
+      if (!result.success) {
+        toast.error("Не удалось отправить приветствие");
+        return;
+      }
+      toast.success("Приветствие отправлено");
+    } catch (error) {
+      console.error("Ошибка отправки приветствия:", error);
+      toast.error("Ошибка отправки приветствия");
+    } finally {
+      setIsSendingWelcome(false);
+    }
+  };
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -101,22 +115,18 @@ export function ResponseActions({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={handleRate}>
+        <DropdownMenuItem onClick={handleRate} disabled={isRating}>
           <IconStar className="h-4 w-4" />
-          Оценить кандидата
+          {isRating ? "Оценка..." : "Оценить кандидата"}
         </DropdownMenuItem>
 
-        {hasGreeting && (
-          <DropdownMenuItem
-            onClick={handleSendGreeting}
-            disabled={sendByUsernameMutation.isPending}
-          >
-            <IconSend className="h-4 w-4" />
-            {sendByUsernameMutation.isPending
-              ? "Отправка..."
-              : "Отправить в Telegram"}
-          </DropdownMenuItem>
-        )}
+        <DropdownMenuItem
+          onClick={handleSendWelcomeMessage}
+          disabled={isSendingWelcome || !telegramUsername}
+        >
+          <IconSend className="h-4 w-4" />
+          {isSendingWelcome ? "Отправка..." : "Отправить приветствие"}
+        </DropdownMenuItem>
 
         <DropdownMenuItem onClick={handleOpenChat}>
           <IconMessage className="h-4 w-4" />

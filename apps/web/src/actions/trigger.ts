@@ -168,3 +168,20 @@ export async function triggerRefreshSingleResume(responseId: string) {
     return { success: false as const, error: "Failed to trigger refresh" };
   }
 }
+
+export async function triggerSendWelcome(responseId: string, username: string) {
+  try {
+    const { inngest } = await import("@selectio/jobs/client");
+    await inngest.send({
+      name: "candidate/welcome",
+      data: {
+        responseId,
+        username,
+      },
+    });
+    return { success: true as const };
+  } catch (error) {
+    console.error("Failed to trigger send-welcome:", error);
+    return { success: false as const, error: "Failed to trigger welcome" };
+  }
+}
