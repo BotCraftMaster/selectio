@@ -1,10 +1,9 @@
 "use client";
 
-import { Avatar, AvatarFallback, AvatarImage } from "@selectio/ui";
-import { cn } from "@selectio/ui";
-import { Bot, User, Shield, Check } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage, cn } from "@selectio/ui";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
+import { Bot, Check, Shield, User } from "lucide-react";
 
 export type MessageSender = "bot" | "candidate" | "admin";
 
@@ -12,6 +11,9 @@ export interface ChatMessageProps {
   id: string;
   sender: MessageSender;
   content: string;
+  contentType?: "TEXT" | "VOICE";
+  fileUrl?: string | null;
+  voiceDuration?: string | null;
   timestamp: Date;
   senderName?: string;
   avatarUrl?: string;
@@ -38,6 +40,9 @@ const senderConfig = {
 export function ChatMessage({
   sender,
   content,
+  contentType = "TEXT",
+  fileUrl,
+  voiceDuration,
   timestamp,
   senderName,
   avatarUrl,
@@ -45,6 +50,7 @@ export function ChatMessage({
   const config = senderConfig[sender];
   const Icon = config.icon;
   const isOutgoing = config.align === "right";
+  const isVoice = contentType === "VOICE";
 
   return (
     <div
@@ -87,9 +93,34 @@ export function ChatMessage({
               : "bg-white dark:bg-gray-800 rounded-tl-sm",
           )}
         >
-          <p className="text-[15px] leading-[1.4] whitespace-pre-wrap break-words">
-            {content}
-          </p>
+          {isVoice && fileUrl ? (
+            <div className="flex items-center gap-2 min-w-[200px]">
+              <audio
+                controls
+                className="w-full"
+                preload="metadata"
+                style={{
+                  height: "32px",
+                  filter: isOutgoing
+                    ? "invert(1) brightness(1.2)"
+                    : "brightness(0.9)",
+                }}
+              >
+                <source src={fileUrl} type="audio/ogg; codecs=opus" />
+                <track kind="captions" />
+                Ваш браузер не поддерживает аудио
+              </audio>
+              {voiceDuration && (
+                <span className="text-xs opacity-70 whitespace-nowrap">
+                  {voiceDuration}
+                </span>
+              )}
+            </div>
+          ) : (
+            <p className="text-[15px] leading-[1.4] whitespace-pre-wrap break-all">
+              {content}
+            </p>
+          )}
 
           {/* Time and status */}
           <div

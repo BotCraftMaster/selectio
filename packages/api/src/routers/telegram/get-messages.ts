@@ -1,6 +1,6 @@
+import { db, telegramMessage } from "@selectio/db";
 import { desc, eq } from "drizzle-orm";
 import { z } from "zod/v4";
-import { db, telegramMessage } from "@selectio/db";
 import { createTRPCRouter, protectedProcedure } from "../../trpc";
 
 export const getMessagesRouter = createTRPCRouter({
@@ -15,7 +15,26 @@ export const getMessagesRouter = createTRPCRouter({
         },
       });
 
-      return messages;
+      // Генерируем presigned URLs для файлов
+      const { getDownloadUrl } = await import("@selectio/lib");
+
+      const messagesWithUrls = await Promise.all(
+        messages.map(async (msg) => {
+          if (msg.file?.key) {
+            const fileUrl = await getDownloadUrl(msg.file.key);
+            return {
+              ...msg,
+              fileUrl,
+            };
+          }
+          return {
+            ...msg,
+            fileUrl: null,
+          };
+        }),
+      );
+
+      return messagesWithUrls;
     }),
 
   getRecent: protectedProcedure

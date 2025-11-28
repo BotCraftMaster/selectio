@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
 import { Button, Input, ScrollArea } from "@selectio/ui";
-import { Send } from "lucide-react";
-import { useTRPC } from "~/trpc/react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
+import { Send } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { useTRPC } from "~/trpc/react";
 
 export function ChatView({ conversationId }: { conversationId: string }) {
   const trpc = useTRPC();
@@ -153,6 +153,11 @@ export function ChatView({ conversationId }: { conversationId: string }) {
                   ? "text-blue-100"
                   : "text-muted-foreground";
 
+              const isVoice = msg.contentType === "VOICE";
+              const fileUrl =
+                (msg as typeof msg & { fileUrl?: string | null }).fileUrl ||
+                null;
+
               return (
                 <div
                   key={msg.id}
@@ -164,7 +169,36 @@ export function ChatView({ conversationId }: { conversationId: string }) {
                     <p className="text-xs font-semibold mb-1 opacity-80">
                       {senderLabel}
                     </p>
-                    <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                    {isVoice && fileUrl ? (
+                      <div className="flex items-center gap-2 min-w-[200px]">
+                        <audio
+                          controls
+                          className="w-full"
+                          preload="metadata"
+                          style={{
+                            height: "32px",
+                            filter: isAdmin
+                              ? "invert(1) brightness(1.2)"
+                              : isBot
+                                ? "invert(1) brightness(1.2)"
+                                : "brightness(0.9)",
+                          }}
+                        >
+                          <source src={fileUrl} type="audio/ogg; codecs=opus" />
+                          <track kind="captions" />
+                          Ваш браузер не поддерживает аудио
+                        </audio>
+                        {msg.voiceDuration && (
+                          <span className="text-xs opacity-70 whitespace-nowrap">
+                            {msg.voiceDuration}
+                          </span>
+                        )}
+                      </div>
+                    ) : (
+                      <p className="text-sm whitespace-pre-wrap">
+                        {msg.content}
+                      </p>
+                    )}
                     <p className={`text-xs mt-1 ${timeColor}`}>
                       {format(msg.createdAt, "HH:mm", { locale: ru })}
                     </p>
