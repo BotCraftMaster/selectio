@@ -12,13 +12,13 @@ export type ResponseStatus =
   (typeof RESPONSE_STATUS)[keyof typeof RESPONSE_STATUS];
 
 export const RESPONSE_STATUS_LABELS: Record<ResponseStatus, string> = {
-  [RESPONSE_STATUS.NEW]: "🟡 НОВЫЙ",
-  [RESPONSE_STATUS.EVALUATED]: "🔵 ОЦЕНЕНО",
-  [RESPONSE_STATUS.DIALOG_APPROVED]: "🟠 ДИАЛОГ УТВЕРЖДЕН",
-  [RESPONSE_STATUS.INTERVIEW_HH]: "🟣 СОБЕСЕДОВАНИЕ HH.ru",
-  [RESPONSE_STATUS.INTERVIEW_WHATSAPP]: "🟣 СОБЕСЕДОВАНИЕ Ватсап",
-  [RESPONSE_STATUS.COMPLETED]: "🟢 ЗАВЕРШЕНО",
-  [RESPONSE_STATUS.SKIPPED]: "🔴 ПРОПУЩЕНО",
+  [RESPONSE_STATUS.NEW]: "Новый",
+  [RESPONSE_STATUS.EVALUATED]: "Оценено",
+  [RESPONSE_STATUS.DIALOG_APPROVED]: "Диалог утвержден",
+  [RESPONSE_STATUS.INTERVIEW_HH]: "Собеседование HH.ru",
+  [RESPONSE_STATUS.INTERVIEW_WHATSAPP]: "Собеседование Ватсап",
+  [RESPONSE_STATUS.COMPLETED]: "Завершено",
+  [RESPONSE_STATUS.SKIPPED]: "Пропущено",
 };
 
 export const RESPONSE_STATUS_DESCRIPTIONS: Record<ResponseStatus, string> = {
@@ -45,10 +45,10 @@ export type HrSelectionStatus =
   (typeof HR_SELECTION_STATUS)[keyof typeof HR_SELECTION_STATUS];
 
 export const HR_SELECTION_STATUS_LABELS: Record<HrSelectionStatus, string> = {
-  [HR_SELECTION_STATUS.INVITE]: "✅ ПРИГЛАСИТЬ",
-  [HR_SELECTION_STATUS.RECOMMENDED]: "🤔 РЕКОМЕНДОВАНО",
-  [HR_SELECTION_STATUS.NOT_RECOMMENDED]: "⚠️ НЕ РЕКОМЕНДОВАНО",
-  [HR_SELECTION_STATUS.REJECTED]: "🛑 ОТКЛОНЕНО",
+  [HR_SELECTION_STATUS.INVITE]: "Пригласить",
+  [HR_SELECTION_STATUS.RECOMMENDED]: "Рекомендовано",
+  [HR_SELECTION_STATUS.NOT_RECOMMENDED]: "Не рекомендовано",
+  [HR_SELECTION_STATUS.REJECTED]: "Отклонено",
 };
 
 export const HR_SELECTION_STATUS_DESCRIPTIONS: Record<

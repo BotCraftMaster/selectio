@@ -78,7 +78,20 @@ export function ResponseRow({
         </div>
       </TableCell>
       <TableCell>
-        <Badge variant="outline" className="whitespace-nowrap">
+        <Badge
+          variant={
+            response.status === "NEW"
+              ? "default"
+              : response.status === "EVALUATED"
+                ? "secondary"
+                : response.status === "COMPLETED"
+                  ? "default"
+                  : response.status === "SKIPPED"
+                    ? "destructive"
+                    : "outline"
+          }
+          className="whitespace-nowrap"
+        >
           {RESPONSE_STATUS_LABELS[response.status]}
         </Badge>
       </TableCell>
@@ -86,7 +99,9 @@ export function ResponseRow({
         {response.screening ? (
           <ScreeningHoverCard screening={response.screening} />
         ) : (
-          <span className="text-muted-foreground text-sm">—</span>
+          <Badge variant="outline" className="text-muted-foreground">
+            Не оценен
+          </Badge>
         )}
       </TableCell>
       <TableCell>

@@ -38,24 +38,28 @@ export function ScreeningHoverCard({ screening }: ScreeningHoverCardProps) {
     ? (screening.questions as string[])
     : [];
 
+  const getScoreBadgeVariant = (score: number) => {
+    if (score >= 4) return "default";
+    if (score >= 3) return "secondary";
+    return "destructive";
+  };
+
   return (
     <HoverCard>
       <HoverCardTrigger asChild>
         <button
           type="button"
-          className="flex items-center gap-2 hover:opacity-80 transition-opacity cursor-pointer"
+          className="inline-flex items-center gap-2 hover:opacity-80 transition-opacity cursor-pointer"
         >
-          <div className="flex items-center gap-2">
-            <span
-              className={`text-lg font-bold ${getScoreColor(screening.score)}`}
-            >
-              {screening.score}/5
-            </span>
-            <span className="text-sm font-bold text-primary">
-              ({screening.detailedScore}/100)
-            </span>
-          </div>
-          <Info className="h-4 w-4 text-muted-foreground" />
+          <Badge
+            variant={getScoreBadgeVariant(screening.score)}
+            className="gap-1.5 font-semibold"
+          >
+            <span>{screening.score}/5</span>
+            <span className="opacity-70">·</span>
+            <span className="font-normal">{screening.detailedScore}/100</span>
+          </Badge>
+          <Info className="h-3.5 w-3.5 text-muted-foreground" />
         </button>
       </HoverCardTrigger>
       <HoverCardContent className="w-96" side="left">
