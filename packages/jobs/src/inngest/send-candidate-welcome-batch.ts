@@ -1,5 +1,5 @@
-import { db } from "@selectio/db";
-import { telegramConversation } from "@selectio/db/schema";
+import { db, eq } from "@selectio/db";
+import { telegramConversation, vacancyResponse } from "@selectio/db/schema";
 import { sendMessageByUsername } from "@selectio/telegram-bot";
 import { generateWelcomeMessage } from "../services/candidate-welcome-service";
 import { inngest } from "./client";
@@ -102,6 +102,14 @@ export const sendCandidateWelcomeBatchFunction = inngest.createFunction(
                   },
                 });
             }
+
+            // Обновляем статус отправки приветствия
+            await db
+              .update(vacancyResponse)
+              .set({
+                welcomeSentAt: new Date(),
+              })
+              .where(eq(vacancyResponse.id, response.id));
 
             console.log(
               `✅ Приветствие отправлено: ${response.id} (@${response.telegramUsername})`,

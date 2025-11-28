@@ -22,6 +22,7 @@ export interface VacancyResponse {
   contacts: unknown;
   createdAt: Date;
   updatedAt: Date;
+  welcomeSentAt?: Date | null;
   screening?: {
     score: number;
     detailedScore: number;

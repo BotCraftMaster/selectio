@@ -310,6 +310,13 @@ export function ResponseTable({ responses, vacancyId }: ResponseTableProps) {
       );
 
       setSelectedIds(new Set());
+
+      // Обновляем данные через некоторое время
+      setTimeout(() => {
+        void queryClient.invalidateQueries(
+          trpc.vacancy.responses.list.pathFilter(),
+        );
+      }, 3000);
     } finally {
       setIsSendingWelcome(false);
     }

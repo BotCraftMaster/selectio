@@ -4,8 +4,17 @@ import {
   HR_SELECTION_STATUS_LABELS,
   RESPONSE_STATUS_LABELS,
 } from "@selectio/db/schema";
-import { Badge, Checkbox, TableCell, TableRow } from "@selectio/ui";
-import { User } from "lucide-react";
+import {
+  Badge,
+  Checkbox,
+  TableCell,
+  TableRow,
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@selectio/ui";
+import { Send, User } from "lucide-react";
 import { ResponseActions } from "~/components/response";
 import type { VacancyResponse } from "~/types/vacancy";
 import { ContactInfo } from "./contact-info";
@@ -43,8 +52,27 @@ export function ResponseRow({
             <User className="h-5 w-5 text-primary" />
           </div>
           <div>
-            <div className="font-medium">
+            <div className="font-medium flex items-center gap-2">
               {response.candidateName || "Без имени"}
+              {response.welcomeSentAt && (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="rounded-full bg-green-100 p-1">
+                        <Send className="h-3 w-3 text-green-600" />
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Приветствие отправлено</p>
+                      <p className="text-xs text-muted-foreground">
+                        {new Date(response.welcomeSentAt).toLocaleString(
+                          "ru-RU",
+                        )}
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
             </div>
           </div>
         </div>

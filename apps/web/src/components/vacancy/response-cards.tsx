@@ -14,8 +14,12 @@ import {
   HoverCard,
   HoverCardContent,
   HoverCardTrigger,
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
 } from "@selectio/ui";
-import { User } from "lucide-react";
+import { Send, User } from "lucide-react";
 import { ResponseActions } from "~/components/response";
 import type { VacancyResponse } from "~/types/vacancy";
 import { ContactInfo } from "./contact-info";
@@ -36,8 +40,27 @@ export function ResponseCards({ responses }: ResponseCardsProps) {
                   <User className="h-6 w-6 text-primary" />
                 </div>
                 <div>
-                  <CardTitle className="text-base">
+                  <CardTitle className="text-base flex items-center gap-2">
                     {response.candidateName || "Без имени"}
+                    {response.welcomeSentAt && (
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <div className="rounded-full bg-green-100 p-1">
+                              <Send className="h-3 w-3 text-green-600" />
+                            </div>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Приветствие отправлено</p>
+                            <p className="text-xs text-muted-foreground">
+                              {new Date(response.welcomeSentAt).toLocaleString(
+                                "ru-RU",
+                              )}
+                            </p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    )}
                   </CardTitle>
                   <CardDescription className="text-xs">
                     {new Date(response.createdAt).toLocaleDateString("ru-RU")}
