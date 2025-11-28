@@ -6,11 +6,12 @@ import {
 } from "../../services/response-service";
 import type { ResponseData } from "../types";
 import { HH_CONFIG } from "./config";
-import { humanDelay, humanScroll, randomDelay } from "./human-behavior";
+import { humanScroll } from "./human-behavior";
 import { parseResumeExperience } from "./resume-parser";
 
 interface ResponseWithId extends ResponseData {
   resumeId: string;
+  respondedAt?: Date;
 }
 
 export async function parseResponses(
@@ -18,13 +19,11 @@ export async function parseResponses(
   url: string,
   vacancyId: string,
 ): Promise<ResponseData[]> {
-  // Извлекаем vacancyId из URL если он там есть
   const urlObj = new URL(url, HH_CONFIG.urls.baseUrl);
   const urlVacancyId = urlObj.searchParams.get("vacancyId") || vacancyId;
 
   console.log(`🚀 Начинаем парсинг откликов для вакансии ${urlVacancyId}`);
 
-  // ЭТАП 1: Собираем отклики со всех страниц и сразу сохраняем в базу
   console.log("\n📋 ЭТАП 1: Сбор откликов и сохранение в базу...");
   const allResponses = await collectAndSaveResponses(
     page,
@@ -39,7 +38,6 @@ export async function parseResponses(
 
   console.log(`✅ Всего обработано откликов: ${allResponses.length}`);
 
-  // ЭТАП 2: Определяем отклики без детальной информации
   console.log("\n🔍 ЭТАП 2: Поиск откликов без детальной информации...");
   const responsesNeedingDetails =
     await filterResponsesNeedingDetails(allResponses);
@@ -53,7 +51,6 @@ export async function parseResponses(
     return allResponses;
   }
 
-  // ЭТАП 3: Парсим детальную информацию резюме
   console.log("\n📊 ЭТАП 3: Парсинг детальной информации резюме...");
   await parseResponseDetails(page, responsesNeedingDetails, vacancyId);
 
@@ -64,9 +61,39 @@ export async function parseResponses(
   return allResponses;
 }
 
-/**
- * ЭТАП 1: Собирает отклики со всех страниц и сразу сохраняет в базу
- */
+function parseResponseDate(dateStr: string): Date | undefined {
+  if (!dateStr) return undefined;
+
+  const currentYear = new Date().getFullYear();
+  const months: Record<string, number> = {
+    января: 0,
+    февраля: 1,
+    марта: 2,
+    апреля: 3,
+    мая: 4,
+    июня: 5,
+    июля: 6,
+    августа: 7,
+    сентября: 8,
+    октября: 9,
+    ноября: 10,
+    декабря: 11,
+  };
+
+  const match = dateStr.match(/(\d+)\s+(\S+)/);
+  if (match) {
+    const day = Number.parseInt(match[1] || "1", 10);
+    const monthName = match[2]?.toLowerCase() || "";
+    const month = months[monthName];
+
+    if (month !== undefined) {
+      return new Date(currentYear, month, day);
+    }
+  }
+
+  return undefined;
+}
+
 async function collectAndSaveResponses(
   page: Page,
   vacancyId: string,
@@ -92,7 +119,6 @@ async function collectAndSaveResponses(
       break;
     }
 
-    // Проверяем наличие контейнера с откликами
     const hasResponses = await page
       .waitForSelector('div[data-qa="vacancy-real-responses"]', {
         timeout: HH_CONFIG.timeouts.selector,
@@ -107,10 +133,8 @@ async function collectAndSaveResponses(
       break;
     }
 
-    // Скроллим для подгрузки
     await humanScroll(page);
 
-    // Парсим отклики на странице
     const pageResponses = await page.$$eval(
       'div[data-qa="vacancy-real-responses"] [data-resume-id]',
       (elements: Element[]) => {
@@ -122,7 +146,6 @@ async function collectAndSaveResponses(
           );
           const name = nameEl ? nameEl.textContent?.trim() : "";
 
-          // Извлекаем resumeId из URL
           let resumeId = "";
           if (url) {
             const fullUrl = new URL(url, "https://hh.ru").href;
@@ -130,10 +153,24 @@ async function collectAndSaveResponses(
             resumeId = match?.[1] ?? "";
           }
 
+          let respondedAtStr = "";
+          const dateSpans = el.querySelectorAll("span");
+          for (const span of Array.from(dateSpans)) {
+            const text = span.textContent || "";
+            if (text.includes("Откликнулся")) {
+              const innerSpan = span.querySelector("span");
+              if (innerSpan) {
+                respondedAtStr = innerSpan.textContent?.trim() || "";
+              }
+              break;
+            }
+          }
+
           return {
             name,
             url: url ? new URL(url, "https://hh.ru").href : "",
             resumeId,
+            respondedAtStr,
           };
         });
       },
@@ -148,27 +185,29 @@ async function collectAndSaveResponses(
       `✅ Страница ${currentPage}: найдено ${pageResponses.length} откликов`,
     );
 
-    // Обрабатываем и сохраняем отклики с текущей страницы
     let pageSaved = 0;
     let pageSkipped = 0;
     let pageErrors = 0;
 
     for (const response of pageResponses) {
       if (response.url && response.resumeId) {
+        const respondedAt = parseResponseDate(response.respondedAtStr || "");
+
         const responseWithId: ResponseWithId = {
           ...response,
           resumeId: response.resumeId,
+          respondedAt,
         };
 
         allResponses.push(responseWithId);
 
         try {
-          // Сразу сохраняем в базу
           const saved = await saveBasicResponse(
             vacancyIdForSave,
             response.resumeId,
             response.url,
             response.name,
+            respondedAt,
           );
 
           if (saved) {
@@ -182,7 +221,6 @@ async function collectAndSaveResponses(
             `❌ Ошибка сохранения отклика ${response.name}:`,
             error,
           );
-          // Продолжаем работу со следующим откликом
         }
       } else {
         console.log(`⚠️ Не удалось получить resumeId для: ${response.name}`);
@@ -206,9 +244,6 @@ async function collectAndSaveResponses(
   return allResponses;
 }
 
-/**
- * ЭТАП 2: Фильтрует отклики, которым нужна детальная информация
- */
 async function filterResponsesNeedingDetails(
   responses: ResponseWithId[],
 ): Promise<ResponseWithId[]> {
@@ -224,7 +259,7 @@ async function filterResponsesNeedingDetails(
       if (!hasDetails) {
         responsesNeedingDetails.push(response);
         console.log(
-          `📝 Требуется парсинг ${i + 1}/${responses.length}: ${response.name}`,
+          `� ПТребуется парсинг ${i + 1}/${responses.length}: ${response.name}`,
         );
       } else {
         console.log(
@@ -233,7 +268,6 @@ async function filterResponsesNeedingDetails(
       }
     } catch (error) {
       console.error(`❌ Ошибка проверки деталей для ${response.name}:`, error);
-      // В случае ошибки проверки, добавляем в список для парсинга
       responsesNeedingDetails.push(response);
     }
   }
@@ -241,9 +275,6 @@ async function filterResponsesNeedingDetails(
   return responsesNeedingDetails;
 }
 
-/**
- * ЭТАП 3: Парсит детальную информацию резюме и обновляет записи
- */
 async function parseResponseDetails(
   page: Page,
   responses: ResponseWithId[],
@@ -261,10 +292,8 @@ async function parseResponseDetails(
         `\n📊 Парсинг резюме ${i + 1}/${responses.length}: ${response.name}`,
       );
 
-      // Парсим детальную информацию резюме
       const experienceData = await parseResumeExperience(page, response.url);
 
-      // Обновляем детальную информацию в базе
       await updateResponseDetails({
         vacancyId,
         resumeId: response.resumeId,
@@ -289,7 +318,6 @@ async function parseResponseDetails(
         errorMessage,
       );
 
-      // Пауза после ошибки перед следующей попыткой
       console.log(`⏭️ Переход к следующему резюме...`);
     }
   }

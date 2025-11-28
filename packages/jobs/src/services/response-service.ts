@@ -24,6 +24,7 @@ export async function saveBasicResponse(
   resumeId: string,
   resumeUrl: string,
   candidateName: string,
+  respondedAt?: Date,
 ): Promise<boolean> {
   try {
     const existingResponse = await db.query.vacancyResponse.findFirst({
@@ -43,6 +44,7 @@ export async function saveBasicResponse(
         about: "",
         education: "",
         courses: "",
+        respondedAt,
       });
       console.log(`✅ Базовая информация сохранена: ${candidateName}`);
       return true;

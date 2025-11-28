@@ -46,6 +46,7 @@ export const vacancyResponse = pgTable("vacancy_responses", {
   about: text("about"),
   education: text("education"),
   courses: text("courses"),
+  respondedAt: timestamp("responded_at"),
   welcomeSentAt: timestamp("welcome_sent_at"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at")
@@ -73,6 +74,7 @@ export const CreateVacancyResponseSchema = createInsertSchema(vacancyResponse, {
   hrSelectionStatus: z
     .enum(["INVITE", "RECOMMENDED", "NOT_RECOMMENDED", "REJECTED"])
     .optional(),
+  respondedAt: z.date().optional(),
   welcomeSentAt: z.date().optional(),
 }).omit({
   id: true,
