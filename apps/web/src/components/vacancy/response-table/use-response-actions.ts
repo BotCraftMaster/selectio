@@ -107,10 +107,11 @@ export function useResponseActions(
 
       if (!result.success) {
         console.error("Failed to trigger refresh:", result.error);
+        toast.error("Не удалось запустить обновление откликов");
         return;
       }
 
-      console.log("Запущено обновление откликов для вакансии");
+      toast.success("Обновление откликов запущено");
 
       setTimeout(() => {
         void queryClient.invalidateQueries(

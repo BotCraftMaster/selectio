@@ -54,14 +54,34 @@ export function ResponseTableToolbar({
         />
       </div>
       <div className="flex gap-2">
-        <Button onClick={onRefresh} disabled={isRefreshing} variant="outline">
-          {isRefreshing ? (
-            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-          ) : (
-            <RefreshCw className="h-4 w-4 mr-2" />
-          )}
-          {isRefreshing ? "Обновление..." : "Получить новые отклики"}
-        </Button>
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button disabled={isRefreshing} variant="outline">
+              {isRefreshing ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <RefreshCw className="h-4 w-4 mr-2" />
+              )}
+              {isRefreshing ? "Обновление..." : "Получить новые отклики"}
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Получение новых откликов</AlertDialogTitle>
+              <AlertDialogDescription>
+                Будет запущен процесс получения новых откликов с HeadHunter для
+                этой вакансии. Процесс будет выполняться в фоновом режиме, и
+                новые отклики появятся в таблице автоматически.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Отмена</AlertDialogCancel>
+              <AlertDialogAction onClick={onRefresh}>
+                Получить отклики
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
         <AlertDialog>
           <AlertDialogTrigger asChild>
             <Button disabled={isParsingResumes} variant="outline">
