@@ -52,6 +52,11 @@ export async function generateWelcomeMessage(responseId: string) {
 
   let finalMessage = text.trim();
 
+  // Добавляем ссылку на вакансию
+  if (response.vacancy) {
+    finalMessage += `\n\n🔗 Ссылка на вакансию: https://hh.ru/vacancy/${response.vacancy.id}`;
+  }
+
   // Если есть вопросы из скрининга, добавляем их к сообщению
   if (screening?.questions) {
     const questions = screening.questions as string[];
