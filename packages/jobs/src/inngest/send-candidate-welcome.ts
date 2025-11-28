@@ -2,6 +2,7 @@ import { db, eq } from "@selectio/db";
 import {
   responseScreening,
   telegramConversation,
+  telegramMessage,
   vacancyResponse,
 } from "@selectio/db/schema";
 import { sendMessageByUsername } from "@selectio/telegram-bot";
@@ -108,7 +109,7 @@ export const sendCandidateWelcomeFunction = inngest.createFunction(
 
         const questions = (screening?.questions as string[]) || [];
 
-        await db
+        const [conversation] = await db
           .insert(telegramConversation)
           .values({
             chatId,
@@ -137,9 +138,22 @@ export const sendCandidateWelcomeFunction = inngest.createFunction(
                 questionAnswers: [],
               }),
             },
-          });
+          })
+          .returning();
 
         console.log(`✅ Сохранена беседа с chatId: ${chatId}`);
+
+        // Сохраняем приветственное сообщение в историю
+        if (conversation) {
+          await db.insert(telegramMessage).values({
+            conversationId: conversation.id,
+            sender: "BOT",
+            contentType: "TEXT",
+            content: welcomeMessage,
+          });
+
+          console.log(`✅ Приветственное сообщение сохранено в историю`);
+        }
       });
     }
 

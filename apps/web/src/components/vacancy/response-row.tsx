@@ -77,6 +77,7 @@ export function ResponseRow({
               {response.conversation && (
                 <ChatIndicator
                   messageCount={response.conversation.messages.length}
+                  conversationId={response.conversation.id}
                 />
               )}
             </div>

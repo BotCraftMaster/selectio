@@ -65,6 +65,7 @@ export function ResponseCards({ responses }: ResponseCardsProps) {
                     {response.conversation && (
                       <ChatIndicator
                         messageCount={response.conversation.messages.length}
+                        conversationId={response.conversation.id}
                       />
                     )}
                   </CardTitle>

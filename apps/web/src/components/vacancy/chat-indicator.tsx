@@ -5,24 +5,33 @@ import {
   TooltipTrigger,
 } from "@selectio/ui";
 import { MessageCircle } from "lucide-react";
+import Link from "next/link";
 
 interface ChatIndicatorProps {
   messageCount: number;
+  conversationId: string;
 }
 
-export function ChatIndicator({ messageCount }: ChatIndicatorProps) {
+export function ChatIndicator({
+  messageCount,
+  conversationId,
+}: ChatIndicatorProps) {
   if (messageCount === 0) return null;
 
   return (
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
-          <div className="flex items-center gap-1 rounded-full bg-blue-50 px-2 py-0.5 transition-colors hover:bg-blue-100">
+          <Link
+            href={`/chat/${conversationId}`}
+            className="flex items-center gap-1 rounded-full bg-blue-50 px-2 py-0.5 transition-colors hover:bg-blue-100"
+            onClick={(e) => e.stopPropagation()}
+          >
             <MessageCircle className="h-3 w-3 text-blue-600" />
             <span className="text-xs font-medium text-blue-600">
               {messageCount}
             </span>
-          </div>
+          </Link>
         </TooltipTrigger>
         <TooltipContent>
           <p>Диалог активен</p>

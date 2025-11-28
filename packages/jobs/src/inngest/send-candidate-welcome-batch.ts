@@ -1,5 +1,9 @@
 import { db, eq } from "@selectio/db";
-import { telegramConversation, vacancyResponse } from "@selectio/db/schema";
+import {
+  telegramConversation,
+  telegramMessage,
+  vacancyResponse,
+} from "@selectio/db/schema";
 import { sendMessageByUsername } from "@selectio/telegram-bot";
 import { generateWelcomeMessage } from "../services/candidate-welcome-service";
 import { inngest } from "./client";
@@ -77,7 +81,7 @@ export const sendCandidateWelcomeBatchFunction = inngest.createFunction(
 
             // Сохраняем беседу если получили chatId
             if (sendResult.chatId) {
-              await db
+              const [conversation] = await db
                 .insert(telegramConversation)
                 .values({
                   chatId: sendResult.chatId,
@@ -102,7 +106,18 @@ export const sendCandidateWelcomeBatchFunction = inngest.createFunction(
                       username: response.telegramUsername,
                     }),
                   },
+                })
+                .returning();
+
+              // Сохраняем приветственное сообщение в историю
+              if (conversation) {
+                await db.insert(telegramMessage).values({
+                  conversationId: conversation.id,
+                  sender: "BOT",
+                  contentType: "TEXT",
+                  content: welcomeMessage,
                 });
+              }
             }
 
             // Обновляем статус отправки приветствия

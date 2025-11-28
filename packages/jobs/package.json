@@ -16,7 +16,7 @@
   "scripts": {
     "build": "tsc",
     "clean": "git clean -xdf .cache .turbo dist node_modules",
-    "dev": "bun with-env bun run src/inngest/server.ts",
+    "dev": "bun with-env bun run --watch src/inngest/server.ts",
     "dev:trigger": "bun with-env trigger dev",
     "dev:inngest": "npx inngest-cli@latest dev -u http://localhost:8000/api/inngest",
     "hh:parse": "bun with-env bun run src/hh-response-parser.ts",
