@@ -44,11 +44,18 @@ export const transcribeVoiceFunction = inngest.createFunction(
         // Транскрибируем аудио
         const transcriptionText = await transcribeAudio(fileBuffer);
 
-        console.log("✅ Транскрипция завершена", {
-          messageId,
-          fileId,
-          transcriptionLength: transcriptionText?.length || 0,
-        });
+        if (transcriptionText) {
+          console.log("✅ Транскрипция завершена", {
+            messageId,
+            fileId,
+            transcriptionLength: transcriptionText.length,
+          });
+        } else {
+          console.log("⏭️ Транскрипция пропущена (OPENAI_API_KEY не заполнен)", {
+            messageId,
+            fileId,
+          });
+        }
 
         return transcriptionText;
       } catch (error) {
@@ -61,20 +68,22 @@ export const transcribeVoiceFunction = inngest.createFunction(
       }
     });
 
-    // Обновляем запись сообщения с транскрипцией
-    await step.run("update-message-transcription", async () => {
-      await db
-        .update(telegramMessage)
-        .set({
-          voiceTranscription: transcription,
-        })
-        .where(eq(telegramMessage.id, messageId));
+    // Обновляем запись сообщения с транскрипцией (только если она есть)
+    if (transcription) {
+      await step.run("update-message-transcription", async () => {
+        await db
+          .update(telegramMessage)
+          .set({
+            voiceTranscription: transcription,
+          })
+          .where(eq(telegramMessage.id, messageId));
 
-      console.log("✅ Обновлена транскрипция в БД", {
-        messageId,
-        transcriptionLength: transcription?.length || 0,
+        console.log("✅ Обновлена транскрипция в БД", {
+          messageId,
+          transcriptionLength: transcription.length,
+        });
       });
-    });
+    }
 
     return {
       success: true,

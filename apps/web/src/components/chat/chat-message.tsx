@@ -3,23 +3,31 @@ import { ru } from "date-fns/locale";
 import { VoicePlayer } from "./voice-player";
 
 interface ChatMessageProps {
+  id: string;
   sender: "ADMIN" | "BOT" | "CANDIDATE";
   contentType: string;
   content: string;
   createdAt: Date;
   candidateName: string | null;
   fileUrl?: string | null;
+  fileId?: string | null;
   voiceTranscription?: string | null;
+  onTranscribe?: (messageId: string, fileId: string) => void;
+  isTranscribing?: boolean;
 }
 
 export function ChatMessage({
+  id,
   sender,
   contentType,
   content,
   createdAt,
   candidateName,
   fileUrl,
+  fileId,
   voiceTranscription,
+  onTranscribe,
+  isTranscribing = false,
 }: ChatMessageProps) {
   const isAdmin = sender === "ADMIN";
   const isBot = sender === "BOT";
@@ -55,7 +63,19 @@ export function ChatMessage({
         <p className="text-xs font-semibold mb-1 opacity-80">{senderLabel}</p>
         {isVoice && fileUrl ? (
           <div className="space-y-2">
-            <VoicePlayer src={fileUrl} isOutgoing={isAdmin} />
+            <VoicePlayer
+              src={fileUrl}
+              isOutgoing={isAdmin}
+              messageId={id}
+              fileId={fileId ?? undefined}
+              hasTranscription={!!voiceTranscription}
+              onTranscribe={
+                fileId && onTranscribe
+                  ? () => onTranscribe(id, fileId)
+                  : undefined
+              }
+              isTranscribing={isTranscribing}
+            />
             {voiceTranscription && (
               <div
                 className={`text-xs leading-relaxed pt-2 border-t ${borderColor}`}

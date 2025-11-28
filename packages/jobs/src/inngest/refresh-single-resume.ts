@@ -24,7 +24,7 @@ async function setupBrowser(): Promise<Browser> {
 
 async function setupPage(
   browser: Browser,
-  savedCookies: unknown[] | null,
+  savedCookies: Parameters<Page["setCookie"]> | null,
 ): Promise<Page> {
   const page = await browser.newPage();
 

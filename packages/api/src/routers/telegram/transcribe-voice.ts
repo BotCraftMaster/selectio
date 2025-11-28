@@ -1,0 +1,27 @@
+import { inngest } from "@selectio/jobs/client";
+import { z } from "zod/v4";
+import { createTRPCRouter, protectedProcedure } from "../../trpc";
+
+export const transcribeVoiceRouter = createTRPCRouter({
+  trigger: protectedProcedure
+    .input(
+      z.object({
+        messageId: z.string().uuid(),
+        fileId: z.string().uuid(),
+      }),
+    )
+    .mutation(async ({ input }) => {
+      await inngest.send({
+        name: "telegram/voice.transcribe",
+        data: {
+          messageId: input.messageId,
+          fileId: input.fileId,
+        },
+      });
+
+      return {
+        success: true,
+        messageId: input.messageId,
+      };
+    }),
+});

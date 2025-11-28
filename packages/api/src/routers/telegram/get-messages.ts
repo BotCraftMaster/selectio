@@ -25,11 +25,13 @@ export const getMessagesRouter = createTRPCRouter({
             return {
               ...msg,
               fileUrl,
+              fileId: msg.fileId,
             };
           }
           return {
             ...msg,
             fileUrl: null,
+            fileId: msg.fileId,
           };
         }),
       );

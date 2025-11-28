@@ -1,15 +1,28 @@
 "use client";
 
 import { cn } from "@selectio/ui";
-import { Pause, Play } from "lucide-react";
+import { FileText, Pause, Play } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 interface VoicePlayerProps {
   src: string;
   isOutgoing?: boolean;
+  messageId?: string;
+  fileId?: string;
+  hasTranscription?: boolean;
+  onTranscribe?: () => void;
+  isTranscribing?: boolean;
 }
 
-export function VoicePlayer({ src, isOutgoing = false }: VoicePlayerProps) {
+export function VoicePlayer({
+  src,
+  isOutgoing = false,
+  messageId,
+  fileId,
+  hasTranscription = false,
+  onTranscribe,
+  isTranscribing = false,
+}: VoicePlayerProps) {
   const audioRef = useRef<HTMLAudioElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -53,6 +66,9 @@ export function VoicePlayer({ src, isOutgoing = false }: VoicePlayerProps) {
   };
 
   const progress = totalDuration > 0 ? (currentTime / totalDuration) * 100 : 0;
+
+  const canTranscribe =
+    messageId && fileId && !hasTranscription && onTranscribe;
 
   return (
     <div className="flex items-center gap-2 min-w-[200px]">
@@ -104,6 +120,31 @@ export function VoicePlayer({ src, isOutgoing = false }: VoicePlayerProps) {
           {formatTime(currentTime)} / {formatTime(totalDuration)}
         </span>
       </div>
+
+      {/* Transcribe Button */}
+      {canTranscribe && (
+        <button
+          type="button"
+          onClick={onTranscribe}
+          disabled={isTranscribing}
+          className={cn(
+            "flex items-center justify-center w-8 h-8 rounded-full transition-colors shrink-0",
+            isTranscribing && "opacity-50 cursor-not-allowed",
+            isOutgoing
+              ? "bg-white/20 hover:bg-white/30"
+              : "bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600",
+          )}
+          title="Транскрибировать"
+        >
+          <FileText
+            className={cn(
+              "w-4 h-4",
+              isOutgoing ? "text-white" : "text-black",
+              isTranscribing && "animate-pulse",
+            )}
+          />
+        </button>
+      )}
     </div>
   );
 }

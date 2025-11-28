@@ -1,6 +1,8 @@
 "use client";
 
+import { toast } from "@selectio/ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
 import { ChatError } from "~/components/chat/chat-error";
 import { ChatHeader } from "~/components/chat/chat-header";
 import { ChatInput } from "~/components/chat/chat-input";
@@ -12,6 +14,10 @@ import { useTRPC } from "~/trpc/react";
 export function ChatView({ conversationId }: { conversationId: string }) {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
+  const [transcribingMessageId, setTranscribingMessageId] = useState<
+    string | null
+  >(null);
+  const [toastId, setToastId] = useState<string | number | null>(null);
 
   const conversationQueryOptions =
     trpc.telegram.conversation.getById.queryOptions({
@@ -59,6 +65,40 @@ export function ChatView({ conversationId }: { conversationId: string }) {
     sendMessageMutationOptions,
   );
 
+  const transcribeVoiceMutationOptions =
+    trpc.telegram.transcribeVoice.trigger.mutationOptions({
+      onSuccess: () => {
+        if (toastId) {
+          toast.success("Транскрибация запущена", {
+            id: toastId,
+            description: "Результат появится через несколько секунд",
+          });
+        }
+        queryClient.invalidateQueries({
+          queryKey: [
+            ["telegram", "messages", "getByConversationId"],
+            { input: { conversationId }, type: "query" },
+          ],
+        });
+        setTranscribingMessageId(null);
+        setToastId(null);
+      },
+      onError: (error) => {
+        if (toastId) {
+          toast.error("Ошибка транскрибации", {
+            id: toastId,
+            description: error.message || "Не удалось запустить транскрибацию",
+          });
+        }
+        setTranscribingMessageId(null);
+        setToastId(null);
+      },
+    });
+
+  const { mutate: transcribeVoice } = useMutation(
+    transcribeVoiceMutationOptions,
+  );
+
   const handleSendMessage = (message: string) => {
     if (!message.trim() || !conversationId) return;
 
@@ -68,6 +108,13 @@ export function ChatView({ conversationId }: { conversationId: string }) {
       contentType: "TEXT",
       content: message,
     });
+  };
+
+  const handleTranscribe = (messageId: string, fileId: string) => {
+    setTranscribingMessageId(messageId);
+    const id = toast.loading("Запуск транскрибации...");
+    setToastId(id);
+    transcribeVoice({ messageId, fileId });
   };
 
   if (isPending) {
@@ -89,6 +136,8 @@ export function ChatView({ conversationId }: { conversationId: string }) {
         <ChatMessages
           messages={messages}
           candidateName={currentConversation.candidateName}
+          onTranscribe={handleTranscribe}
+          transcribingMessageId={transcribingMessageId}
         />
 
         <ChatInput onSendMessage={handleSendMessage} isSending={isSending} />
