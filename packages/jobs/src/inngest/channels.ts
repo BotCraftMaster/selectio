@@ -4,5 +4,6 @@
  */
 export {
   refreshVacancyResponsesChannel,
+  screenAllResponsesChannel,
   screenNewResponsesChannel,
 } from "./channels-client";

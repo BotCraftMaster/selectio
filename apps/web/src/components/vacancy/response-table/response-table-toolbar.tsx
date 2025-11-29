@@ -1,14 +1,5 @@
 import { useInngestSubscription } from "@inngest/realtime/hooks";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
   Button,
   Dialog,
   DialogContent,
@@ -20,11 +11,11 @@ import { FileText, Loader2, RefreshCw, Sparkles } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import {
   fetchRefreshVacancyResponsesToken,
+  fetchScreenAllResponsesToken,
   fetchScreenNewResponsesToken,
 } from "~/actions/realtime";
 import { getParseResumesToken } from "~/actions/trigger";
 import { ResponseFilters, type ScreeningFilter } from "~/components/response";
-import { ScreeningProgressDialog } from "../screening-progress-dialog";
 
 // Компонент для подписки на refresh - монтируется только когда нужен
 function RefreshSubscription({
@@ -110,6 +101,31 @@ function ScreenNewSubscription({
   return null;
 }
 
+// Компонент для подписки на screen all - монтируется только когда нужен
+function ScreenAllSubscription({
+  vacancyId,
+  onMessage,
+}: {
+  vacancyId: string;
+  onMessage: (message: string) => void;
+}) {
+  const subscription = useInngestSubscription({
+    refreshToken: () => fetchScreenAllResponsesToken(vacancyId),
+    enabled: true,
+  });
+
+  useEffect(() => {
+    if (subscription.latestData) {
+      const data = subscription.latestData;
+      if (data.kind === "data") {
+        onMessage(JSON.stringify({ topic: data.topic, data: data.data }));
+      }
+    }
+  }, [subscription.latestData, onMessage]);
+
+  return null;
+}
+
 interface ResponseTableToolbarProps {
   vacancyId: string;
   totalResponses: number;
@@ -174,6 +190,20 @@ export function ResponseTableToolbar({
     failed: number;
   } | null>(null);
   const [screenNewSubscriptionActive, setScreenNewSubscriptionActive] =
+    useState(false);
+
+  const [screenAllDialogOpen, setScreenAllDialogOpen] = useState(false);
+  const [screenAllError, setScreenAllError] = useState<string | null>(null);
+  const [screenAllStatus, setScreenAllStatus] = useState<
+    "idle" | "loading" | "success" | "error"
+  >("idle");
+  const [screenAllMessage, setScreenAllMessage] = useState<string>("");
+  const [screenAllProgress, setScreenAllProgress] = useState<{
+    total: number;
+    processed: number;
+    failed: number;
+  } | null>(null);
+  const [screenAllSubscriptionActive, setScreenAllSubscriptionActive] =
     useState(false);
 
   // Обработчик сообщений от refresh подписки
@@ -348,6 +378,89 @@ export function ResponseTableToolbar({
     }
   };
 
+  // Обработчик закрытия диалога screen all
+  const handleScreenAllDialogClose = useCallback(() => {
+    setScreenAllDialogOpen(false);
+    setScreenAllError(null);
+    setScreenAllMessage("");
+    setScreenAllProgress(null);
+    setScreenAllStatus("idle");
+    setScreenAllSubscriptionActive(false);
+    onScreeningDialogClose();
+  }, [onScreeningDialogClose]);
+
+  // Обработчик сообщений от screen all подписки
+  const handleScreenAllMessage = useCallback(
+    (messageStr: string) => {
+      const message = JSON.parse(messageStr) as {
+        topic: string;
+        data: any;
+      };
+
+      if (message.topic === "progress") {
+        const progressData = message.data as {
+          status: string;
+          message: string;
+          total?: number;
+          processed?: number;
+          failed?: number;
+        };
+        setScreenAllMessage(progressData.message);
+        if (progressData.total !== undefined) {
+          setScreenAllProgress({
+            total: progressData.total,
+            processed: progressData.processed || 0,
+            failed: progressData.failed || 0,
+          });
+        }
+      } else if (message.topic === "result") {
+        const resultData = message.data as {
+          success: boolean;
+          total: number;
+          processed: number;
+          failed: number;
+        };
+        setScreenAllProgress({
+          total: resultData.total,
+          processed: resultData.processed,
+          failed: resultData.failed,
+        });
+        if (resultData.success) {
+          setScreenAllStatus("success");
+          setScreenAllMessage(
+            `Оценка завершена! Обработано: ${resultData.processed} из ${resultData.total}`,
+          );
+        } else {
+          setScreenAllStatus("error");
+          setScreenAllError("Процесс завершился с ошибками");
+        }
+
+        // Автоматически закрываем диалог через 3 секунды после завершения
+        setTimeout(() => {
+          handleScreenAllDialogClose();
+        }, 3000);
+      }
+    },
+    [handleScreenAllDialogClose],
+  );
+
+  const handleScreenAllClick = async () => {
+    setScreenAllError(null);
+    setScreenAllMessage("");
+    setScreenAllProgress(null);
+    setScreenAllStatus("loading");
+    setScreenAllSubscriptionActive(true); // Активируем подписку один раз
+
+    try {
+      await onScreenAll();
+    } catch (error) {
+      setScreenAllStatus("error");
+      setScreenAllError(
+        error instanceof Error ? error.message : "Произошла ошибка",
+      );
+    }
+  };
+
   return (
     <>
       {/* Условный рендеринг подписок - монтируются один раз при запуске процесса */}
@@ -364,6 +477,12 @@ export function ResponseTableToolbar({
         <ScreenNewSubscription
           vacancyId={vacancyId}
           onMessage={handleScreenNewMessage}
+        />
+      )}
+      {screenAllSubscriptionActive && (
+        <ScreenAllSubscription
+          vacancyId={vacancyId}
+          onMessage={handleScreenAllMessage}
         />
       )}
 
@@ -676,46 +795,154 @@ export function ResponseTableToolbar({
               </DialogFooter>
             </DialogContent>
           </Dialog>
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button disabled={isProcessingAll} variant="default">
-                {isProcessingAll ? (
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                ) : (
-                  <Sparkles className="h-4 w-4 mr-2" />
+          <Dialog
+            open={screenAllDialogOpen}
+            onOpenChange={(open) => {
+              if (!open && screenAllStatus !== "loading") {
+                handleScreenAllDialogClose();
+              }
+            }}
+          >
+            <Button
+              disabled={isProcessingAll}
+              variant="default"
+              onClick={() => setScreenAllDialogOpen(true)}
+            >
+              {isProcessingAll ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <Sparkles className="h-4 w-4 mr-2" />
+              )}
+              {isProcessingAll
+                ? "Оценка..."
+                : `Оценить всех (${totalResponses})`}
+            </Button>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Оценка всех откликов</DialogTitle>
+                <div>
+                  {screenAllStatus === "idle" && (
+                    <>
+                      Вы собираетесь запустить оценку для {totalResponses}{" "}
+                      {totalResponses === 1
+                        ? "отклика"
+                        : totalResponses < 5
+                          ? "откликов"
+                          : "откликов"}
+                      . Процесс будет выполняться в фоновом режиме, и результаты
+                      появятся в таблице автоматически.
+                    </>
+                  )}
+                  {screenAllStatus === "loading" && (
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        <span>
+                          {screenAllMessage || "Запускаем оценку откликов..."}
+                        </span>
+                      </div>
+                      {screenAllProgress && screenAllProgress.total > 0 && (
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between text-sm">
+                            <span className="text-muted-foreground">
+                              Прогресс:
+                            </span>
+                            <span className="font-medium">
+                              {screenAllProgress.processed} /{" "}
+                              {screenAllProgress.total}
+                            </span>
+                          </div>
+                          <div className="w-full bg-secondary rounded-full h-2">
+                            <div
+                              className="bg-primary h-2 rounded-full transition-all"
+                              style={{
+                                width: `${Math.round((screenAllProgress.processed / screenAllProgress.total) * 100)}%`,
+                              }}
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  {screenAllStatus === "success" && (
+                    <div className="space-y-4">
+                      <div className="text-green-600">
+                        ✓ {screenAllMessage || "Процесс успешно завершен!"}
+                      </div>
+                      {screenAllProgress && (
+                        <div className="grid grid-cols-3 gap-4 p-4 rounded-lg border bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20">
+                          <div className="text-center">
+                            <div className="text-2xl font-bold text-foreground">
+                              {screenAllProgress.total}
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                              Всего
+                            </div>
+                          </div>
+                          <div className="text-center">
+                            <div className="text-2xl font-bold text-green-600">
+                              {screenAllProgress.processed}
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                              Успешно
+                            </div>
+                          </div>
+                          {screenAllProgress.failed > 0 && (
+                            <div className="text-center">
+                              <div className="text-2xl font-bold text-destructive">
+                                {screenAllProgress.failed}
+                              </div>
+                              <div className="text-xs text-muted-foreground">
+                                Ошибок
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  {screenAllStatus === "error" && (
+                    <div className="text-red-600">
+                      ✗ Ошибка:{" "}
+                      {screenAllError || "Не удалось запустить процесс"}
+                    </div>
+                  )}
+                </div>
+              </DialogHeader>
+              <DialogFooter>
+                {screenAllStatus === "idle" && (
+                  <>
+                    <Button
+                      variant="outline"
+                      onClick={handleScreenAllDialogClose}
+                    >
+                      Отмена
+                    </Button>
+                    <Button onClick={handleScreenAllClick}>
+                      Оценить отклики
+                    </Button>
+                  </>
                 )}
-                {isProcessingAll
-                  ? "Запуск оценки..."
-                  : `Оценить всех (${totalResponses})`}
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>
-                  Подтверждение массовой оценки
-                </AlertDialogTitle>
-                <AlertDialogDescription>
-                  Вы собираетесь запустить оценку для {totalResponses}{" "}
-                  {totalResponses === 1
-                    ? "отклика"
-                    : totalResponses < 5
-                      ? "откликов"
-                      : "откликов"}
-                  . Это может занять некоторое время.
-                  <br />
-                  <br />
-                  Процесс будет выполняться в фоновом режиме. Вы можете
-                  продолжать работу, а результаты появятся автоматически.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Отмена</AlertDialogCancel>
-                <AlertDialogAction onClick={onScreenAll}>
-                  Запустить оценку
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+                {screenAllStatus === "loading" && (
+                  <Button disabled>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Выполняется...
+                  </Button>
+                )}
+                {screenAllStatus === "success" && (
+                  <Button onClick={handleScreenAllDialogClose}>Закрыть</Button>
+                )}
+                {screenAllStatus === "error" && (
+                  <Button
+                    variant="destructive"
+                    onClick={handleScreenAllDialogClose}
+                  >
+                    Закрыть
+                  </Button>
+                )}
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
     </>

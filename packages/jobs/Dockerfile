@@ -57,6 +57,10 @@ ENV NODE_ENV=production \
 # Don't run production as root
 RUN addgroup --system --gid 1001 bunjs
 RUN adduser --system --uid 1001 bunjs
+
+# Создаем директорию для MTCute с правами для bunjs
+RUN mkdir -p /tmp/mtcute && chown -R bunjs:bunjs /tmp/mtcute
+
 USER bunjs
 
 COPY --from=installer /app .
