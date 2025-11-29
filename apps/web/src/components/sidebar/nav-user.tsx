@@ -22,6 +22,7 @@ import {
   IconUserCircle,
 } from "@tabler/icons-react";
 import { useRouter } from "next/navigation";
+import { authClient } from "~/auth/client";
 
 function getInitials(name: string): string {
   return name
@@ -46,15 +47,7 @@ export function NavUser({
   const initials = getInitials(user.name);
 
   const handleLogout = async () => {
-    try {
-      await fetch("/api/auth/sign-out", {
-        method: "POST",
-        credentials: "include",
-      });
-      router.push("/auth/login");
-    } catch (error) {
-      console.error("Sign out error:", error);
-    }
+    await authClient.signOut();
   };
 
   return (
