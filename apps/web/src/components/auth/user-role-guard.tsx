@@ -1,0 +1,44 @@
+"use client";
+
+import { useRouter } from "next/navigation";
+import { useEffect, type ReactNode } from "react";
+import { authClient } from "~/auth/client";
+
+interface UserRoleGuardProps {
+  children: ReactNode;
+  allowedRoles: string[];
+  redirectTo?: string;
+}
+
+/**
+ * Компонент для защиты контента на основе роли пользователя
+ * Использует customSession для получения роли из сессии без запроса к БД
+ */
+export function UserRoleGuard({
+  children,
+  allowedRoles,
+  redirectTo = "/access-denied",
+}: UserRoleGuardProps) {
+  const router = useRouter();
+  const { data: session, isPending } = authClient.useSession();
+
+  useEffect(() => {
+    if (!isPending && session) {
+      const userRole = session.role ?? "user";
+      if (!allowedRoles.includes(userRole)) {
+        router.push(redirectTo);
+      }
+    }
+  }, [session, isPending, allowedRoles, redirectTo, router]);
+
+  if (isPending) {
+    return <div>Загрузка...</div>;
+  }
+
+  const userRole = session?.role ?? "user";
+  if (!allowedRoles.includes(userRole)) {
+    return null;
+  }
+
+  return <>{children}</>;
+}

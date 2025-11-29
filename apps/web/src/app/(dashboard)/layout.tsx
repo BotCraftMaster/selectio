@@ -3,7 +3,6 @@ import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
 import { getSession } from "~/auth/server";
 import { AppSidebar } from "~/components/sidebar";
-import { getUserRole } from "~/lib/auth-utils";
 
 export default async function DashboardLayout({
   children,
@@ -16,10 +15,8 @@ export default async function DashboardLayout({
     return <>{children}</>;
   }
 
-  // Проверяем роль пользователя
-  const userRole = await getUserRole(session.user.id);
-
-  if (userRole !== "admin") {
+  // Проверяем роль пользователя из сессии
+  if (session.role !== "admin") {
     redirect("/access-denied");
   }
 

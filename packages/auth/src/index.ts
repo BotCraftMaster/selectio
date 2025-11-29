@@ -1,8 +1,10 @@
 import { db } from "@selectio/db/client";
+import { user } from "@selectio/db/schema";
 import type { BetterAuthOptions, BetterAuthPlugin } from "better-auth";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { emailOTP, oAuthProxy } from "better-auth/plugins";
+import { customSession, emailOTP, oAuthProxy } from "better-auth/plugins";
+import { eq } from "drizzle-orm";
 
 export function initAuth<
   TExtraPlugins extends BetterAuthPlugin[] = [],
@@ -35,6 +37,20 @@ export function initAuth<
             await options.sendEmail(data);
           }
         },
+      }),
+      customSession(async ({ session, user: sessionUser }) => {
+        // Получаем роль пользователя из базы данных
+        const userData = await db
+          .select({ role: user.role })
+          .from(user)
+          .where(eq(user.id, session.userId))
+          .limit(1);
+
+        return {
+          user: sessionUser,
+          session,
+          role: userData[0]?.role ?? "user",
+        };
       }),
       ...(options.extraPlugins ?? []),
     ],

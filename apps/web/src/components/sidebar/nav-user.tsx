@@ -43,7 +43,6 @@ export function NavUser({
   };
 }) {
   const { isMobile } = useSidebar();
-  const router = useRouter();
   const initials = getInitials(user.name);
 
   const handleLogout = async () => {
