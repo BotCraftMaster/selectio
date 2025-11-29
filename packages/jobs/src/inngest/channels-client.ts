@@ -34,3 +34,17 @@ export const screenNewResponsesChannel = channel(
       }),
     ),
   );
+/**
+ * Канал для отслеживания прогресса обновления откликов вакансии
+ */
+export const refreshVacancyResponsesChannel = channel(
+  (vacancyId: string) => `vacancy-responses-refresh:${vacancyId}`,
+).addTopic(
+  topic("status").schema(
+    z.object({
+      status: z.enum(["started", "processing", "completed", "error"]),
+      message: z.string(),
+      vacancyId: z.string(),
+    }),
+  ),
+);

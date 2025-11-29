@@ -30,9 +30,8 @@ export function ScreeningProgressDialog({
 
   // Подписываемся на канал Realtime
   const { data, error } = useInngestSubscription({
-    refreshToken: async () => {
-      return await fetchScreenNewResponsesToken(vacancyId);
-    },
+    refreshToken: () => fetchScreenNewResponsesToken(vacancyId),
+    enabled: isOpen,
   });
 
   // Получаем последнее сообщение

@@ -1,26 +1,34 @@
 "use server";
 
 import { getSubscriptionToken } from "@inngest/realtime";
-import { screenNewResponsesChannel } from "@selectio/jobs/channels";
-import { getSession } from "~/auth/server";
+import {
+  refreshVacancyResponsesChannel,
+  screenNewResponsesChannel,
+} from "@selectio/jobs/channels";
 
 /**
- * Server action для получения токена подписки на Realtime канал
- * Проверяет авторизацию пользователя перед выдачей токена
+ * Server action для получения токена подписки на Realtime канал скрининга
  */
 export async function fetchScreenNewResponsesToken(vacancyId: string) {
-  const session = await getSession();
-
-  if (!session?.user) {
-    throw new Error("Unauthorized");
-  }
-
   const { inngest } = await import("@selectio/jobs/client");
 
-  // Создаем токен для подписки на канал конкретной вакансии
   const token = await getSubscriptionToken(inngest, {
     channel: screenNewResponsesChannel(vacancyId),
     topics: ["progress", "result"],
+  });
+
+  return token;
+}
+
+/**
+ * Server action для получения токена подписки на Realtime канал обновления откликов
+ */
+export async function fetchRefreshVacancyResponsesToken(vacancyId: string) {
+  const { inngest } = await import("@selectio/jobs/client");
+
+  const token = await getSubscriptionToken(inngest, {
+    channel: refreshVacancyResponsesChannel(vacancyId),
+    topics: ["status"],
   });
 
   return token;

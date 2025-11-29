@@ -19,10 +19,8 @@ import {
 } from "@selectio/ui";
 import { FileText, Loader2, RefreshCw, Sparkles } from "lucide-react";
 import { useEffect, useState } from "react";
-import {
-  getParseResumesToken,
-  getRefreshVacancyToken,
-} from "~/actions/trigger";
+import { fetchRefreshVacancyResponsesToken } from "~/actions/realtime";
+import { getParseResumesToken } from "~/actions/trigger";
 import { ResponseFilters, type ScreeningFilter } from "~/components/response";
 import { ScreeningProgressDialog } from "../screening-progress-dialog";
 
@@ -75,10 +73,10 @@ export function ResponseTableToolbar({
 
   // Подписка на статус выполнения refresh
   const refreshSubscription = useInngestSubscription({
-    refreshToken: getRefreshVacancyToken,
+    refreshToken: () => fetchRefreshVacancyResponsesToken(vacancyId),
     enabled: refreshDialogOpen && refreshStatus === "loading",
   });
-
+  console.log(refreshSubscription);
   // Подписка на статус выполнения parse
   const parseSubscription = useInngestSubscription({
     refreshToken: getParseResumesToken,
@@ -136,7 +134,7 @@ export function ResponseTableToolbar({
     setRefreshStatus("loading");
 
     try {
-      await onRefresh();
+      onRefresh();
     } catch (error) {
       setRefreshStatus("error");
       setRefreshError(
@@ -206,7 +204,7 @@ export function ResponseTableToolbar({
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Получение новых откликов</DialogTitle>
-              <DialogDescription>
+              <div>
                 {refreshStatus === "idle" && (
                   <>
                     Будет запущен процесс получения новых откликов с HeadHunter
@@ -234,7 +232,7 @@ export function ResponseTableToolbar({
                     ✗ Ошибка: {refreshError || "Не удалось запустить процесс"}
                   </div>
                 )}
-              </DialogDescription>
+              </div>
             </DialogHeader>
             <DialogFooter>
               {refreshStatus === "idle" && (
@@ -281,7 +279,7 @@ export function ResponseTableToolbar({
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Парсинг резюме новых откликов</DialogTitle>
-              <DialogDescription>
+              <div>
                 {parseStatus === "idle" && (
                   <>
                     Будут распарсены резюме откликов, у которых ещё нет данных
@@ -306,7 +304,7 @@ export function ResponseTableToolbar({
                     ✗ Ошибка: {parseError || "Не удалось запустить процесс"}
                   </div>
                 )}
-              </DialogDescription>
+              </div>
             </DialogHeader>
             <DialogFooter>
               {parseStatus === "idle" && (

@@ -2,15 +2,6 @@
 
 import { getSubscriptionToken } from "@inngest/realtime";
 
-export async function getRefreshVacancyToken() {
-  const { inngest } = await import("@selectio/jobs/client");
-  const token = await getSubscriptionToken(inngest, {
-    channel: "vacancy-responses-refresh",
-    topics: ["status"],
-  });
-  return token;
-}
-
 export async function getParseResumesToken() {
   const { inngest } = await import("@selectio/jobs/client");
   const token = await getSubscriptionToken(inngest, {

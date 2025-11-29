@@ -1,22 +1,9 @@
-import { channel, topic } from "@inngest/realtime";
 import { db } from "@selectio/db/client";
 import { vacancy } from "@selectio/db/schema";
 import { eq } from "drizzle-orm";
-import { z } from "zod";
 import { refreshVacancyResponses } from "../parsers/hh";
+import { refreshVacancyResponsesChannel } from "./channels-client";
 import { inngest } from "./client";
-
-export const refreshVacancyResponsesChannel = channel(
-  "vacancy-responses-refresh",
-).addTopic(
-  topic("status").schema(
-    z.object({
-      status: z.string(),
-      message: z.string(),
-      vacancyId: z.string(),
-    }),
-  ),
-);
 
 /**
  * Inngest функция для обновления откликов конкретной вакансии
@@ -34,7 +21,7 @@ export const refreshVacancyResponsesFunction = inngest.createFunction(
     const { vacancyId } = event.data;
 
     await publish(
-      refreshVacancyResponsesChannel().status({
+      refreshVacancyResponsesChannel(vacancyId).status({
         status: "started",
         message: "Начинаем обновление откликов",
         vacancyId,
@@ -50,7 +37,7 @@ export const refreshVacancyResponsesFunction = inngest.createFunction(
 
       if (!vacancyData) {
         await publish(
-          refreshVacancyResponsesChannel().status({
+          refreshVacancyResponsesChannel(vacancyId).status({
             status: "error",
             message: `Вакансия ${vacancyId} не найдена`,
             vacancyId,
@@ -61,7 +48,7 @@ export const refreshVacancyResponsesFunction = inngest.createFunction(
 
       try {
         await publish(
-          refreshVacancyResponsesChannel().status({
+          refreshVacancyResponsesChannel(vacancyId).status({
             status: "processing",
             message: "Получаем отклики с HeadHunter",
             vacancyId,
@@ -71,7 +58,7 @@ export const refreshVacancyResponsesFunction = inngest.createFunction(
         await refreshVacancyResponses(vacancyId);
 
         await publish(
-          refreshVacancyResponsesChannel().status({
+          refreshVacancyResponsesChannel(vacancyId).status({
             status: "completed",
             message: "Отклики успешно обновлены",
             vacancyId,
@@ -86,7 +73,7 @@ export const refreshVacancyResponsesFunction = inngest.createFunction(
           error,
         );
         await publish(
-          refreshVacancyResponsesChannel().status({
+          refreshVacancyResponsesChannel(vacancyId).status({
             status: "error",
             message:
               error instanceof Error ? error.message : "Неизвестная ошибка",

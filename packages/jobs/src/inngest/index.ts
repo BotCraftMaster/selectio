@@ -20,10 +20,7 @@ export {
   parseNewResumesFunction,
 } from "./parse-new-resumes";
 export { refreshSingleResumeFunction } from "./refresh-single-resume";
-export {
-  refreshVacancyResponsesChannel,
-  refreshVacancyResponsesFunction,
-} from "./refresh-vacancy-responses";
+export { refreshVacancyResponsesFunction } from "./refresh-vacancy-responses";
 export { screenAllResponsesFunction } from "./screen-all-responses";
 export { screenNewResponsesFunction } from "./screen-new-responses";
 export { screenResponseFunction } from "./screen-response";
