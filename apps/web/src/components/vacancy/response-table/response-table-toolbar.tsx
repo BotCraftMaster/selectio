@@ -1,3 +1,4 @@
+import { useInngestSubscription } from "@inngest/realtime/hooks";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -17,7 +18,11 @@ import {
   DialogTitle,
 } from "@selectio/ui";
 import { FileText, Loader2, RefreshCw, Sparkles } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import {
+  getParseResumesToken,
+  getRefreshVacancyToken,
+} from "~/actions/trigger";
 import { ResponseFilters, type ScreeningFilter } from "~/components/response";
 import { ScreeningProgressDialog } from "../screening-progress-dialog";
 
@@ -55,29 +60,83 @@ export function ResponseTableToolbar({
   onScreeningDialogClose,
 }: ResponseTableToolbarProps) {
   const [refreshDialogOpen, setRefreshDialogOpen] = useState(false);
+  const [refreshError, setRefreshError] = useState<string | null>(null);
   const [refreshStatus, setRefreshStatus] = useState<
     "idle" | "loading" | "success" | "error"
   >("idle");
-  const [refreshError, setRefreshError] = useState<string | null>(null);
+  const [refreshMessage, setRefreshMessage] = useState<string>("");
 
   const [parseDialogOpen, setParseDialogOpen] = useState(false);
+  const [parseError, setParseError] = useState<string | null>(null);
   const [parseStatus, setParseStatus] = useState<
     "idle" | "loading" | "success" | "error"
   >("idle");
-  const [parseError, setParseError] = useState<string | null>(null);
+  const [parseMessage, setParseMessage] = useState<string>("");
+
+  // Подписка на статус выполнения refresh
+  const refreshSubscription = useInngestSubscription({
+    refreshToken: getRefreshVacancyToken,
+    enabled: refreshDialogOpen && refreshStatus === "loading",
+  });
+
+  // Подписка на статус выполнения parse
+  const parseSubscription = useInngestSubscription({
+    refreshToken: getParseResumesToken,
+    enabled: parseDialogOpen && parseStatus === "loading",
+  });
+
+  // Обновляем статус на основе данных подписки для refresh
+  useEffect(() => {
+    if (refreshSubscription.latestData) {
+      const data = refreshSubscription.latestData;
+      if (data.kind === "data" && data.topic === "status") {
+        const statusData = data.data as {
+          status: string;
+          message: string;
+          vacancyId?: string;
+        };
+        setRefreshMessage(statusData.message);
+
+        if (statusData.status === "completed") {
+          setRefreshStatus("success");
+        } else if (statusData.status === "error") {
+          setRefreshStatus("error");
+          setRefreshError(statusData.message);
+        }
+      }
+    }
+  }, [refreshSubscription.latestData]);
+
+  // Обновляем статус на основе данных подписки для parse
+  useEffect(() => {
+    if (parseSubscription.latestData) {
+      const data = parseSubscription.latestData;
+      if (data.kind === "data" && data.topic === "status") {
+        const statusData = data.data as {
+          status: string;
+          message: string;
+          total?: number;
+          processed?: number;
+        };
+        setParseMessage(statusData.message);
+
+        if (statusData.status === "completed") {
+          setParseStatus("success");
+        } else if (statusData.status === "error") {
+          setParseStatus("error");
+          setParseError(statusData.message);
+        }
+      }
+    }
+  }, [parseSubscription.latestData]);
 
   const handleRefreshClick = async () => {
-    setRefreshStatus("loading");
     setRefreshError(null);
+    setRefreshMessage("");
+    setRefreshStatus("loading");
 
     try {
       await onRefresh();
-      setRefreshStatus("success");
-
-      setTimeout(() => {
-        setRefreshDialogOpen(false);
-        setRefreshStatus("idle");
-      }, 2000);
     } catch (error) {
       setRefreshStatus("error");
       setRefreshError(
@@ -89,23 +148,19 @@ export function ResponseTableToolbar({
   const handleRefreshDialogClose = () => {
     if (refreshStatus !== "loading") {
       setRefreshDialogOpen(false);
-      setRefreshStatus("idle");
       setRefreshError(null);
+      setRefreshMessage("");
+      setRefreshStatus("idle");
     }
   };
 
   const handleParseClick = async () => {
-    setParseStatus("loading");
     setParseError(null);
+    setParseMessage("");
+    setParseStatus("loading");
 
     try {
       await onParseResumes();
-      setParseStatus("success");
-
-      setTimeout(() => {
-        setParseDialogOpen(false);
-        setParseStatus("idle");
-      }, 2000);
     } catch (error) {
       setParseStatus("error");
       setParseError(
@@ -117,8 +172,9 @@ export function ResponseTableToolbar({
   const handleParseDialogClose = () => {
     if (parseStatus !== "loading") {
       setParseDialogOpen(false);
-      setParseStatus("idle");
       setParseError(null);
+      setParseMessage("");
+      setParseStatus("idle");
     }
   };
 
@@ -161,13 +217,16 @@ export function ResponseTableToolbar({
                 {refreshStatus === "loading" && (
                   <div className="flex items-center gap-2">
                     <Loader2 className="h-4 w-4 animate-spin" />
-                    <span>Запускаем получение откликов...</span>
+                    <span>
+                      {refreshMessage || "Запускаем получение откликов..."}
+                    </span>
                   </div>
                 )}
                 {refreshStatus === "success" && (
                   <div className="text-green-600">
-                    ✓ Процесс успешно запущен! Новые отклики появятся в таблице
-                    автоматически.
+                    ✓{" "}
+                    {refreshMessage ||
+                      "Процесс успешно завершен! Новые отклики появятся в таблице автоматически."}
                   </div>
                 )}
                 {refreshStatus === "error" && (
@@ -189,11 +248,19 @@ export function ResponseTableToolbar({
               {refreshStatus === "loading" && (
                 <Button disabled>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Запуск...
+                  Выполняется...
                 </Button>
               )}
-              {(refreshStatus === "success" || refreshStatus === "error") && (
+              {refreshStatus === "success" && (
                 <Button onClick={handleRefreshDialogClose}>Закрыть</Button>
+              )}
+              {refreshStatus === "error" && (
+                <Button
+                  variant="destructive"
+                  onClick={handleRefreshDialogClose}
+                >
+                  Закрыть
+                </Button>
               )}
             </DialogFooter>
           </DialogContent>
@@ -224,13 +291,14 @@ export function ResponseTableToolbar({
                 {parseStatus === "loading" && (
                   <div className="flex items-center gap-2">
                     <Loader2 className="h-4 w-4 animate-spin" />
-                    <span>Запускаем парсинг резюме...</span>
+                    <span>{parseMessage || "Запускаем парсинг резюме..."}</span>
                   </div>
                 )}
                 {parseStatus === "success" && (
                   <div className="text-green-600">
-                    ✓ Процесс успешно запущен! Данные резюме появятся
-                    автоматически.
+                    ✓{" "}
+                    {parseMessage ||
+                      "Процесс успешно завершен! Данные резюме появятся автоматически."}
                   </div>
                 )}
                 {parseStatus === "error" && (
@@ -252,11 +320,16 @@ export function ResponseTableToolbar({
               {parseStatus === "loading" && (
                 <Button disabled>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Запуск...
+                  Выполняется...
                 </Button>
               )}
-              {(parseStatus === "success" || parseStatus === "error") && (
+              {parseStatus === "success" && (
                 <Button onClick={handleParseDialogClose}>Закрыть</Button>
+              )}
+              {parseStatus === "error" && (
+                <Button variant="destructive" onClick={handleParseDialogClose}>
+                  Закрыть
+                </Button>
               )}
             </DialogFooter>
           </DialogContent>

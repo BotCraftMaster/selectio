@@ -1,8 +1,22 @@
+import { channel, topic } from "@inngest/realtime";
 import { db } from "@selectio/db/client";
 import { vacancy } from "@selectio/db/schema";
 import { eq } from "drizzle-orm";
+import { z } from "zod";
 import { refreshVacancyResponses } from "../parsers/hh";
 import { inngest } from "./client";
+
+export const refreshVacancyResponsesChannel = channel(
+  "vacancy-responses-refresh",
+).addTopic(
+  topic("status").schema(
+    z.object({
+      status: z.string(),
+      message: z.string(),
+      vacancyId: z.string(),
+    }),
+  ),
+);
 
 /**
  * Inngest функция для обновления откликов конкретной вакансии
@@ -16,8 +30,16 @@ export const refreshVacancyResponsesFunction = inngest.createFunction(
     concurrency: 1,
   },
   { event: "vacancy/responses.refresh" },
-  async ({ event, step }) => {
+  async ({ event, step, publish }) => {
     const { vacancyId } = event.data;
+
+    await publish(
+      refreshVacancyResponsesChannel().status({
+        status: "started",
+        message: "Начинаем обновление откликов",
+        vacancyId,
+      }),
+    );
 
     return await step.run("parse-vacancy-responses", async () => {
       console.log(`🚀 Запуск обновления откликов для вакансии ${vacancyId}`);
@@ -27,11 +49,34 @@ export const refreshVacancyResponsesFunction = inngest.createFunction(
       });
 
       if (!vacancyData) {
+        await publish(
+          refreshVacancyResponsesChannel().status({
+            status: "error",
+            message: `Вакансия ${vacancyId} не найдена`,
+            vacancyId,
+          }),
+        );
         throw new Error(`Вакансия ${vacancyId} не найдена`);
       }
 
       try {
+        await publish(
+          refreshVacancyResponsesChannel().status({
+            status: "processing",
+            message: "Получаем отклики с HeadHunter",
+            vacancyId,
+          }),
+        );
+
         await refreshVacancyResponses(vacancyId);
+
+        await publish(
+          refreshVacancyResponsesChannel().status({
+            status: "completed",
+            message: "Отклики успешно обновлены",
+            vacancyId,
+          }),
+        );
 
         console.log(`✅ Отклики для вакансии ${vacancyId} обновлены успешно`);
         return { success: true, vacancyId };
@@ -39,6 +84,14 @@ export const refreshVacancyResponsesFunction = inngest.createFunction(
         console.error(
           `❌ Ошибка при обновлении откликов вакансии ${vacancyId}:`,
           error,
+        );
+        await publish(
+          refreshVacancyResponsesChannel().status({
+            status: "error",
+            message:
+              error instanceof Error ? error.message : "Неизвестная ошибка",
+            vacancyId,
+          }),
         );
         throw error;
       }

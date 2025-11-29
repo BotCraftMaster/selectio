@@ -15,9 +15,15 @@ import { updateVacanciesFunction } from "./update-vacancies";
 export { screenNewResponsesChannel } from "./channels";
 export { inngest } from "./client";
 export { extractVacancyRequirementsFunction } from "./extract-vacancy-requirements";
-export { parseNewResumesFunction } from "./parse-new-resumes";
+export {
+  parseNewResumesChannel,
+  parseNewResumesFunction,
+} from "./parse-new-resumes";
 export { refreshSingleResumeFunction } from "./refresh-single-resume";
-export { refreshVacancyResponsesFunction } from "./refresh-vacancy-responses";
+export {
+  refreshVacancyResponsesChannel,
+  refreshVacancyResponsesFunction,
+} from "./refresh-vacancy-responses";
 export { screenAllResponsesFunction } from "./screen-all-responses";
 export { screenNewResponsesFunction } from "./screen-new-responses";
 export { screenResponseFunction } from "./screen-response";

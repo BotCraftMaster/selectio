@@ -1,5 +1,25 @@
 "use server";
 
+import { getSubscriptionToken } from "@inngest/realtime";
+
+export async function getRefreshVacancyToken() {
+  const { inngest } = await import("@selectio/jobs/client");
+  const token = await getSubscriptionToken(inngest, {
+    channel: "vacancy-responses-refresh",
+    topics: ["status"],
+  });
+  return token;
+}
+
+export async function getParseResumesToken() {
+  const { inngest } = await import("@selectio/jobs/client");
+  const token = await getSubscriptionToken(inngest, {
+    channel: "parse-new-resumes",
+    topics: ["status"],
+  });
+  return token;
+}
+
 export async function triggerScreenResponse(responseId: string) {
   try {
     const { inngest } = await import("@selectio/jobs/client");
@@ -103,7 +123,11 @@ export async function triggerRefreshVacancyResponses(vacancyId: string) {
     return { success: true as const };
   } catch (error) {
     console.error("Failed to trigger refresh-vacancy-responses:", error);
-    return { success: false as const, error: "Failed to trigger refresh" };
+    return {
+      success: false as const,
+      error:
+        error instanceof Error ? error.message : "Failed to trigger refresh",
+    };
   }
 }
 
@@ -149,7 +173,11 @@ export async function triggerParseNewResumes(vacancyId: string) {
     return { success: true as const };
   } catch (error) {
     console.error("Failed to trigger parse-new-resumes:", error);
-    return { success: false as const, error: "Failed to trigger parsing" };
+    return {
+      success: false as const,
+      error:
+        error instanceof Error ? error.message : "Failed to trigger parsing",
+    };
   }
 }
 

@@ -1,7 +1,20 @@
+import { channel, topic } from "@inngest/realtime";
 import { db, inArray } from "@selectio/db";
 import { vacancyResponse } from "@selectio/db/schema";
+import { z } from "zod";
 import { runEnricher } from "../parsers/hh/enricher";
 import { inngest } from "./client";
+
+export const parseNewResumesChannel = channel("parse-new-resumes").addTopic(
+  topic("status").schema(
+    z.object({
+      status: z.string(),
+      message: z.string(),
+      total: z.number(),
+      processed: z.number(),
+    }),
+  ),
+);
 
 /**
  * Inngest функция для парсинга резюме новых откликов (без детальной информации)
@@ -16,8 +29,17 @@ export const parseNewResumesFunction = inngest.createFunction(
     },
   },
   { event: "response/resume.parse-new" },
-  async ({ events, step }) => {
+  async ({ events, step, publish }) => {
     console.log(`🚀 Запуск парсинга резюме для ${events.length} событий`);
+
+    await publish(
+      parseNewResumesChannel().status({
+        status: "started",
+        message: "Начинаем парсинг резюме",
+        total: 0,
+        processed: 0,
+      }),
+    );
 
     const vacancyIds = events.map((evt) => evt.data.vacancyId);
     console.log(`📋 Вакансии для обработки: ${vacancyIds.join(", ")}`);
@@ -45,12 +67,30 @@ export const parseNewResumesFunction = inngest.createFunction(
         );
 
         console.log(`✅ Найдено откликов без деталей: ${results.length}`);
+
+        await publish(
+          parseNewResumesChannel().status({
+            status: "processing",
+            message: `Найдено ${results.length} резюме для парсинга`,
+            total: results.length,
+            processed: 0,
+          }),
+        );
+
         return results;
       },
     );
 
     if (responses.length === 0) {
       console.log("ℹ️ Нет откликов для парсинга");
+      await publish(
+        parseNewResumesChannel().status({
+          status: "completed",
+          message: "Нет новых резюме для парсинга",
+          total: 0,
+          processed: 0,
+        }),
+      );
       return {
         success: true,
         total: 0,
@@ -64,6 +104,15 @@ export const parseNewResumesFunction = inngest.createFunction(
       console.log("🚀 Запуск обогащения данных резюме...");
       await runEnricher();
       console.log("✅ Обогащение завершено");
+
+      await publish(
+        parseNewResumesChannel().status({
+          status: "completed",
+          message: "Парсинг резюме завершен",
+          total: responses.length,
+          processed: responses.length,
+        }),
+      );
     });
 
     return {
