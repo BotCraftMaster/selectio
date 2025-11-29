@@ -25,7 +25,7 @@ jobs:
       - name: Build, tag, and push image
         env:
           CR_REGISTRY: crpb8701utioog2loisu
-          CR_REPOSITORY: jobs
+          CR_REPOSITORY: selectio-jobs
           IMAGE_TAG: ${{ github.sha }}
         run: |
           docker build -f packages/jobs/Dockerfile -t cr.yandex/$CR_REGISTRY/$CR_REPOSITORY:$IMAGE_TAG -t cr.yandex/$CR_REGISTRY/$CR_REPOSITORY:latest .
