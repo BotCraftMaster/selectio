@@ -1,6 +1,5 @@
-import { mkdirSync } from "node:fs";
-import { join } from "node:path";
 import { TelegramClient } from "@mtcute/bun";
+import { MemoryStorage } from "@mtcute/core";
 import { env } from "@selectio/config";
 
 const API_ID = Number.parseInt(env.TELEGRAM_API_ID || "0", 10);
@@ -12,25 +11,11 @@ if (!API_ID || !API_HASH || !BOT_TOKEN) {
   );
 }
 
-// Определяем путь для хранения данных MTCute
-// В k8s используем /tmp, локально - .cache
-const STORAGE_DIR =
-  process.env.NODE_ENV === "production"
-    ? "/tmp/mtcute"
-    : join(process.cwd(), ".cache/mtcute");
-
-// Создаем директорию если её нет
-try {
-  mkdirSync(STORAGE_DIR, { recursive: true });
-} catch (error) {
-  console.warn("⚠️ Не удалось создать директорию для MTCute:", error);
-}
-
 // Создаем клиент для отправки сообщений
 export const tg = new TelegramClient({
   apiId: API_ID,
   apiHash: API_HASH,
-  storage: STORAGE_DIR,
+  storage: new MemoryStorage(),
 });
 
 // Инициализация клиента
