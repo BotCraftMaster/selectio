@@ -7,14 +7,17 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@selectio/ui";
-import { FileText, Loader2, RefreshCw, Sparkles } from "lucide-react";
+import { Contact, FileText, Loader2, RefreshCw, Sparkles } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import {
   fetchRefreshVacancyResponsesToken,
   fetchScreenAllResponsesToken,
   fetchScreenNewResponsesToken,
 } from "~/actions/realtime";
-import { getParseResumesToken } from "~/actions/trigger";
+import {
+  getParseMissingContactsToken,
+  getParseResumesToken,
+} from "~/actions/trigger";
 import { ResponseFilters, type ScreeningFilter } from "~/components/response";
 
 // Компонент для подписки на refresh - монтируется только когда нужен
@@ -55,6 +58,35 @@ function ParseSubscription({
 }) {
   const subscription = useInngestSubscription({
     refreshToken: getParseResumesToken,
+    enabled: true,
+  });
+
+  useEffect(() => {
+    if (subscription.latestData) {
+      const data = subscription.latestData;
+      if (data.kind === "data" && data.topic === "status") {
+        const statusData = data.data as {
+          status: string;
+          message: string;
+          total?: number;
+          processed?: number;
+        };
+        onMessage(JSON.stringify(statusData));
+      }
+    }
+  }, [subscription.latestData, onMessage]);
+
+  return null;
+}
+
+// Компонент для подписки на parse contacts - монтируется только когда нужен
+function ParseContactsSubscription({
+  onMessage,
+}: {
+  onMessage: (message: string) => void;
+}) {
+  const subscription = useInngestSubscription({
+    refreshToken: getParseMissingContactsToken,
     enabled: true,
   });
 
@@ -141,6 +173,7 @@ interface ResponseTableToolbarProps {
   onScreenNew: () => void;
   onScreenAll: () => void;
   onParseResumes: () => void;
+  onParseMissingContacts: () => void;
   onScreeningDialogClose: () => void;
 }
 
@@ -159,6 +192,7 @@ export function ResponseTableToolbar({
   onScreenNew,
   onScreenAll,
   onParseResumes,
+  onParseMissingContacts,
   onScreeningDialogClose,
 }: ResponseTableToolbarProps) {
   const [refreshDialogOpen, setRefreshDialogOpen] = useState(false);
@@ -177,6 +211,17 @@ export function ResponseTableToolbar({
   >("idle");
   const [parseMessage, setParseMessage] = useState<string>("");
   const [parseSubscriptionActive, setParseSubscriptionActive] = useState(false);
+
+  const [parseContactsDialogOpen, setParseContactsDialogOpen] = useState(false);
+  const [parseContactsError, setParseContactsError] = useState<string | null>(
+    null,
+  );
+  const [parseContactsStatus, setParseContactsStatus] = useState<
+    "idle" | "loading" | "success" | "error"
+  >("idle");
+  const [parseContactsMessage, setParseContactsMessage] = useState<string>("");
+  const [parseContactsSubscriptionActive, setParseContactsSubscriptionActive] =
+    useState(false);
 
   const [screenNewDialogOpen, setScreenNewDialogOpen] = useState(false);
   const [screenNewError, setScreenNewError] = useState<string | null>(null);
@@ -240,6 +285,24 @@ export function ResponseTableToolbar({
     } else if (statusData.status === "error") {
       setParseStatus("error");
       setParseError(statusData.message);
+    }
+  };
+
+  // Обработчик сообщений от parse contacts подписки
+  const handleParseContactsMessage = (messageStr: string) => {
+    const statusData = JSON.parse(messageStr) as {
+      status: string;
+      message: string;
+      total?: number;
+      processed?: number;
+    };
+    setParseContactsMessage(statusData.message);
+
+    if (statusData.status === "completed") {
+      setParseContactsStatus("success");
+    } else if (statusData.status === "error") {
+      setParseContactsStatus("error");
+      setParseContactsError(statusData.message);
     }
   };
 
@@ -361,6 +424,32 @@ export function ResponseTableToolbar({
     }
   };
 
+  const handleParseContactsClick = async () => {
+    setParseContactsError(null);
+    setParseContactsMessage("");
+    setParseContactsStatus("loading");
+    setParseContactsSubscriptionActive(true); // Активируем подписку один раз
+
+    try {
+      await onParseMissingContacts();
+    } catch (error) {
+      setParseContactsStatus("error");
+      setParseContactsError(
+        error instanceof Error ? error.message : "Произошла ошибка",
+      );
+    }
+  };
+
+  const handleParseContactsDialogClose = () => {
+    if (parseContactsStatus !== "loading") {
+      setParseContactsDialogOpen(false);
+      setParseContactsError(null);
+      setParseContactsMessage("");
+      setParseContactsStatus("idle");
+      setParseContactsSubscriptionActive(false); // Деактивируем подписку
+    }
+  };
+
   const handleScreenNewClick = async () => {
     setScreenNewError(null);
     setScreenNewMessage("");
@@ -472,6 +561,9 @@ export function ResponseTableToolbar({
       )}
       {parseSubscriptionActive && (
         <ParseSubscription onMessage={handleParseMessage} />
+      )}
+      {parseContactsSubscriptionActive && (
+        <ParseContactsSubscription onMessage={handleParseContactsMessage} />
       )}
       {screenNewSubscriptionActive && (
         <ScreenNewSubscription
@@ -647,6 +739,93 @@ export function ResponseTableToolbar({
                   <Button
                     variant="destructive"
                     onClick={handleParseDialogClose}
+                  >
+                    Закрыть
+                  </Button>
+                )}
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+          <Dialog
+            open={parseContactsDialogOpen}
+            onOpenChange={setParseContactsDialogOpen}
+          >
+            <Button
+              disabled={isParsingResumes}
+              variant="outline"
+              onClick={() => setParseContactsDialogOpen(true)}
+            >
+              {isParsingResumes ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <Contact className="h-4 w-4 mr-2" />
+              )}
+              {isParsingResumes ? "Парсинг..." : "Распарсить контакты"}
+            </Button>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Парсинг контактов откликов</DialogTitle>
+                <div>
+                  {parseContactsStatus === "idle" && (
+                    <>
+                      Будут распарсены контакты откликов, у которых нет Telegram
+                      username или телефона. Процесс будет выполняться в фоновом
+                      режиме.
+                    </>
+                  )}
+                  {parseContactsStatus === "loading" && (
+                    <div className="flex items-center gap-2">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <span>
+                        {parseContactsMessage ||
+                          "Запускаем парсинг контактов..."}
+                      </span>
+                    </div>
+                  )}
+                  {parseContactsStatus === "success" && (
+                    <div className="text-green-600">
+                      ✓{" "}
+                      {parseContactsMessage ||
+                        "Процесс успешно завершен! Контакты появятся автоматически."}
+                    </div>
+                  )}
+                  {parseContactsStatus === "error" && (
+                    <div className="text-red-600">
+                      ✗ Ошибка:{" "}
+                      {parseContactsError || "Не удалось запустить процесс"}
+                    </div>
+                  )}
+                </div>
+              </DialogHeader>
+              <DialogFooter>
+                {parseContactsStatus === "idle" && (
+                  <>
+                    <Button
+                      variant="outline"
+                      onClick={handleParseContactsDialogClose}
+                    >
+                      Отмена
+                    </Button>
+                    <Button onClick={handleParseContactsClick}>
+                      Запустить парсинг
+                    </Button>
+                  </>
+                )}
+                {parseContactsStatus === "loading" && (
+                  <Button disabled>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Выполняется...
+                  </Button>
+                )}
+                {parseContactsStatus === "success" && (
+                  <Button onClick={handleParseContactsDialogClose}>
+                    Закрыть
+                  </Button>
+                )}
+                {parseContactsStatus === "error" && (
+                  <Button
+                    variant="destructive"
+                    onClick={handleParseContactsDialogClose}
                   >
                     Закрыть
                   </Button>

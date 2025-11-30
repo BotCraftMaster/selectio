@@ -3,6 +3,7 @@ import { EventSchemas, Inngest } from "inngest";
 import {
   candidateWelcomeBatchDataSchema,
   candidateWelcomeDataSchema,
+  parseMissingContactsDataSchema,
   parseNewResumesDataSchema,
   refreshSingleResumeDataSchema,
   responseScreenDataSchema,
@@ -29,6 +30,7 @@ export const inngest = new Inngest({
     "response/screen.batch": screenResponsesBatchDataSchema,
     "response/resume.parse-new": parseNewResumesDataSchema,
     "response/resume.refresh": refreshSingleResumeDataSchema,
+    "response/contacts.parse-missing": parseMissingContactsDataSchema,
     "vacancy/update.active": vacancyUpdateActiveDataSchema,
     "vacancy/responses.refresh": vacancyResponsesRefreshDataSchema,
     "candidate/welcome": candidateWelcomeDataSchema,

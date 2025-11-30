@@ -2,6 +2,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
 import {
+  triggerParseMissingContacts,
   triggerParseNewResumes,
   triggerRefreshVacancyResponses,
   triggerScreenAllResponses,
@@ -188,6 +189,32 @@ export function useResponseActions(
     }
   };
 
+  const handleParseMissingContacts = async () => {
+    setIsParsingResumes(true);
+
+    try {
+      const result = await triggerParseMissingContacts(vacancyId);
+
+      if (!result.success) {
+        console.error("Failed to trigger parse contacts:", result.error);
+        setIsParsingResumes(false);
+        return result;
+      }
+
+      setTimeout(() => {
+        void queryClient.invalidateQueries(
+          trpc.vacancy.responses.list.pathFilter(),
+        );
+        setIsParsingResumes(false);
+      }, 3000);
+
+      return result;
+    } catch (error) {
+      setIsParsingResumes(false);
+      throw error;
+    }
+  };
+
   return {
     isProcessing,
     isProcessingAll,
@@ -203,5 +230,6 @@ export function useResponseActions(
     handleRefreshComplete,
     handleSendWelcomeBatch,
     handleParseNewResumes,
+    handleParseMissingContacts,
   };
 }

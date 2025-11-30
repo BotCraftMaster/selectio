@@ -67,6 +67,11 @@ export const refreshSingleResumeDataSchema = z.object({
   responseId: z.string().min(1, "Response ID is required"),
 });
 
+// Schema for parsing missing contacts event data
+export const parseMissingContactsDataSchema = z.object({
+  vacancyId: z.string().min(1, "Vacancy ID is required"),
+});
+
 // Schema for telegram message send event data
 export const telegramMessageSendDataSchema = z.object({
   messageId: z.string().min(1, "Message ID is required"),
@@ -118,6 +123,9 @@ export const inngestEventSchemas = {
   "response/resume.refresh": {
     data: refreshSingleResumeDataSchema,
   },
+  "response/contacts.parse-missing": {
+    data: parseMissingContactsDataSchema,
+  },
   "telegram/message.send": {
     data: telegramMessageSendDataSchema,
   },
@@ -157,6 +165,9 @@ export type ScreenResponsesBatchPayload = z.infer<
 export type ParseNewResumesPayload = z.infer<typeof parseNewResumesDataSchema>;
 export type RefreshSingleResumePayload = z.infer<
   typeof refreshSingleResumeDataSchema
+>;
+export type ParseMissingContactsPayload = z.infer<
+  typeof parseMissingContactsDataSchema
 >;
 export type TelegramMessageSendPayload = z.infer<
   typeof telegramMessageSendDataSchema

@@ -11,6 +11,15 @@ export async function getParseResumesToken() {
   return token;
 }
 
+export async function getParseMissingContactsToken() {
+  const { inngest } = await import("@selectio/jobs/client");
+  const token = await getSubscriptionToken(inngest, {
+    channel: "parse-missing-contacts",
+    topics: ["status"],
+  });
+  return token;
+}
+
 export async function triggerScreenResponse(responseId: string) {
   try {
     const { inngest } = await import("@selectio/jobs/client");
@@ -164,6 +173,26 @@ export async function triggerParseNewResumes(vacancyId: string) {
     return { success: true as const };
   } catch (error) {
     console.error("Failed to trigger parse-new-resumes:", error);
+    return {
+      success: false as const,
+      error:
+        error instanceof Error ? error.message : "Failed to trigger parsing",
+    };
+  }
+}
+
+export async function triggerParseMissingContacts(vacancyId: string) {
+  try {
+    const { inngest } = await import("@selectio/jobs/client");
+    await inngest.send({
+      name: "response/contacts.parse-missing",
+      data: {
+        vacancyId,
+      },
+    });
+    return { success: true as const };
+  } catch (error) {
+    console.error("Failed to trigger parse-missing-contacts:", error);
     return {
       success: false as const,
       error:

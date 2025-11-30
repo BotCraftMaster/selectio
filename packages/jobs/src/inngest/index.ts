@@ -1,4 +1,5 @@
 import { extractVacancyRequirementsFunction } from "./extract-vacancy-requirements";
+import { parseMissingContactsFunction } from "./parse-missing-contacts";
 import { parseNewResumesFunction } from "./parse-new-resumes";
 import { refreshSingleResumeFunction } from "./refresh-single-resume";
 import { refreshVacancyResponsesFunction } from "./refresh-vacancy-responses";
@@ -15,6 +16,10 @@ import { updateVacanciesFunction } from "./update-vacancies";
 export { screenNewResponsesChannel } from "./channels";
 export { inngest } from "./client";
 export { extractVacancyRequirementsFunction } from "./extract-vacancy-requirements";
+export {
+  parseMissingContactsChannel,
+  parseMissingContactsFunction,
+} from "./parse-missing-contacts";
 export {
   parseNewResumesChannel,
   parseNewResumesFunction,
@@ -33,6 +38,7 @@ export { updateVacanciesFunction } from "./update-vacancies";
 
 export const inngestFunctions = [
   extractVacancyRequirementsFunction,
+  parseMissingContactsFunction,
   parseNewResumesFunction,
   refreshSingleResumeFunction,
   refreshVacancyResponsesFunction,

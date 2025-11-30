@@ -61,6 +61,7 @@ export function ResponseTable({ vacancyId, accessToken }: ResponseTableProps) {
     handleRefreshComplete,
     handleSendWelcomeBatch,
     handleParseNewResumes,
+    handleParseMissingContacts,
   } = useResponseActions(vacancyId, selectedIds, setSelectedIds);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: reset selection when filters change
@@ -106,6 +107,7 @@ export function ResponseTable({ vacancyId, accessToken }: ResponseTableProps) {
           onScreenNew={handleScreenNew}
           onScreenAll={handleScreenAll}
           onParseResumes={handleParseNewResumes}
+          onParseMissingContacts={handleParseMissingContacts}
           onScreeningDialogClose={handleScreeningDialogClose}
         />
       )}
