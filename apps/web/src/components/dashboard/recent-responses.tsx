@@ -18,11 +18,9 @@ import { useTRPC } from "~/trpc/react";
 export function RecentResponses() {
   const trpc = useTRPC();
 
-  const { data: responses, isLoading } = useQuery(
-    trpc.vacancy.responses.listAll.queryOptions(),
+  const { data: recentResponses, isLoading } = useQuery(
+    trpc.vacancy.responses.listRecent.queryOptions(),
   );
-
-  const recentResponses = responses?.slice(0, 5) ?? [];
 
   if (isLoading) {
     return (
@@ -53,7 +51,7 @@ export function RecentResponses() {
     );
   }
 
-  if (recentResponses.length === 0) {
+  if (recentResponses?.length === 0)
     return (
       <Card className="@container/card">
         <CardHeader>
@@ -70,7 +68,6 @@ export function RecentResponses() {
         </CardContent>
       </Card>
     );
-  }
 
   return (
     <Card className="@container/card">
@@ -80,7 +77,7 @@ export function RecentResponses() {
       </CardHeader>
       <CardContent>
         <div className="space-y-3">
-          {recentResponses.map((response) => (
+          {recentResponses?.map((response) => (
             <Link
               key={response.id}
               href={`/responses/${response.id}`}
@@ -114,14 +111,6 @@ export function RecentResponses() {
             </Link>
           ))}
         </div>
-        {responses && responses.length > 5 && (
-          <Link
-            href="/responses"
-            className="mt-4 block text-center text-sm text-primary hover:underline"
-          >
-            Показать все отклики
-          </Link>
-        )}
       </CardContent>
     </Card>
   );
