@@ -18,10 +18,10 @@ BEGIN
   uuid_bytes := unix_ts_ms || gen_random_bytes(10);
   
   -- Set version (7) in the 7th byte: 0111xxxx
-  uuid_bytes := set_byte(uuid_bytes, 6, (b'01110000' | (get_byte(uuid_bytes, 6) & b'00001111'))::int);
+  uuid_bytes := set_byte(uuid_bytes, 6, (112 | (get_byte(uuid_bytes, 6) & 15)));
   
   -- Set variant (10) in the 9th byte: 10xxxxxx
-  uuid_bytes := set_byte(uuid_bytes, 8, (b'10000000' | (get_byte(uuid_bytes, 8) & b'00111111'))::int);
+  uuid_bytes := set_byte(uuid_bytes, 8, (128 | (get_byte(uuid_bytes, 8) & 63)));
   
   RETURN encode(uuid_bytes, 'hex')::uuid;
 END
