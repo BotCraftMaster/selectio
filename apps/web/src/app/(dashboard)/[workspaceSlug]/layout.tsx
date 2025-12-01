@@ -8,13 +8,15 @@ export default async function WorkspaceLayout({
   params,
 }: {
   children: ReactNode;
-  params: { workspaceSlug: string };
+  params: Promise<{ workspaceSlug: string }>;
 }) {
   const session = await getSession();
 
   if (!session?.user) {
-    redirect("/auth/signin");
+    redirect("/auth/login");
   }
+
+  const { workspaceSlug } = await params;
 
   // Получаем workspaces пользователя
   const caller = await api();
@@ -22,7 +24,7 @@ export default async function WorkspaceLayout({
 
   // Находим workspace по slug
   const currentWorkspace = userWorkspaces.find(
-    (uw) => uw.workspace.slug === params.workspaceSlug,
+    (uw) => uw.workspace.slug === workspaceSlug,
   );
 
   if (!currentWorkspace) {

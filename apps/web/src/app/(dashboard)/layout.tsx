@@ -13,12 +13,7 @@ export default async function DashboardLayout({
   const session = await getSession();
 
   if (!session?.user) {
-    redirect("/auth/signin");
-  }
-
-  // Проверяем роль пользователя из сессии
-  if (session.role !== "admin") {
-    redirect("/access-denied");
+    redirect("/auth/login");
   }
 
   // Получаем workspaces пользователя
@@ -38,12 +33,6 @@ export default async function DashboardLayout({
     logo: uw.workspace.logo,
     role: uw.role,
   }));
-
-  // Редирект на первый workspace
-  const firstWorkspace = workspaces[0];
-  if (firstWorkspace) {
-    redirect(`/${firstWorkspace.slug}`);
-  }
 
   return (
     <SidebarProvider>

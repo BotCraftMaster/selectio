@@ -1,36 +1,24 @@
+import { redirect } from "next/navigation";
 import { getSession } from "~/auth/server";
-import {
-  ActiveVacancies,
-  DashboardStats,
-  RecentResponses,
-  ResponsesChart,
-  TopResponses,
-} from "~/components/dashboard";
-import { SiteHeader } from "~/components/layout";
+import { api } from "~/trpc/server";
 
 export default async function Page() {
   const session = await getSession();
-  const useSiteHeader = !!session?.user;
-  return (
-    <>
-      {useSiteHeader && <SiteHeader />}
-      <div className="flex flex-1 flex-col">
-        <div className="@container/main flex flex-1 flex-col gap-2">
-          <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
-            <DashboardStats />
-            <div className="grid gap-4 px-4 lg:px-6 md:grid-cols-2">
-              <RecentResponses />
-              <ActiveVacancies />
-            </div>
-            <div className="px-4 lg:px-6">
-              <TopResponses />
-            </div>
-            <div className="px-4 lg:px-6">
-              <ResponsesChart />
-            </div>
-          </div>
-        </div>
-      </div>
-    </>
-  );
+
+  if (!session?.user) {
+    redirect("/auth/login");
+  }
+
+  // Получаем workspaces пользователя
+  const caller = await api();
+  const userWorkspaces = await caller.workspace.list();
+
+  // Редирект на первый workspace
+  const firstWorkspace = userWorkspaces[0];
+  if (firstWorkspace) {
+    redirect(`/${firstWorkspace.workspace.slug}`);
+  }
+
+  // Если нет workspaces, редирект на создание
+  redirect("/onboarding");
 }

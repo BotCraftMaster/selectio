@@ -1,13 +1,15 @@
 import type { ReactNode } from "react";
 import { SettingsSidebar } from "~/components/settings/settings-sidebar";
 
-export default function SettingsLayout({
+export default async function SettingsLayout({
   children,
   params,
 }: {
   children: ReactNode;
-  params: { workspaceSlug: string };
+  params: Promise<{ workspaceSlug: string }>;
 }) {
+  const { workspaceSlug } = await params;
+
   return (
     <div className="space-y-6 p-10 pb-16 max-w-5xl">
       <div className="space-y-1">
@@ -19,7 +21,7 @@ export default function SettingsLayout({
       <div className="flex flex-col gap-6 lg:flex-row">
         <aside className="lg:w-[240px] shrink-0">
           <div className="rounded-lg border p-2">
-            <SettingsSidebar workspaceSlug={params.workspaceSlug} />
+            <SettingsSidebar workspaceSlug={workspaceSlug} />
           </div>
         </aside>
         <div className="flex-1">{children}</div>

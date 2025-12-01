@@ -10,8 +10,9 @@ import { SiteHeader } from "~/components/layout";
 export default async function WorkspacePage({
   params,
 }: {
-  params: { workspaceSlug: string };
+  params: Promise<{ workspaceSlug: string }>;
 }) {
+  await params;
   return (
     <>
       <SiteHeader />

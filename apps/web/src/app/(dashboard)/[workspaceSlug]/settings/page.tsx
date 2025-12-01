@@ -1,9 +1,10 @@
 import { redirect } from "next/navigation";
 
-export default function SettingsPage({
+export default async function SettingsPage({
   params,
 }: {
-  params: { workspaceSlug: string };
+  params: Promise<{ workspaceSlug: string }>;
 }) {
-  redirect(`/${params.workspaceSlug}/settings/profile`);
+  const { workspaceSlug } = await params;
+  redirect(`/${workspaceSlug}/settings/profile`);
 }
