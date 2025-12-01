@@ -20,6 +20,7 @@ export const updateIntegration = protectedProcedure
     }
 
     const updated = await upsertIntegration({
+      workspaceId: integration.workspaceId,
       type: input.type,
       name: input.name ?? integration.name,
       credentials: input.credentials ?? integration.credentials,

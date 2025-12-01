@@ -6,3 +6,4 @@ export * from "./data-table";
 export * from "./login";
 export * from "./otp";
 export * from "./profile";
+export * from "./workspace";

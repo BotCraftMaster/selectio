@@ -3,4 +3,5 @@ export * from "drizzle-orm/sql";
 
 export * from "./client";
 export * from "./repositories/integration";
+export * from "./repositories/workspace.repository";
 export * from "./schema";

@@ -1,10 +1,15 @@
 import { relations } from "drizzle-orm";
 import { telegramConversation } from "../telegram/conversation";
+import { workspace } from "../workspace/workspace";
 import { vacancyResponse } from "./response";
 import { responseScreening } from "./screening";
 import { vacancy } from "./vacancy";
 
-export const vacancyRelations = relations(vacancy, ({ many }) => ({
+export const vacancyRelations = relations(vacancy, ({ one, many }) => ({
+  workspace: one(workspace, {
+    fields: [vacancy.workspaceId],
+    references: [workspace.id],
+  }),
   responses: many(vacancyResponse),
 }));
 

@@ -1,10 +1,16 @@
 import { jsonb, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { workspace } from "../workspace/workspace";
 
 export const integration = pgTable("integrations", {
   id: uuid("id").primaryKey().defaultRandom(),
 
+  // Workspace к которому принадлежит интеграция
+  workspaceId: uuid("workspace_id")
+    .notNull()
+    .references(() => workspace.id, { onDelete: "cascade" }),
+
   // Тип интеграции (hh, linkedin, etc.)
-  type: text("type").notNull().unique(),
+  type: text("type").notNull(),
 
   // Название интеграции (для отображения)
   name: text("name").notNull(),

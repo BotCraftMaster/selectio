@@ -5,6 +5,7 @@ import { protectedProcedure } from "../../trpc";
 export const createIntegration = protectedProcedure
   .input(
     z.object({
+      workspaceId: z.uuid(),
       type: z.string(),
       name: z.string(),
       credentials: z.record(z.string(), z.string()),
@@ -13,6 +14,7 @@ export const createIntegration = protectedProcedure
   )
   .mutation(async ({ input }) => {
     const integration = await upsertIntegration({
+      workspaceId: input.workspaceId,
       type: input.type,
       name: input.name,
       credentials: input.credentials,

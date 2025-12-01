@@ -13,6 +13,7 @@
     "db:push": "turbo -F @selectio/db push",
     "db:studio": "turbo -F @selectio/db studio",
     "db:generate-key": "bun --filter @selectio/db generate-key",
+    "db:migrate-workspaces": "bun --filter @selectio/db migrate-workspaces",
     "dev": "turbo watch dev --continue",
     "dev:next": "turbo watch dev -F @selectio/nextjs...",
     "format": "biome format .",

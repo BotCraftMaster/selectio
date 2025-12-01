@@ -41,7 +41,12 @@ export async function hasVacancyDescription(
 /**
  * Сохраняет базовую информацию о вакансии (без описания)
  */
-export async function saveBasicVacancy(vacancyData: VacancyData) {
+export async function saveBasicVacancy(
+  vacancyData: VacancyData,
+  workspaceId?: string,
+) {
+  // TODO: получать workspaceId из контекста интеграции
+  const wsId = workspaceId || "00000000-0000-0000-0000-000000000000";
   try {
     const existingVacancy = await db.query.vacancy.findFirst({
       where: eq(vacancy.id, vacancyData.id),
@@ -49,6 +54,7 @@ export async function saveBasicVacancy(vacancyData: VacancyData) {
 
     const dataToSave = {
       id: vacancyData.id,
+      workspaceId: wsId,
       title: vacancyData.title,
       url: vacancyData.url || undefined,
       views: Number.parseInt(vacancyData.views, 10) || 0,
@@ -127,7 +133,12 @@ export async function getVacanciesWithoutDescription() {
   }
 }
 
-export async function saveVacancyToDb(vacancyData: VacancyData) {
+export async function saveVacancyToDb(
+  vacancyData: VacancyData,
+  workspaceId?: string,
+) {
+  // TODO: получать workspaceId из контекста интеграции
+  const wsId = workspaceId || "00000000-0000-0000-0000-000000000000";
   try {
     const existingVacancy = await db.query.vacancy.findFirst({
       where: eq(vacancy.id, vacancyData.id),
@@ -135,6 +146,7 @@ export async function saveVacancyToDb(vacancyData: VacancyData) {
 
     const dataToSave = {
       id: vacancyData.id,
+      workspaceId: wsId,
       title: vacancyData.title,
       url: vacancyData.url || undefined,
       views: Number.parseInt(vacancyData.views, 10) || 0,
