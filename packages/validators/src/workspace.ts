@@ -1,5 +1,8 @@
 import { z } from "zod";
 
+// Общая схема для workspaceId
+export const workspaceIdSchema = z.string().regex(/^ws_[0-9a-f]{32}$/);
+
 export const createWorkspaceSchema = z.object({
   name: z.string().min(1, "Название обязательно").max(100),
   slug: z
@@ -26,13 +29,13 @@ export const updateWorkspaceSchema = z.object({
 });
 
 export const addUserToWorkspaceSchema = z.object({
-  workspaceId: z.string().uuid(),
+  workspaceId: workspaceIdSchema,
   userId: z.string(),
   role: z.enum(["owner", "admin", "member"]).default("member"),
 });
 
 export const updateUserRoleSchema = z.object({
-  workspaceId: z.string().uuid(),
+  workspaceId: workspaceIdSchema,
   userId: z.string(),
   role: z.enum(["owner", "admin", "member"]),
 });

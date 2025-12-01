@@ -2,6 +2,7 @@ import { workspaceRepository } from "@selectio/db";
 import {
   addUserToWorkspaceSchema,
   updateUserRoleSchema,
+  workspaceIdSchema,
 } from "@selectio/validators";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -38,7 +39,7 @@ export const workspaceMembers = {
   createInviteLink: protectedProcedure
     .input(
       z.object({
-        workspaceId: z.string().regex(/^ws_[0-9a-f]{32}$/),
+        workspaceId: workspaceIdSchema,
         role: z.enum(["owner", "admin", "member"]).default("member"),
       }),
     )
@@ -67,7 +68,7 @@ export const workspaceMembers = {
 
   // Получить активный invite link
   getInviteLink: protectedProcedure
-    .input(z.object({ workspaceId: z.string().regex(/^ws_[0-9a-f]{32}$/) }))
+    .input(z.object({ workspaceId: workspaceIdSchema }))
     .query(async ({ input, ctx }) => {
       // Проверка доступа
       const access = await workspaceRepository.checkAccess(
@@ -153,7 +154,7 @@ export const workspaceMembers = {
   removeUser: protectedProcedure
     .input(
       z.object({
-        workspaceId: z.string().regex(/^ws_[0-9a-f]{32}$/),
+        workspaceId: workspaceIdSchema,
         userId: z.string(),
       }),
     )

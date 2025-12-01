@@ -1,4 +1,5 @@
 import { workspaceRepository } from "@selectio/db";
+import { workspaceIdSchema } from "@selectio/validators";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { protectedProcedure } from "../../trpc";
@@ -14,7 +15,7 @@ export const workspaceQueries = {
 
   // Получить workspace по ID
   byId: protectedProcedure
-    .input(z.object({ id: z.string().regex(/^ws_[0-9a-f]{32}$/) }))
+    .input(z.object({ id: workspaceIdSchema }))
     .query(async ({ input, ctx }) => {
       const workspace = await workspaceRepository.findById(input.id);
 
@@ -72,7 +73,7 @@ export const workspaceQueries = {
 
   // Получить участников workspace
   members: protectedProcedure
-    .input(z.object({ workspaceId: z.string().regex(/^ws_[0-9a-f]{32}$/) }))
+    .input(z.object({ workspaceId: workspaceIdSchema }))
     .query(async ({ input, ctx }) => {
       // Проверка доступа
       const access = await workspaceRepository.checkAccess(

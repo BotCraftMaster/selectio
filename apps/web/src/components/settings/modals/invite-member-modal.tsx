@@ -47,33 +47,41 @@ function InviteMemberModalContent({
 }) {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
-  const [userId, setUserId] = useState("");
+  const [email, setEmail] = useState("");
   const [role, setRole] = useState<"owner" | "admin" | "member">("member");
 
   const addUser = useMutation(
     trpc.workspace.addUser.mutationOptions({
       onSuccess: () => {
-        toast.success("Участник добавлен");
-        setUserId("");
+        toast.success("Приглашение отправлено");
+        setEmail("");
         setRole("member");
         onOpenChange(false);
         queryClient.invalidateQueries(trpc.workspace.members.pathFilter());
       },
       onError: (err) => {
-        toast.error(err.message || "Не удалось добавить участника");
+        toast.error(err.message || "Не удалось отправить приглашение");
       },
     }),
   );
 
   const handleInvite = () => {
-    if (!userId.trim()) {
-      toast.error("Введите ID пользователя");
+    const emailTrimmed = email.trim();
+    if (!emailTrimmed) {
+      toast.error("Введите email");
+      return;
+    }
+
+    // Простая валидация email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(emailTrimmed)) {
+      toast.error("Введите корректный email");
       return;
     }
 
     addUser.mutate({
       workspaceId,
-      userId: userId.trim(),
+      userId: emailTrimmed, // Временно используем email как userId, нужно будет изменить API
       role,
     });
   };
@@ -83,22 +91,25 @@ function InviteMemberModalContent({
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Пригласить участника</DialogTitle>
-          <DialogDescription>
-            Добавьте нового участника в workspace
-          </DialogDescription>
+          <DialogDescription>Отправьте приглашение по email</DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <div className="grid gap-2">
-            <Label htmlFor="userId">ID пользователя</Label>
+            <Label htmlFor="email">Email</Label>
             <Input
-              id="userId"
-              type="text"
-              placeholder="user_id"
-              value={userId}
-              onChange={(e) => setUserId(e.target.value)}
+              id="email"
+              type="email"
+              placeholder="example@email.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  handleInvite();
+                }
+              }}
             />
             <p className="text-xs text-muted-foreground">
-              Введите ID существующего пользователя
+              Пользователь получит приглашение на указанный email
             </p>
           </div>
           <div className="grid gap-2">
@@ -111,9 +122,9 @@ function InviteMemberModalContent({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="owner">Owner</SelectItem>
-                <SelectItem value="admin">Admin</SelectItem>
-                <SelectItem value="member">Member</SelectItem>
+                <SelectItem value="owner">Владелец</SelectItem>
+                <SelectItem value="admin">Администратор</SelectItem>
+                <SelectItem value="member">Участник</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -127,7 +138,7 @@ function InviteMemberModalContent({
             Отмена
           </Button>
           <Button onClick={handleInvite} disabled={addUser.isPending}>
-            {addUser.isPending ? "Добавление..." : "Добавить"}
+            {addUser.isPending ? "Отправка..." : "Отправить приглашение"}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -2,6 +2,7 @@ import { workspaceRepository } from "@selectio/db";
 import {
   createWorkspaceSchema,
   updateWorkspaceSchema,
+  workspaceIdSchema,
 } from "@selectio/validators";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -45,7 +46,7 @@ export const workspaceMutations = {
   update: protectedProcedure
     .input(
       z.object({
-        id: z.string().regex(/^ws_[0-9a-f]{32}$/),
+        id: workspaceIdSchema,
         data: updateWorkspaceSchema,
       }),
     )
@@ -80,7 +81,7 @@ export const workspaceMutations = {
 
   // Удалить workspace
   delete: protectedProcedure
-    .input(z.object({ id: z.string().regex(/^ws_[0-9a-f]{32}$/) }))
+    .input(z.object({ id: workspaceIdSchema }))
     .mutation(async ({ input, ctx }) => {
       // Проверка доступа
       const access = await workspaceRepository.checkAccess(

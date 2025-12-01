@@ -212,9 +212,9 @@ export function WorkspaceMembersClient({
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Все роли</SelectItem>
-              <SelectItem value="owner">Owner</SelectItem>
-              <SelectItem value="admin">Admin</SelectItem>
-              <SelectItem value="member">Member</SelectItem>
+              <SelectItem value="owner">Владелец</SelectItem>
+              <SelectItem value="admin">Администратор</SelectItem>
+              <SelectItem value="member">Участник</SelectItem>
             </SelectContent>
           </Select>
 
@@ -356,9 +356,9 @@ function MemberRow({
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="owner">Owner</SelectItem>
-              <SelectItem value="admin">Admin</SelectItem>
-              <SelectItem value="member">Member</SelectItem>
+              <SelectItem value="owner">Владелец</SelectItem>
+              <SelectItem value="admin">Администратор</SelectItem>
+              <SelectItem value="member">Участник</SelectItem>
             </SelectContent>
           </Select>
         </TableCell>

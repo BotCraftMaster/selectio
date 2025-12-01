@@ -1,11 +1,12 @@
 import { upsertIntegration } from "@selectio/db";
+import { workspaceIdSchema } from "@selectio/validators";
 import { z } from "zod";
 import { protectedProcedure } from "../../trpc";
 
 export const createIntegration = protectedProcedure
   .input(
     z.object({
-      workspaceId: z.string().regex(/^ws_[0-9a-f]{32}$/),
+      workspaceId: workspaceIdSchema,
       type: z.string(),
       name: z.string(),
       credentials: z.record(z.string(), z.string()),
