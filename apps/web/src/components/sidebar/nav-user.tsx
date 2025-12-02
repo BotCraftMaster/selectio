@@ -46,10 +46,8 @@ export function NavUser({
   const { isMobile } = useSidebar();
   const router = useRouter();
 
-  // Используем useSession для автоматического обновления данных
   const { data: session } = authClient.useSession();
 
-  // Используем данные из сессии, если доступны, иначе начальные данные
   const user = session?.user
     ? {
         name: session.user.name,

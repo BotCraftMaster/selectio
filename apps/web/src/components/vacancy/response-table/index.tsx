@@ -52,7 +52,6 @@ export function ResponseTable({ vacancyId, accessToken }: ResponseTableProps) {
     isProcessingNew,
     isRefreshing,
     isSendingWelcome,
-    isParsingResumes,
     handleBulkScreen,
     handleScreenAll,
     handleScreenNew,
@@ -60,8 +59,6 @@ export function ResponseTable({ vacancyId, accessToken }: ResponseTableProps) {
     handleRefreshResponses,
     handleRefreshComplete,
     handleSendWelcomeBatch,
-    handleParseNewResumes,
-    handleParseMissingContacts,
   } = useResponseActions(vacancyId, selectedIds, setSelectedIds);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: reset selection when filters change
@@ -99,13 +96,10 @@ export function ResponseTable({ vacancyId, accessToken }: ResponseTableProps) {
         isRefreshing={isRefreshing}
         isProcessingNew={isProcessingNew}
         isProcessingAll={isProcessingAll}
-        isParsingResumes={isParsingResumes}
         onRefresh={handleRefreshResponses}
         onRefreshComplete={handleRefreshComplete}
         onScreenNew={handleScreenNew}
         onScreenAll={handleScreenAll}
-        onParseResumes={handleParseNewResumes}
-        onParseMissingContacts={handleParseMissingContacts}
         onScreeningDialogClose={handleScreeningDialogClose}
       />
 

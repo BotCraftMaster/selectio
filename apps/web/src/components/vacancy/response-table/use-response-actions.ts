@@ -2,8 +2,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
 import {
-  triggerParseMissingContacts,
-  triggerParseNewResumes,
   triggerRefreshVacancyResponses,
   triggerScreenAllResponses,
   triggerScreenNewResponses,
@@ -22,7 +20,6 @@ export function useResponseActions(
   const [isProcessingNew, setIsProcessingNew] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isSendingWelcome, setIsSendingWelcome] = useState(false);
-  const [isParsingResumes, setIsParsingResumes] = useState(false);
 
   const trpc = useTRPC();
   const queryClient = useQueryClient();
@@ -163,65 +160,12 @@ export function useResponseActions(
     }
   };
 
-  const handleParseNewResumes = async () => {
-    setIsParsingResumes(true);
-
-    try {
-      const result = await triggerParseNewResumes(vacancyId);
-
-      if (!result.success) {
-        console.error("Failed to trigger parse resumes:", result.error);
-        setIsParsingResumes(false);
-        return result;
-      }
-
-      setTimeout(() => {
-        void queryClient.invalidateQueries(
-          trpc.vacancy.responses.list.pathFilter(),
-        );
-        setIsParsingResumes(false);
-      }, 3000);
-
-      return result;
-    } catch (error) {
-      setIsParsingResumes(false);
-      throw error;
-    }
-  };
-
-  const handleParseMissingContacts = async () => {
-    setIsParsingResumes(true);
-
-    try {
-      const result = await triggerParseMissingContacts(vacancyId);
-
-      if (!result.success) {
-        console.error("Failed to trigger parse contacts:", result.error);
-        setIsParsingResumes(false);
-        return result;
-      }
-
-      setTimeout(() => {
-        void queryClient.invalidateQueries(
-          trpc.vacancy.responses.list.pathFilter(),
-        );
-        setIsParsingResumes(false);
-      }, 3000);
-
-      return result;
-    } catch (error) {
-      setIsParsingResumes(false);
-      throw error;
-    }
-  };
-
   return {
     isProcessing,
     isProcessingAll,
     isProcessingNew,
     isRefreshing,
     isSendingWelcome,
-    isParsingResumes,
     handleBulkScreen,
     handleScreenAll,
     handleScreenNew,
@@ -229,7 +173,5 @@ export function useResponseActions(
     handleRefreshResponses,
     handleRefreshComplete,
     handleSendWelcomeBatch,
-    handleParseNewResumes,
-    handleParseMissingContacts,
   };
 }
