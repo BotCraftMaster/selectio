@@ -13,6 +13,7 @@ export const telegramInterviewScoring = pgTable("telegram_interview_scorings", {
   id: uuid("id").primaryKey().default(sql`uuid_generate_v7()`),
   conversationId: uuid("conversation_id")
     .notNull()
+    .unique()
     .references(() => telegramConversation.id, { onDelete: "cascade" }),
   responseId: uuid("response_id").references(() => vacancyResponse.id, {
     onDelete: "cascade",
