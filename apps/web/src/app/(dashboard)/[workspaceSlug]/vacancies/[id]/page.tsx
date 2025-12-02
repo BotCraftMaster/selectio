@@ -160,11 +160,12 @@ export default function VacancyDetailPage({
                             description={vacancy.description}
                           />
                         </div>
-                        <div className="prose prose-sm max-w-none dark:prose-invert">
-                          <p className="whitespace-pre-wrap text-sm leading-relaxed text-muted-foreground">
-                            {vacancy.description}
-                          </p>
-                        </div>
+                        <div
+                          className="prose prose-sm max-w-none dark:prose-invert text-sm leading-relaxed text-muted-foreground"
+                          dangerouslySetInnerHTML={{
+                            __html: vacancy.description,
+                          }}
+                        />
                       </div>
                     )}
                   </div>
