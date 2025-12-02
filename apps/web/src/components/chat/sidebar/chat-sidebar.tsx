@@ -39,10 +39,7 @@ export function ChatSidebar({
         {responseData?.resumePdfFile && (
           <div>
             <h2 className="text-lg font-semibold mb-4">Резюме</h2>
-            <ResumePdfLink
-              fileKey={responseData.resumePdfFile.key}
-              fileName={responseData.resumePdfFile.fileName}
-            />
+            <ResumePdfLink fileKey={responseData.resumePdfFile.key} />
           </div>
         )}
 

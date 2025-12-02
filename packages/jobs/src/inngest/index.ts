@@ -1,3 +1,4 @@
+import { analyzeInterviewFunction } from "./analyze-interview";
 import { extractVacancyRequirementsFunction } from "./extract-vacancy-requirements";
 import { parseMissingContactsFunction } from "./parse-missing-contacts";
 import { parseNewResumesFunction } from "./parse-new-resumes";
@@ -14,6 +15,7 @@ import { transcribeVoiceFunction } from "./transcribe-voice";
 import { updateSingleVacancyFunction } from "./update-single-vacancy";
 import { updateVacanciesFunction } from "./update-vacancies";
 
+export { analyzeInterviewFunction } from "./analyze-interview";
 export { screenNewResponsesChannel } from "./channels";
 export { inngest } from "./client";
 export { extractVacancyRequirementsFunction } from "./extract-vacancy-requirements";
@@ -39,6 +41,7 @@ export { updateSingleVacancyFunction } from "./update-single-vacancy";
 export { updateVacanciesFunction } from "./update-vacancies";
 
 export const inngestFunctions = [
+  analyzeInterviewFunction,
   extractVacancyRequirementsFunction,
   parseMissingContactsFunction,
   parseNewResumesFunction,

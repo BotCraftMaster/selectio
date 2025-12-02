@@ -83,6 +83,36 @@ export const transcribeVoiceFunction = inngest.createFunction(
           transcriptionLength: transcription.length,
         });
       });
+
+      // Запускаем анализ интервью в отдельной задаче
+      await step.run("trigger-interview-analysis", async () => {
+        const [message] = await db
+          .select()
+          .from(telegramMessage)
+          .where(eq(telegramMessage.id, messageId))
+          .limit(1);
+
+        if (!message) {
+          console.log("⏭️ Сообщение не найдено");
+          return;
+        }
+
+        console.log("🚀 Запуск анализа интервью", {
+          conversationId: message.conversationId,
+          messageId,
+        });
+
+        // Отправляем событие для анализа интервью
+        await inngest.send({
+          name: "telegram/interview.analyze",
+          data: {
+            conversationId: message.conversationId,
+            transcription,
+          },
+        });
+
+        console.log("✅ Событие анализа интервью отправлено");
+      });
     }
 
     return {

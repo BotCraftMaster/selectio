@@ -3,6 +3,7 @@ import { EventSchemas, Inngest } from "inngest";
 import {
   candidateWelcomeBatchDataSchema,
   candidateWelcomeDataSchema,
+  interviewAnalysisDataSchema,
   parseMissingContactsDataSchema,
   parseNewResumesDataSchema,
   refreshSingleResumeDataSchema,
@@ -39,5 +40,6 @@ export const inngest = new Inngest({
     "candidate/welcome.batch": candidateWelcomeBatchDataSchema,
     "telegram/message.send": telegramMessageSendDataSchema,
     "telegram/voice.transcribe": voiceTranscriptionDataSchema,
+    "telegram/interview.analyze": interviewAnalysisDataSchema,
   }),
 });

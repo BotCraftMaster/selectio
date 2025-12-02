@@ -92,6 +92,12 @@ export const voiceTranscriptionDataSchema = z.object({
   fileId: z.string().min(1, "File ID is required"),
 });
 
+// Schema for interview analysis event data
+export const interviewAnalysisDataSchema = z.object({
+  conversationId: z.string().min(1, "Conversation ID is required"),
+  transcription: z.string().min(1, "Transcription is required"),
+});
+
 /**
  * Inngest event schemas using Zod
  * Each event must have a 'data' field containing the payload
@@ -142,6 +148,9 @@ export const inngestEventSchemas = {
   "telegram/voice.transcribe": {
     data: voiceTranscriptionDataSchema,
   },
+  "telegram/interview.analyze": {
+    data: interviewAnalysisDataSchema,
+  },
 };
 
 /**
@@ -187,4 +196,7 @@ export type TelegramMessageSendPayload = z.infer<
 >;
 export type VoiceTranscriptionPayload = z.infer<
   typeof voiceTranscriptionDataSchema
+>;
+export type InterviewAnalysisPayload = z.infer<
+  typeof interviewAnalysisDataSchema
 >;

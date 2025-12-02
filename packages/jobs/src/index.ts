@@ -21,6 +21,12 @@ export {
   triggerVacancyResponsesRefresh,
   triggerVoiceTranscription,
 } from "./services/inngest-service";
+export {
+  analyzeAndGenerateNextQuestion,
+  createInterviewScoring,
+  getInterviewContext,
+  saveQuestionAnswer,
+} from "./services/interview-service";
 export { screenResponse } from "./services/response-screening-service";
 export {
   parseScreeningResult,

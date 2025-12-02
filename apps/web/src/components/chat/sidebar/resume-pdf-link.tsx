@@ -2,15 +2,14 @@
 
 import { Button } from "@selectio/ui";
 import { useQuery } from "@tanstack/react-query";
-import { ExternalLink, FileText } from "lucide-react";
+import { ExternalLink } from "lucide-react";
 import { useTRPC } from "~/trpc/react";
 
 interface ResumePdfLinkProps {
   fileKey: string;
-  fileName?: string;
 }
 
-export function ResumePdfLink({ fileKey, fileName }: ResumePdfLinkProps) {
+export function ResumePdfLink({ fileKey }: ResumePdfLinkProps) {
   const trpc = useTRPC();
 
   const { data: fileData, isLoading } = useQuery({
@@ -25,11 +24,6 @@ export function ResumePdfLink({ fileKey, fileName }: ResumePdfLinkProps) {
 
   return (
     <div className="space-y-2">
-      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-        <FileText className="h-4 w-4" />
-        <span>{fileName || "Резюме.pdf"}</span>
-      </div>
-
       <Button
         variant="outline"
         size="sm"
