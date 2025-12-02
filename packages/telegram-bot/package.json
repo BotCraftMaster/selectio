@@ -18,11 +18,11 @@
     "with-env": "bun run --env-file ../../.env"
   },
   "dependencies": {
-    "@ai-sdk/openai": "2.0.74",
+    "@ai-sdk/openai": "2.0.76",
     "@selectio/config": "workspace:*",
     "@selectio/db": "workspace:*",
     "@selectio/lib": "workspace:*",
-    "ai": "^5.0.104",
+    "ai": "^5.0.106",
     "grammy": "^1.38.4"
   },
   "devDependencies": {
