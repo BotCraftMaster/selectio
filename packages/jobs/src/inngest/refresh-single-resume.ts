@@ -165,6 +165,18 @@ export const refreshSingleResumeFunction = inngest.createFunction(
           }
         }
 
+        // Загружаем PDF в S3 и сохраняем в БД
+        let resumePdfFileId: string | null = null;
+        if (experienceData.pdfBuffer) {
+          const { uploadResumePdf } = await import(
+            "../services/response-service"
+          );
+          resumePdfFileId = await uploadResumePdf(
+            experienceData.pdfBuffer,
+            response.resumeId,
+          );
+        }
+
         await updateResponseDetails({
           vacancyId: response.vacancyId,
           resumeId: response.resumeId,
@@ -178,6 +190,7 @@ export const refreshSingleResumeFunction = inngest.createFunction(
           education: experienceData.education,
           courses: experienceData.courses,
           telegramUsername,
+          resumePdfFileId,
         });
 
         console.log(

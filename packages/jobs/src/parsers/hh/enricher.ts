@@ -171,6 +171,18 @@ export async function runEnricher(workspaceId?: string) {
           }
         }
 
+        // Загружаем PDF в S3
+        let resumePdfFileId: string | null = null;
+        if (experienceData.pdfBuffer) {
+          const { uploadResumePdf } = await import(
+            "../../services/response-service"
+          );
+          resumePdfFileId = await uploadResumePdf(
+            experienceData.pdfBuffer,
+            resumeId,
+          );
+        }
+
         await updateResponseDetails({
           vacancyId,
           resumeId,
@@ -184,6 +196,7 @@ export async function runEnricher(workspaceId?: string) {
           education: experienceData.education,
           courses: experienceData.courses,
           telegramUsername,
+          resumePdfFileId,
         });
 
         console.log(`✅ Данные обновлены для: ${candidateName}`);

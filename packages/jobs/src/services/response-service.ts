@@ -1,6 +1,7 @@
 import { eq, isNull, or } from "@selectio/db";
 import { db } from "@selectio/db/client";
-import { vacancyResponse } from "@selectio/db/schema";
+import { file, vacancyResponse } from "@selectio/db/schema";
+import { uploadFile } from "@selectio/lib";
 import type { SaveResponseData } from "../parsers/types";
 
 export async function checkResponseExists(resumeId: string): Promise<boolean> {
@@ -97,6 +98,7 @@ export async function updateResponseDetails(response: SaveResponseData) {
         education: response.education,
         courses: response.courses,
         telegramUsername: response.telegramUsername,
+        resumePdfFileId: response.resumePdfFileId,
       })
       .where(eq(vacancyResponse.resumeId, response.resumeId));
 
@@ -106,7 +108,7 @@ export async function updateResponseDetails(response: SaveResponseData) {
       `❌ Ошибка обновления детальной информации для ${response.candidateName}:`,
       error,
     );
-    throw error; // Пробрасываем ошибку для обработки на верхнем уровне
+    throw error;
   }
 }
 
@@ -124,6 +126,41 @@ export async function getResponsesWithoutDetails() {
   } catch (error) {
     console.error(`❌ Ошибка получения откликов без деталей:`, error);
     return [];
+  }
+}
+
+/**
+ * Загружает PDF резюме в S3 и сохраняет запись в БД
+ */
+export async function uploadResumePdf(
+  pdfBuffer: Buffer,
+  resumeId: string,
+): Promise<string | null> {
+  try {
+    const fileName = `resume_${resumeId}.pdf`;
+    const key = await uploadFile(
+      pdfBuffer,
+      fileName,
+      "application/pdf",
+      "resumes",
+    );
+
+    const [fileRecord] = await db
+      .insert(file)
+      .values({
+        provider: "S3",
+        key,
+        fileName,
+        mimeType: "application/pdf",
+        fileSize: pdfBuffer.length.toString(),
+      })
+      .returning();
+
+    console.log(`✅ PDF резюме загружен в S3: ${key}`);
+    return fileRecord?.id ?? null;
+  } catch {
+    console.log("⚠️ Ошибка загрузки PDF в S3");
+    return null;
   }
 }
 

@@ -11,6 +11,7 @@ import {
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
+import { file } from "../file";
 import { vacancy } from "./vacancy";
 
 export const responseStatusEnum = pgEnum("response_status", [
@@ -48,6 +49,9 @@ export const vacancyResponse = pgTable("vacancy_responses", {
   about: text("about"),
   education: text("education"),
   courses: text("courses"),
+  resumePdfFileId: uuid("resume_pdf_file_id").references(() => file.id, {
+    onDelete: "set null",
+  }),
   respondedAt: timestamp("responded_at"),
   welcomeSentAt: timestamp("welcome_sent_at"),
   createdAt: timestamp("created_at").defaultNow().notNull(),

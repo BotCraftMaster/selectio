@@ -3,6 +3,77 @@ import { stripHtml } from "string-strip-html";
 import type { ResumeExperience } from "../types";
 import { HH_CONFIG } from "./config";
 
+/**
+ * Скачивает PDF резюме с HH.ru
+ */
+async function downloadResumePdf(page: Page): Promise<Buffer | null> {
+  try {
+    console.log("📥 Попытка скачать PDF резюме...");
+
+    // Ищем кнопку скачивания
+    const downloadButton = await page.$(
+      'button[data-qa="resume-download-button"]',
+    );
+
+    if (!downloadButton) {
+      console.log("⚠️ Кнопка скачивания резюме не найдена");
+      return null;
+    }
+
+    // Кликаем по кнопке
+    await downloadButton.click();
+
+    // Ждем появления ссылки на PDF
+    await page.waitForSelector('a[data-qa="resume-export-pdf"]', {
+      timeout: 5000,
+    });
+
+    const pdfLink = await page.$('a[data-qa="resume-export-pdf"]');
+
+    if (!pdfLink) {
+      console.log("⚠️ Ссылка на PDF не найдена");
+      return null;
+    }
+
+    // Получаем URL PDF
+    const pdfUrl = await pdfLink.evaluate((el) => el.getAttribute("href"));
+
+    if (!pdfUrl) {
+      console.log("⚠️ URL PDF не найден");
+      return null;
+    }
+
+    // Формируем полный URL
+    const fullPdfUrl = pdfUrl.startsWith("http")
+      ? pdfUrl
+      : new URL(pdfUrl, "https://hh.ru").href;
+
+    console.log(`📄 Скачивание PDF: ${fullPdfUrl}`);
+
+    // Скачиваем PDF
+    const response = await page.goto(fullPdfUrl, {
+      waitUntil: "networkidle0",
+      timeout: 30000,
+    });
+
+    if (!response) {
+      console.log("⚠️ Не удалось получить ответ от сервера");
+      return null;
+    }
+
+    const buffer = await response.buffer();
+    console.log(`✅ PDF скачан, размер: ${buffer.length} байт`);
+
+    return buffer;
+  } catch (error) {
+    console.log("⚠️ Ошибка при скачивании PDF резюме:");
+    if (error instanceof Error) {
+      console.log(`   ${error.message}`);
+    }
+    return null;
+  }
+}
+
 export async function parseResumeExperience(
   page: Page,
   url: string,
@@ -207,8 +278,28 @@ export async function parseResumeExperience(
     console.log("⚠️ Не удалось извлечь ID резюме из URL.");
   }
 
+  // Скачиваем PDF резюме
+  let pdfBuffer: Buffer | null = null;
+  try {
+    pdfBuffer = await downloadResumePdf(page);
+  } catch (error) {
+    console.log("⚠️ Не удалось скачать PDF резюме");
+    if (error instanceof Error) {
+      console.log(`   ${error.message}`);
+    }
+  }
+
   // Clean up the 403 logging handler
   page.off("response", log403Handler);
 
-  return { experience, contacts, phone, languages, about, education, courses };
+  return {
+    experience,
+    contacts,
+    phone,
+    languages,
+    about,
+    education,
+    courses,
+    pdfBuffer,
+  };
 }

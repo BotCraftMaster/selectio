@@ -25,6 +25,7 @@ export interface ResumeExperience {
   about: string;
   education: string;
   courses: string;
+  pdfBuffer: Buffer | null;
 }
 
 export interface SaveResponseData {
@@ -40,4 +41,5 @@ export interface SaveResponseData {
   education: string;
   courses: string;
   telegramUsername?: string | null;
+  resumePdfFileId?: string | null;
 }

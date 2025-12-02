@@ -296,6 +296,18 @@ async function parseResponseDetails(
 
       const experienceData = await parseResumeExperience(page, response.url);
 
+      // Загружаем PDF в S3
+      let resumePdfFileId: string | null = null;
+      if (experienceData.pdfBuffer) {
+        const { uploadResumePdf } = await import(
+          "../../services/response-service"
+        );
+        resumePdfFileId = await uploadResumePdf(
+          experienceData.pdfBuffer,
+          response.resumeId,
+        );
+      }
+
       await updateResponseDetails({
         vacancyId,
         resumeId: response.resumeId,
@@ -308,6 +320,7 @@ async function parseResponseDetails(
         about: experienceData.about,
         education: experienceData.education,
         courses: experienceData.courses,
+        resumePdfFileId,
       });
 
       successCount++;
