@@ -70,7 +70,7 @@ export function CreateWorkspaceDialog({ trigger }: CreateWorkspaceDialogProps) {
         router.push(`/${workspace.slug}`);
         router.refresh();
       },
-      onError: (error: any) => {
+      onError: (error) => {
         form.setError("slug", {
           message: error.message || "Ошибка при создании workspace",
         });

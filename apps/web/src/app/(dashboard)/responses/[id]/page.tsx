@@ -212,7 +212,7 @@ export default function ResponseDetailPage({
                     <CardContent>
                       <ul className="space-y-3">
                         {(response.screening.questions as string[]).map(
-                          (question) => (
+                          (question, idx) => (
                             <li
                               key={question}
                               className="text-sm text-muted-foreground"

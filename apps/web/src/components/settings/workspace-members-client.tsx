@@ -89,8 +89,9 @@ function MembersLoadingSkeleton() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {[...Array(5)].map((_, i) => (
-              <TableRow key={i}>
+            {Array.from({ length: 5 }, (_, i) => (
+              // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton loader, order never changes
+              <TableRow key={`skeleton-row-${i}`}>
                 <TableCell>
                   <div className="flex items-center gap-3">
                     <Skeleton className="h-8 w-8 rounded-full" />

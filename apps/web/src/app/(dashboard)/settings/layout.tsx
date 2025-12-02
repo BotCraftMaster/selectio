@@ -1,23 +1,28 @@
-import type { ReactNode } from "react";
-import { SettingsSidebar } from "~/components/settings/settings-sidebar";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
+import { api } from "~/trpc/server";
 
-export default function SettingsLayout({ children }: { children: ReactNode }) {
-  return (
-    <div className="space-y-6 p-10 pb-16 max-w-5xl">
-      <div className="space-y-1">
-        <h1 className="text-2xl font-bold tracking-tight">Настройки</h1>
-        <p className="text-muted-foreground">
-          Управляйте настройками аккаунта и интеграциями.
-        </p>
-      </div>
-      <div className="flex flex-col gap-6 lg:flex-row">
-        <aside className="lg:w-[240px] shrink-0">
-          <div className="rounded-lg border p-2">
-            <SettingsSidebar />
-          </div>
-        </aside>
-        <div className="flex-1">{children}</div>
-      </div>
-    </div>
-  );
+export default async function SettingsLayout() {
+  // Получаем активный workspace из cookies или первый доступный
+  const cookieStore = await cookies();
+  const activeWorkspaceId = cookieStore.get("active-workspace")?.value;
+
+  const caller = await api();
+  const userWorkspaces = await caller.workspace.list();
+
+  if (userWorkspaces.length === 0) {
+    redirect("/onboarding");
+  }
+
+  // Находим активный workspace или берем первый
+  const activeWorkspace =
+    userWorkspaces.find((uw) => uw.workspace.id === activeWorkspaceId) ||
+    userWorkspaces[0];
+
+  if (!activeWorkspace) {
+    redirect("/onboarding");
+  }
+
+  // Редирект на workspace-specific settings
+  redirect(`/${activeWorkspace.workspace.slug}/settings`);
 }

@@ -172,7 +172,7 @@ export function WorkspaceForm({
                 <div className="flex items-start gap-4">
                   {logoPreview && (
                     <div className="relative h-20 w-20 rounded-lg overflow-hidden border">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      {/* biome-ignore lint/performance/noImgElement: preview from FileReader */}
                       <img
                         src={logoPreview}
                         alt="Workspace logo"

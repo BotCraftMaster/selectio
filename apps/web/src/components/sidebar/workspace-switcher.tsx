@@ -77,6 +77,7 @@ export function WorkspaceSwitcher({
             >
               <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
                 {activeWorkspace.logo ? (
+                  // biome-ignore lint/performance/noImgElement: external URL from database
                   <img
                     src={activeWorkspace.logo}
                     alt={activeWorkspace.name}
@@ -107,6 +108,7 @@ export function WorkspaceSwitcher({
               <div className="flex items-center gap-2">
                 <div className="flex size-10 items-center justify-center rounded-lg border">
                   {activeWorkspace.logo ? (
+                    // biome-ignore lint/performance/noImgElement: external URL from database
                     <img
                       src={activeWorkspace.logo}
                       alt={activeWorkspace.name}
@@ -162,6 +164,7 @@ export function WorkspaceSwitcher({
               >
                 <div className="flex size-6 items-center justify-center rounded-md border">
                   {workspace.logo ? (
+                    // biome-ignore lint/performance/noImgElement: external URL from database
                     <img
                       src={workspace.logo}
                       alt={workspace.name}

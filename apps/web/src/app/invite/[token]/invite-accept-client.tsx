@@ -27,12 +27,12 @@ export function InviteAcceptClient({ invite, token }: InviteAcceptClientProps) {
   const router = useRouter();
 
   const acceptInvite = useMutation(
-    (trpc.workspace as any).acceptInvite.mutationOptions({
+    trpc.workspace.acceptInvite.mutationOptions({
       onSuccess: () => {
         toast.success(`Вы присоединились к ${invite.workspace.name}`);
         router.push(`/${invite.workspace.slug}`);
       },
-      onError: (err: Error) => {
+      onError: (err) => {
         toast.error(err.message || "Не удалось принять приглашение");
       },
     }),
@@ -61,7 +61,7 @@ export function InviteAcceptClient({ invite, token }: InviteAcceptClientProps) {
         <div className="text-center space-y-2">
           {invite.workspace.logo && (
             <div className="flex justify-center mb-4">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
+              {/* biome-ignore lint/performance/noImgElement: external URL from database */}
               <img
                 src={invite.workspace.logo}
                 alt={invite.workspace.name}
