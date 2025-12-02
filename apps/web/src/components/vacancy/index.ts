@@ -1,10 +1,10 @@
 export { ChatIndicator } from "./chat-indicator";
 export { ContactInfo } from "./contact-info";
 export { EmptyResponses } from "./empty-responses";
-export { GenerateRequirementsButton } from "./generate-requirements-button";
 export { ResponseCards } from "./response-cards";
 export { ResponseTable } from "./response-table";
 export { ScreeningHoverCard } from "./screening-hover-card";
+export { UpdateVacancyButton } from "./update-vacancy-button";
 export { VacancyAnalytics, VacancyRequirements } from "./vacancy-analytics";
 export { VacancyHeader } from "./vacancy-header";
 export { VacancyStats } from "./vacancy-stats";

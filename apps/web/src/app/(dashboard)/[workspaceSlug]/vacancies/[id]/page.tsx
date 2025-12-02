@@ -14,7 +14,7 @@ import Link from "next/link";
 import { use } from "react";
 import { SiteHeader } from "~/components/layout";
 import {
-  GenerateRequirementsButton,
+  UpdateVacancyButton,
   VacancyAnalytics,
   VacancyHeader,
   VacancyRequirements,
@@ -155,10 +155,7 @@ export default function VacancyDetailPage({
                           <h2 className="text-xl font-semibold">
                             Описание вакансии
                           </h2>
-                          <GenerateRequirementsButton
-                            vacancyId={vacancy.id}
-                            description={vacancy.description}
-                          />
+                          <UpdateVacancyButton vacancyId={vacancy.id} />
                         </div>
                         <div
                           className="prose prose-sm max-w-none dark:prose-invert text-sm leading-relaxed text-muted-foreground [&_p]:mb-4 [&_p]:leading-relaxed"

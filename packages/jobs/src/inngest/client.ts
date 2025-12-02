@@ -14,6 +14,7 @@ import {
   vacancyRequirementsExtractDataSchema,
   vacancyResponsesRefreshDataSchema,
   vacancyUpdateActiveDataSchema,
+  vacancyUpdateSingleDataSchema,
   voiceTranscriptionDataSchema,
 } from "./types";
 
@@ -32,6 +33,7 @@ export const inngest = new Inngest({
     "response/resume.refresh": refreshSingleResumeDataSchema,
     "response/contacts.parse-missing": parseMissingContactsDataSchema,
     "vacancy/update.active": vacancyUpdateActiveDataSchema,
+    "vacancy/update.single": vacancyUpdateSingleDataSchema,
     "vacancy/responses.refresh": vacancyResponsesRefreshDataSchema,
     "candidate/welcome": candidateWelcomeDataSchema,
     "candidate/welcome.batch": candidateWelcomeBatchDataSchema,

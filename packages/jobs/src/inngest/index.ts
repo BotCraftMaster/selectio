@@ -11,6 +11,7 @@ import { sendCandidateWelcomeFunction } from "./send-candidate-welcome";
 import { sendCandidateWelcomeBatchFunction } from "./send-candidate-welcome-batch";
 import { sendTelegramMessageFunction } from "./send-telegram-message";
 import { transcribeVoiceFunction } from "./transcribe-voice";
+import { updateSingleVacancyFunction } from "./update-single-vacancy";
 import { updateVacanciesFunction } from "./update-vacancies";
 
 export { screenNewResponsesChannel } from "./channels";
@@ -34,6 +35,7 @@ export { sendCandidateWelcomeFunction } from "./send-candidate-welcome";
 export { sendCandidateWelcomeBatchFunction } from "./send-candidate-welcome-batch";
 export { sendTelegramMessageFunction } from "./send-telegram-message";
 export { transcribeVoiceFunction } from "./transcribe-voice";
+export { updateSingleVacancyFunction } from "./update-single-vacancy";
 export { updateVacanciesFunction } from "./update-vacancies";
 
 export const inngestFunctions = [
@@ -50,5 +52,6 @@ export const inngestFunctions = [
   sendCandidateWelcomeFunction,
   sendTelegramMessageFunction,
   transcribeVoiceFunction,
+  updateSingleVacancyFunction,
   updateVacanciesFunction,
 ];

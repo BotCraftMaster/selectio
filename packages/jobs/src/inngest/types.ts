@@ -74,6 +74,11 @@ export const parseMissingContactsDataSchema = z.object({
   vacancyId: z.string().min(1, "Vacancy ID is required"),
 });
 
+// Schema for updating single vacancy event data
+export const vacancyUpdateSingleDataSchema = z.object({
+  vacancyId: z.string().min(1, "Vacancy ID is required"),
+});
+
 // Schema for telegram message send event data
 export const telegramMessageSendDataSchema = z.object({
   messageId: z.string().min(1, "Message ID is required"),
@@ -128,6 +133,9 @@ export const inngestEventSchemas = {
   "response/contacts.parse-missing": {
     data: parseMissingContactsDataSchema,
   },
+  "vacancy/update.single": {
+    data: vacancyUpdateSingleDataSchema,
+  },
   "telegram/message.send": {
     data: telegramMessageSendDataSchema,
   },
@@ -170,6 +178,9 @@ export type RefreshSingleResumePayload = z.infer<
 >;
 export type ParseMissingContactsPayload = z.infer<
   typeof parseMissingContactsDataSchema
+>;
+export type VacancyUpdateSinglePayload = z.infer<
+  typeof vacancyUpdateSingleDataSchema
 >;
 export type TelegramMessageSendPayload = z.infer<
   typeof telegramMessageSendDataSchema

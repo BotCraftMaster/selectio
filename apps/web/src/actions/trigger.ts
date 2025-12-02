@@ -256,3 +256,22 @@ export async function triggerGenerateRequirements(
     };
   }
 }
+
+export async function triggerUpdateSingleVacancy(vacancyId: string) {
+  try {
+    const { inngest } = await import("@selectio/jobs/client");
+    await inngest.send({
+      name: "vacancy/update.single",
+      data: {
+        vacancyId,
+      },
+    });
+    return { success: true as const };
+  } catch (error) {
+    console.error("Failed to trigger update-single-vacancy:", error);
+    return {
+      success: false as const,
+      error: "Failed to trigger vacancy update",
+    };
+  }
+}
