@@ -217,8 +217,10 @@
       "version": "0.1.0",
       "dependencies": {
         "@mtcute/bun": "0.27.1",
+        "@mtcute/dispatcher": "0.27.1",
         "@selectio/config": "workspace:*",
         "@selectio/db": "workspace:*",
+        "@selectio/lib": "workspace:*",
         "hono": "^4.10.7",
         "zod": "^4.1.13",
       },
@@ -754,6 +756,8 @@
     "@mtcute/bun": ["@mtcute/bun@0.27.1", "", { "dependencies": { "@fuman/bun": "0.0.17", "@fuman/io": "0.0.17", "@fuman/net": "0.0.17", "@fuman/utils": "0.0.17", "@mtcute/core": "^0.27.1", "@mtcute/html-parser": "^0.27.1", "@mtcute/markdown-parser": "^0.27.1", "@mtcute/wasm": "^0.27.0" } }, "sha512-TO94Nwvifj2xS/+1pJkxM738mdrGAhJxw6SVLSpaWVfuLij44GwobgbvtCEj0K01eTM7QhL+0vgkVN8EGwk9Lg=="],
 
     "@mtcute/core": ["@mtcute/core@0.27.1", "", { "dependencies": { "@fuman/io": "0.0.17", "@fuman/net": "0.0.17", "@fuman/utils": "0.0.17", "@mtcute/file-id": "^0.27.0", "@mtcute/tl": "^218.0.1", "@mtcute/tl-runtime": "^0.24.3", "@types/events": "3.0.0", "long": "5.2.3" } }, "sha512-+vRQG7XRJ62YY5drSucvwCuAzSJ47BIDCfXNYCyVoX7bxnrH3CYOnEG8Ze/NrE8jlaHRHSUt7MLQZur850dAqw=="],
+
+    "@mtcute/dispatcher": ["@mtcute/dispatcher@0.27.1", "", { "dependencies": { "@fuman/utils": "0.0.17", "@mtcute/core": "^0.27.1" } }, "sha512-djCT7ZI85I+ifVwmw6k8LAH+DDP/v3XR2yth5W5xPx+veZcqJI6syppzHE+TQsGe3ZVGa6yQ7xT3rKj+MdxGkg=="],
 
     "@mtcute/file-id": ["@mtcute/file-id@0.27.0", "", { "dependencies": { "@fuman/utils": "0.0.17", "@mtcute/tl-runtime": "^0.24.3", "long": "5.2.3" } }, "sha512-a8+8TSot62zM7rmuNzf7aTk3dws3wuHPjWRFeybhFg11Gr1/1f8R3MRGoHYzDGRcuXobcU9mUQxEKYYE+ogdEg=="],
 

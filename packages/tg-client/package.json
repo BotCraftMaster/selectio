@@ -20,12 +20,16 @@
     "dev": "tsc",
     "api": "bun run src/api/index.ts",
     "api:dev": "bun --watch src/api/index.ts",
+    "bot": "bun run --env-file ../../.env src/start-bot.ts",
+    "bot:dev": "bun --watch --env-file ../../.env src/start-bot.ts",
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
   "dependencies": {
     "@mtcute/bun": "0.27.1",
+    "@mtcute/dispatcher": "0.27.1",
     "@selectio/config": "workspace:*",
     "@selectio/db": "workspace:*",
+    "@selectio/lib": "workspace:*",
     "hono": "^4.10.7",
     "zod": "^4.1.13"
   },
