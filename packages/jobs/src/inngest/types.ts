@@ -21,7 +21,7 @@ export const responseScreenDataSchema = z.object({
  */
 // Schema for vacancy update active event data
 export const vacancyUpdateActiveDataSchema = z.object({
-  workspaceId: z.string().optional(),
+  workspaceId: z.string().min(1, "Workspace ID is required"),
 });
 
 // Schema for vacancy responses refresh event data

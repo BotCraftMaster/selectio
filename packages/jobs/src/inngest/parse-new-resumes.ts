@@ -59,6 +59,13 @@ export const parseNewResumesFunction = inngest.createFunction(
             experience: true,
             contacts: true,
           },
+          with: {
+            vacancy: {
+              columns: {
+                workspaceId: true,
+              },
+            },
+          },
         });
 
         // Фильтруем только отклики без детальной информации
@@ -101,7 +108,12 @@ export const parseNewResumesFunction = inngest.createFunction(
 
     // Запускаем enricher для парсинга резюме
     await step.run("enrich-resumes", async () => {
-      await runEnricher();
+      const workspaceId = responses[0]?.vacancy.workspaceId;
+      if (!workspaceId) {
+        throw new Error("workspaceId не найден");
+      }
+
+      await runEnricher(workspaceId);
 
       await publish(
         parseNewResumesChannel().status({

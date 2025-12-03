@@ -53,11 +53,15 @@ export async function triggerResponseScreening(
 /**
  * Triggers active vacancies update job via Inngest
  */
-export async function triggerVacanciesUpdate(): Promise<void> {
+export async function triggerVacanciesUpdate(
+  workspaceId: string,
+): Promise<void> {
   try {
     await inngest.send({
       name: "vacancy/update.active",
-      data: {},
+      data: {
+        workspaceId,
+      },
     });
 
     console.log(`✅ Inngest event sent for vacancies update`);
