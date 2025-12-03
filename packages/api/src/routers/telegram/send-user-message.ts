@@ -40,7 +40,7 @@ export const sendUserMessageRouter = protectedProcedure
         apiId: Number.parseInt(session.apiId, 10),
         apiHash: session.apiHash,
         sessionData: session.sessionData as Record<string, string>,
-        chatId: input.chatId,
+        chatId: Number(input.chatId),
         text: input.text,
       });
 

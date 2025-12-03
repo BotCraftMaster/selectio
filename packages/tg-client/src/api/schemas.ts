@@ -37,7 +37,8 @@ export const sendMessageSchema = z.object({
   apiHash: z.string().min(1),
   sessionData: z.record(z.string(), z.string()),
   chatId: z
-    .union([z.string(), z.number()])
+    .string()
+    .or(z.number())
     .transform((val) => (typeof val === "string" ? Number(val) : val)),
   text: z.string().min(1),
 });

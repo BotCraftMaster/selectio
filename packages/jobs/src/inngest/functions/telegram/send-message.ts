@@ -58,14 +58,38 @@ export const sendTelegramMessageFunction = inngest.createFunction(
           );
         }
 
+        // Пытаемся получить username из metadata
+        let username: string | undefined;
+        if (conversation.metadata) {
+          try {
+            const metadata = JSON.parse(conversation.metadata);
+            username = metadata.username;
+          } catch (e) {
+            console.warn("Не удалось распарсить metadata", e);
+          }
+        }
+
         // Отправляем сообщение через SDK
-        const result = await tgClientSDK.sendMessage({
-          apiId: Number.parseInt(session.apiId, 10),
-          apiHash: session.apiHash,
-          sessionData: session.sessionData as Record<string, string>,
-          chatId,
-          text: content,
-        });
+        let result: { success: boolean; messageId: string; chatId: string };
+        if (username) {
+          console.log(`📨 Отправка по username: @${username}`);
+          result = await tgClientSDK.sendMessageByUsername({
+            apiId: Number.parseInt(session.apiId, 10),
+            apiHash: session.apiHash,
+            sessionData: session.sessionData as Record<string, string>,
+            username,
+            text: content,
+          });
+        } else {
+          console.log(`📨 Отправка по chatId: ${chatId}`);
+          result = await tgClientSDK.sendMessage({
+            apiId: Number.parseInt(session.apiId, 10),
+            apiHash: session.apiHash,
+            sessionData: session.sessionData as Record<string, string>,
+            chatId: Number(chatId),
+            text: content,
+          });
+        }
 
         const telegramMessageId = result.messageId;
 

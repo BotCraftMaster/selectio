@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { send } from "process";
 import { createUserClient } from "../../user-client";
 import {
   sendMessageByPhoneSchema,
@@ -24,21 +25,13 @@ messages.post("/send", async (c) => {
     const { apiId, apiHash, sessionData, chatId, text } = result.data;
     const { client } = await createUserClient(apiId, apiHash, sessionData);
 
-    // Resolve the peer to ensure it's in the cache before sending
-    try {
-      const peer = await client.resolvePeer(chatId);
-      const messageResult = await client.sendText(peer, text);
-      return c.json({
-        success: true,
-        messageId: messageResult.id.toString(),
-        chatId: messageResult.chat.id.toString(),
-      });
-    } catch (error) {
-      return c.json(
-        { error: handleError(error, "Failed to send message") },
-        500,
-      );
-    }
+    const messageResult = await client.sendText(chatId, text);
+
+    return c.json({
+      success: true,
+      messageId: messageResult.id.toString(),
+      chatId: messageResult.chat.id.toString(),
+    });
   } catch (error) {
     return c.json({ error: handleError(error, "Failed to send message") }, 500);
   }
@@ -64,6 +57,7 @@ messages.post("/send-by-username", async (c) => {
       success: true,
       messageId: messageResult.id.toString(),
       chatId: messageResult.chat.id.toString(),
+      senderId: messageResult.sender.inputPeer,
     });
   } catch (error) {
     return c.json({ error: handleError(error, "Failed to send message") }, 500);
@@ -113,22 +107,14 @@ messages.post("/send-by-phone", async (c) => {
       return c.json({ error: "Failed to get user data" }, 500);
     }
 
-    // Resolve the peer to ensure it's in the cache before sending
-    try {
-      await client.resolvePeer(user.id);
-    } catch (_e) {
-      // If peer resolution fails, try to get full user info to populate cache
-      await client.call({
-        _: "users.getFullUser",
-        id: {
-          _: "inputUser",
-          userId: user.id,
-          accessHash: user.accessHash || Long.ZERO,
-        },
-      });
-    }
+    // Create InputPeer directly with accessHash from imported user
+    const inputPeer = {
+      _: "inputPeerUser" as const,
+      userId: user.id,
+      accessHash: user.accessHash || Long.ZERO,
+    };
 
-    const messageResult = await client.sendText(user.id, text);
+    const messageResult = await client.sendText(inputPeer, text);
 
     return c.json({
       success: true,
