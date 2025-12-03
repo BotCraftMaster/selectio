@@ -5,11 +5,7 @@ import {
   telegramSession,
   vacancyResponse,
 } from "@selectio/db/schema";
-import {
-  createUserClient,
-  sendMessageByPhone,
-  sendMessageByUsername,
-} from "@selectio/tg-client/client";
+import { tgClientSDK } from "@selectio/tg-client/sdk";
 import { generateWelcomeMessage } from "../services/candidate-welcome-service";
 import { inngest } from "./client";
 
@@ -89,55 +85,54 @@ export const sendCandidateWelcomeBatchFunction = inngest.createFunction(
               );
             }
 
-            // Создаем клиент с сохраненной сессией
-            const { client } = await createUserClient(
-              Number.parseInt(session.apiId, 10),
-              session.apiHash,
-              session.sessionData as Record<string, string>,
-            );
-
             // Генерируем приветственное сообщение
             const welcomeMessage = await generateWelcomeMessage(response.id);
 
-            let sendResult:
-              | { success: boolean; message: string; chatId?: string }
-              | undefined;
+            let sendResult: {
+              success: boolean;
+              messageId: string;
+              chatId: string;
+            } | null = null;
 
             // Пытаемся отправить по username, если он есть
             if (response.telegramUsername) {
               console.log(
                 `📨 Попытка отправки по username: @${response.telegramUsername}`,
               );
-              sendResult = await sendMessageByUsername(
-                client,
-                response.telegramUsername,
-                welcomeMessage,
-              );
-
-              if (!sendResult.success && response.phone) {
-                console.log(
-                  `⚠️ Не удалось отправить по username, пробуем по телефону`,
-                );
+              try {
+                sendResult = await tgClientSDK.sendMessageByUsername({
+                  apiId: Number.parseInt(session.apiId, 10),
+                  apiHash: session.apiHash,
+                  sessionData: session.sessionData as Record<string, string>,
+                  username: response.telegramUsername,
+                  text: welcomeMessage,
+                });
+              } catch (_error) {
+                if (response.phone) {
+                  console.log(
+                    `⚠️ Не удалось отправить по username, пробуем по телефону`,
+                  );
+                }
               }
             }
 
             // Если username не сработал или его нет, пробуем по телефону
-            if ((!sendResult || !sendResult.success) && response.phone) {
+            if (!sendResult && response.phone) {
               console.log(
                 `📞 Попытка отправки по номеру телефона: ${response.phone}`,
               );
-              sendResult = await sendMessageByPhone(
-                client,
-                response.phone,
-                welcomeMessage,
-                response.candidateName || undefined,
-              );
+              sendResult = await tgClientSDK.sendMessageByPhone({
+                apiId: Number.parseInt(session.apiId, 10),
+                apiHash: session.apiHash,
+                sessionData: session.sessionData as Record<string, string>,
+                phone: response.phone,
+                text: welcomeMessage,
+                firstName: response.candidateName || undefined,
+              });
             }
 
-            if (!sendResult || !sendResult.success) {
-              throw new Error(
-                sendResult?.message || "Не удалось отправить сообщение",
-              );
+            if (!sendResult) {
+              throw new Error("Не удалось отправить сообщение");
             }
 
             // Обновляем lastUsedAt для сессии

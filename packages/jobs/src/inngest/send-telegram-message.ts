@@ -5,7 +5,7 @@ import {
   telegramMessage,
   telegramSession,
 } from "@selectio/db";
-import { createUserClient } from "@selectio/tg-client/client";
+import { tgClientSDK } from "@selectio/tg-client/sdk";
 import { inngest } from "./client";
 
 /**
@@ -58,16 +58,16 @@ export const sendTelegramMessageFunction = inngest.createFunction(
           );
         }
 
-        // Создаем клиент с сохраненной сессией
-        const { client } = await createUserClient(
-          Number.parseInt(session.apiId, 10),
-          session.apiHash,
-          session.sessionData as Record<string, string>,
-        );
+        // Отправляем сообщение через SDK
+        const result = await tgClientSDK.sendMessage({
+          apiId: Number.parseInt(session.apiId, 10),
+          apiHash: session.apiHash,
+          sessionData: session.sessionData as Record<string, string>,
+          chatId,
+          text: content,
+        });
 
-        // Отправляем сообщение
-        const sentMessage = await client.sendText(chatId, content);
-        const telegramMessageId = String(sentMessage.id);
+        const telegramMessageId = result.messageId;
 
         // Обновляем lastUsedAt для сессии
         await db
