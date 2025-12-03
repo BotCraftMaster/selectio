@@ -24,12 +24,31 @@ export function extractChatIdFromResumeUrl(resumeUrl: string): string | null {
  */
 export async function sendHHChatMessage(params: {
   workspaceId: string;
-  chatId: string;
+  responseId: string;
   text: string;
 }): Promise<{ success: boolean; error?: string }> {
-  const { workspaceId, chatId, text } = params;
+  const { workspaceId, responseId, text } = params;
 
   try {
+    // Получаем отклик с chat_id
+    const response = await db.query.vacancyResponse.findFirst({
+      where: (fields) => eq(fields.id, responseId),
+    });
+
+    if (!response) {
+      return {
+        success: false,
+        error: "Отклик не найден",
+      };
+    }
+
+    if (!response.chatId) {
+      return {
+        success: false,
+        error: "chat_id не найден для этого отклика",
+      };
+    }
+
     // Получаем интеграцию hh.ru для workspace
     const hhIntegration = await db.query.integration.findFirst({
       where: (fields, { and }) =>
@@ -63,10 +82,10 @@ export async function sendHHChatMessage(params: {
     const idempotencyKey = randomUUID();
 
     // Отправляем запрос в hh.ru API с полными браузерными заголовками
-    const response = await axios.post(
+    const apiResponse = await axios.post(
       "https://chatik.hh.ru/chatik/api/send",
       {
-        chatId: Number(chatId),
+        chatId: Number(response.chatId),
         idempotencyKey,
         text,
       },
@@ -96,11 +115,15 @@ export async function sendHHChatMessage(params: {
       },
     );
 
-    if (response.status !== 200) {
-      console.error("Ошибка отправки в hh.ru:", response.status, response.data);
+    if (apiResponse.status !== 200) {
+      console.error(
+        "Ошибка отправки в hh.ru:",
+        apiResponse.status,
+        apiResponse.data,
+      );
       return {
         success: false,
-        error: `HTTP ${response.status}: ${JSON.stringify(response.data)}`,
+        error: `HTTP ${apiResponse.status}: ${JSON.stringify(apiResponse.data)}`,
       };
     }
 
@@ -110,7 +133,7 @@ export async function sendHHChatMessage(params: {
       .set({ lastUsedAt: new Date() })
       .where(eq(integration.id, hhIntegration.id));
 
-    console.log(`✅ Сообщение отправлено в hh.ru чат ${chatId}`);
+    console.log(`✅ Сообщение отправлено в hh.ru чат ${response.chatId}`);
 
     return { success: true };
   } catch (error) {

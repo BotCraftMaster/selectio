@@ -7,10 +7,7 @@ import {
 } from "@selectio/db/schema";
 import { tgClientSDK } from "@selectio/tg-client/sdk";
 import { generateWelcomeMessage } from "../services/candidate-welcome-service";
-import {
-  extractChatIdFromResumeUrl,
-  sendHHChatMessage,
-} from "../services/hh-chat-service";
+import { sendHHChatMessage } from "../services/hh-chat-service";
 import { inngest } from "./client";
 
 /**
@@ -162,43 +159,37 @@ export const sendCandidateWelcomeFunction = inngest.createFunction(
         }
 
         // Если Telegram не сработал, пробуем hh.ru
-        if (!sendResult && response.resumeUrl) {
+        if (!sendResult) {
           console.log(`📧 Попытка отправки через hh.ru`);
 
-          const chatId = extractChatIdFromResumeUrl(response.resumeUrl);
+          const hhResult = await sendHHChatMessage({
+            workspaceId: response.vacancy.workspaceId,
+            responseId,
+            text: welcomeMessage,
+          });
 
-          if (chatId) {
-            const hhResult = await sendHHChatMessage({
-              workspaceId: response.vacancy.workspaceId,
-              chatId,
-              text: welcomeMessage,
-            });
+          if (hhResult.success) {
+            console.log(`✅ Сообщение отправлено через hh.ru`);
 
-            if (hhResult.success) {
-              console.log(`✅ Сообщение отправлено через hh.ru`);
+            // Обновляем статус отправки приветствия
+            await db
+              .update(vacancyResponse)
+              .set({
+                welcomeSentAt: new Date(),
+              })
+              .where(eq(vacancyResponse.id, responseId));
 
-              // Обновляем статус отправки приветствия
-              await db
-                .update(vacancyResponse)
-                .set({
-                  welcomeSentAt: new Date(),
-                })
-                .where(eq(vacancyResponse.id, responseId));
-
-              return {
-                success: true,
-                messageId: "",
-                chatId,
-                method: "hh",
-              };
-            }
-
-            console.error(
-              `❌ Не удалось отправить через hh.ru: ${hhResult.error}`,
-            );
-          } else {
-            console.error(`❌ Не удалось извлечь chatId из resumeUrl`);
+            return {
+              success: true,
+              messageId: "",
+              chatId: response.chatId || "",
+              method: "hh",
+            };
           }
+
+          console.error(
+            `❌ Не удалось отправить через hh.ru: ${hhResult.error}`,
+          );
         }
 
         // Если ничего не сработало
