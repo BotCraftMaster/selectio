@@ -55,8 +55,8 @@ export async function optimizeImageToBase64(
  */
 export async function optimizeAvatar(input: Buffer | string): Promise<string> {
   return optimizeImageToBase64(input, {
-    width: 256,
-    height: 256,
+    width: 100,
+    height: 100,
     quality: 85,
     format: "webp",
   });
@@ -67,8 +67,8 @@ export async function optimizeAvatar(input: Buffer | string): Promise<string> {
  */
 export async function optimizeLogo(input: Buffer | string): Promise<string> {
   return optimizeImageToBase64(input, {
-    width: 512,
-    height: 512,
+    width: 100,
+    height: 100,
     quality: 85,
     format: "webp",
   });
