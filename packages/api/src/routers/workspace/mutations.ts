@@ -22,8 +22,15 @@ export const workspaceMutations = {
         });
       }
 
+      // Оптимизируем логотип, если он передан
+      const dataToCreate = { ...input };
+      if (dataToCreate.logo?.startsWith("data:image/")) {
+        const { optimizeLogo } = await import("@selectio/lib");
+        dataToCreate.logo = await optimizeLogo(dataToCreate.logo);
+      }
+
       // Создать workspace
-      const workspace = await workspaceRepository.create(input);
+      const workspace = await workspaceRepository.create(dataToCreate);
 
       if (!workspace) {
         throw new TRPCError({
@@ -75,7 +82,14 @@ export const workspaceMutations = {
         }
       }
 
-      const updated = await workspaceRepository.update(input.id, input.data);
+      // Оптимизируем логотип, если он передан
+      const dataToUpdate = { ...input.data };
+      if (dataToUpdate.logo?.startsWith("data:image/")) {
+        const { optimizeLogo } = await import("@selectio/lib");
+        dataToUpdate.logo = await optimizeLogo(dataToUpdate.logo);
+      }
+
+      const updated = await workspaceRepository.update(input.id, dataToUpdate);
       return updated;
     }),
 

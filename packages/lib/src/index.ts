@@ -1,4 +1,5 @@
 // S3 utilities
-export * from "./s3";
 
-// Other utilities can be added here
+// Image utilities
+export * from "./image";
+export * from "./s3";

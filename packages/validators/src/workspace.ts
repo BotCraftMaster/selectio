@@ -15,7 +15,14 @@ export const createWorkspaceSchema = z.object({
     .regex(/^[a-z0-9-]+$/, "Slug может содержать только буквы, цифры и дефис"),
   description: z.string().max(500).optional(),
   website: z.string().url("Некорректный URL").optional().or(z.literal("")),
-  logo: z.string().url("Некорректный URL").optional().or(z.literal("")),
+  logo: z
+    .string()
+    .refine(
+      (val) => !val || val.startsWith("data:image/"),
+      "Logo must be a valid data URL",
+    )
+    .optional()
+    .or(z.literal("")),
 });
 
 export const updateWorkspaceSchema = z.object({
@@ -28,7 +35,14 @@ export const updateWorkspaceSchema = z.object({
     .optional(),
   description: z.string().max(500).optional(),
   website: z.string().url().optional().or(z.literal("")),
-  logo: z.string().url().optional().or(z.literal("")),
+  logo: z
+    .string()
+    .refine(
+      (val) => !val || val.startsWith("data:image/"),
+      "Logo must be a valid data URL",
+    )
+    .optional()
+    .or(z.literal("")),
 });
 
 export const addUserToWorkspaceSchema = z.object({
