@@ -4,22 +4,6 @@ import { integration } from "@selectio/db/schema";
 import axios from "axios";
 
 /**
- * Извлекает chatId из resume_url
- * Пример: https://hh.ru/resume/66b4c21d000e7fb565004a23a1387263686e79?vacancyId=127379451&t=4927104694&resumeId=243250533
- * Возвращает: 4927104694
- */
-export function extractChatIdFromResumeUrl(resumeUrl: string): string | null {
-  try {
-    const url = new URL(resumeUrl);
-    const chatId = url.searchParams.get("t");
-    return chatId;
-  } catch (error) {
-    console.error("Ошибка парсинга resume_url:", error);
-    return null;
-  }
-}
-
-/**
  * Отправляет сообщение в чат hh.ru
  */
 export async function sendHHChatMessage(params: {
@@ -78,9 +62,12 @@ export async function sendHHChatMessage(params: {
       .map((cookie) => `${cookie.name}=${cookie.value}`)
       .join("; ");
 
-    // Генерируем уникальный idempotencyKey
     const idempotencyKey = randomUUID();
-
+    console.log({
+      chatId: Number(response.chatId),
+      idempotencyKey,
+      text,
+    });
     // Отправляем запрос в hh.ru API с полными браузерными заголовками
     const apiResponse = await axios.post(
       "https://chatik.hh.ru/chatik/api/send",

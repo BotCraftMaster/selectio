@@ -157,5 +157,8 @@ export async function createUserClient(
     storage,
   });
 
+  // Подключаемся к Telegram
+  await client.connect();
+
   return { client, storage };
 }

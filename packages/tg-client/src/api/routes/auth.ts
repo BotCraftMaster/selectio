@@ -20,7 +20,6 @@ auth.post("/send-code", async (c) => {
     const { apiId, apiHash, phone } = result.data;
     const { client, storage } = await createUserClient(apiId, apiHash);
 
-    await client.connect();
     const authResult = await client.sendCode({ phone });
 
     if ("phoneCodeHash" in authResult) {
@@ -68,7 +67,6 @@ auth.post("/sign-in", async (c) => {
     );
     storage = clientData.storage;
 
-    await clientData.client.connect();
     const user = await clientData.client.signIn({
       phone,
       phoneCode,

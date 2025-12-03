@@ -7,10 +7,7 @@ import {
 } from "@selectio/db/schema";
 import { tgClientSDK } from "@selectio/tg-client/sdk";
 import { generateWelcomeMessage } from "../services/candidate-welcome-service";
-import {
-  extractChatIdFromResumeUrl,
-  sendHHChatMessage,
-} from "../services/hh-chat-service";
+import { sendHHChatMessage } from "../services/hh-chat-service";
 import { inngest } from "./client";
 
 /**
@@ -47,7 +44,7 @@ export const sendCandidateWelcomeBatchFunction = inngest.createFunction(
           phone: true,
           candidateName: true,
           vacancyId: true,
-          resumeUrl: true,
+          chatId: true,
         },
         with: {
           vacancy: {
@@ -137,44 +134,38 @@ export const sendCandidateWelcomeBatchFunction = inngest.createFunction(
             }
 
             // Если не удалось отправить через Telegram, пробуем через hh.ru
-            if (!sendResult && response.resumeUrl) {
+            if (!sendResult) {
               console.log(`📧 Попытка отправки через hh.ru`);
 
-              const chatId = extractChatIdFromResumeUrl(response.resumeUrl);
+              const hhResult = await sendHHChatMessage({
+                workspaceId,
+                responseId: response.id,
+                text: welcomeMessage,
+              });
 
-              if (chatId) {
-                const hhResult = await sendHHChatMessage({
-                  workspaceId,
-                  chatId,
-                  text: welcomeMessage,
-                });
+              if (hhResult.success) {
+                console.log(`✅ Сообщение отправлено через hh.ru`);
 
-                if (hhResult.success) {
-                  console.log(`✅ Сообщение отправлено через hh.ru`);
+                // Обновляем статус отправки приветствия
+                await db
+                  .update(vacancyResponse)
+                  .set({
+                    welcomeSentAt: new Date(),
+                  })
+                  .where(eq(vacancyResponse.id, response.id));
 
-                  // Обновляем статус отправки приветствия
-                  await db
-                    .update(vacancyResponse)
-                    .set({
-                      welcomeSentAt: new Date(),
-                    })
-                    .where(eq(vacancyResponse.id, response.id));
-
-                  return {
-                    responseId: response.id,
-                    username: response.telegramUsername,
-                    chatId,
-                    success: true,
-                    method: "hh",
-                  };
-                }
-
-                console.error(
-                  `❌ Не удалось отправить через hh.ru: ${hhResult.error}`,
-                );
-              } else {
-                console.error(`❌ Не удалось извлечь chatId из resumeUrl`);
+                return {
+                  responseId: response.id,
+                  username: response.telegramUsername,
+                  chatId: response.chatId || "",
+                  success: true,
+                  method: "hh",
+                };
               }
+
+              console.error(
+                `❌ Не удалось отправить через hh.ru: ${hhResult.error}`,
+              );
             }
 
             if (!sendResult) {
