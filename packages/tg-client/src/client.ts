@@ -26,7 +26,7 @@ export async function initClient() {
 
   try {
     await tg.start({
-      botToken: BOT_TOKEN,
+      //   botToken: BOT_TOKEN,
     });
     isInitialized = true;
     console.log("✅ MTCute клиент инициализирован");
