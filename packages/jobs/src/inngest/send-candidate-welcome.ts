@@ -2,9 +2,14 @@ import { db, eq } from "@selectio/db";
 import {
   telegramConversation,
   telegramMessage,
+  telegramSession,
   vacancyResponse,
 } from "@selectio/db/schema";
-import { sendMessageByPhone, sendMessageByUsername } from "@selectio/tg-client";
+import {
+  createUserClient,
+  sendMessageByPhone,
+  sendMessageByUsername,
+} from "@selectio/tg-client/client";
 import { generateWelcomeMessage } from "../services/candidate-welcome-service";
 import { inngest } from "./client";
 
@@ -72,6 +77,26 @@ export const sendCandidateWelcomeFunction = inngest.createFunction(
       });
 
       try {
+        // Получаем активную сессию для workspace
+        const workspaceId = response.vacancy.workspaceId;
+        const session = await db.query.telegramSession.findFirst({
+          where: eq(telegramSession.workspaceId, workspaceId),
+          orderBy: (sessions, { desc }) => [desc(sessions.lastUsedAt)],
+        });
+
+        if (!session) {
+          throw new Error(
+            `Нет активной Telegram сессии для workspace ${workspaceId}`,
+          );
+        }
+
+        // Создаем клиент с сохраненной сессией
+        const { client } = await createUserClient(
+          Number.parseInt(session.apiId, 10),
+          session.apiHash,
+          session.sessionData as Record<string, string>,
+        );
+
         let sendResult:
           | { success: boolean; message: string; chatId?: string }
           | undefined;
@@ -79,7 +104,11 @@ export const sendCandidateWelcomeFunction = inngest.createFunction(
         // Пытаемся отправить по username, если он есть
         if (username) {
           console.log(`📨 Попытка отправки по username: @${username}`);
-          sendResult = await sendMessageByUsername(username, welcomeMessage);
+          sendResult = await sendMessageByUsername(
+            client,
+            username,
+            welcomeMessage,
+          );
 
           if (sendResult.success) {
             console.log("✅ Сообщение отправлено по username", {
@@ -87,6 +116,13 @@ export const sendCandidateWelcomeFunction = inngest.createFunction(
               username,
               chatId: sendResult.chatId,
             });
+
+            // Обновляем lastUsedAt
+            await db
+              .update(telegramSession)
+              .set({ lastUsedAt: new Date() })
+              .where(eq(telegramSession.id, session.id));
+
             return sendResult;
           }
 
@@ -99,6 +135,7 @@ export const sendCandidateWelcomeFunction = inngest.createFunction(
         if (phone) {
           console.log(`📞 Попытка отправки по номеру телефона: ${phone}`);
           sendResult = await sendMessageByPhone(
+            client,
             phone,
             welcomeMessage,
             response.candidateName || undefined,
@@ -110,6 +147,13 @@ export const sendCandidateWelcomeFunction = inngest.createFunction(
               phone,
               chatId: sendResult.chatId,
             });
+
+            // Обновляем lastUsedAt
+            await db
+              .update(telegramSession)
+              .set({ lastUsedAt: new Date() })
+              .where(eq(telegramSession.id, session.id));
+
             return sendResult;
           }
 

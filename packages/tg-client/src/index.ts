@@ -1,7 +1,8 @@
+export { initClient, tg } from "./client";
+export { ExportableStorage } from "./storage";
 export {
   checkUsername,
-  initClient,
+  createUserClient,
   sendMessageByPhone,
   sendMessageByUsername,
-  tg,
-} from "./client";
+} from "./user-client";

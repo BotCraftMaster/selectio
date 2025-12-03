@@ -7,6 +7,14 @@
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./src/index.ts"
+    },
+    "./client": {
+      "types": "./dist/client.d.ts",
+      "default": "./src/client.ts"
+    },
+    "./sdk": {
+      "types": "./dist/sdk/client.d.ts",
+      "default": "./src/sdk/client.ts"
     }
   },
   "license": "MIT",
@@ -14,11 +22,15 @@
     "build": "tsc",
     "clean": "git clean -xdf .cache .turbo dist node_modules",
     "dev": "tsc",
+    "api": "bun run src/api/index.ts",
+    "api:dev": "bun --watch src/api/index.ts",
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
   "dependencies": {
+    "@hono/node-server": "^1.13.7",
     "@mtcute/bun": "0.27.1",
-    "@selectio/config": "workspace:*"
+    "@selectio/config": "workspace:*",
+    "hono": "^4.6.14"
   },
   "devDependencies": {
     "@selectio/tsconfig": "workspace:*",

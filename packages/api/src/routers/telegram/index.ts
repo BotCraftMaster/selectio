@@ -1,7 +1,18 @@
+import {
+  checkPasswordRouter,
+  deleteSessionRouter,
+  getSessionsRouter,
+  sendCodeRouter,
+  signInRouter,
+} from "./auth";
 import { getConversationRouter } from "./get-conversation";
 import { getFileUrlRouter } from "./get-file-url";
 import { getMessagesRouter } from "./get-messages";
 import { sendMessageRouter } from "./send-message";
+import {
+  sendUserMessageByPhoneRouter,
+  sendUserMessageRouter,
+} from "./send-user-message";
 import { transcribeVoiceRouter } from "./transcribe-voice";
 
 export const telegramRouter = {
@@ -10,4 +21,13 @@ export const telegramRouter = {
   sendMessage: sendMessageRouter,
   file: getFileUrlRouter,
   transcribeVoice: transcribeVoiceRouter,
+  // Auth
+  sendCode: sendCodeRouter,
+  signIn: signInRouter,
+  checkPassword: checkPasswordRouter,
+  getSessions: getSessionsRouter,
+  deleteSession: deleteSessionRouter,
+  // User messages
+  sendUserMessage: sendUserMessageRouter,
+  sendUserMessageByPhone: sendUserMessageByPhoneRouter,
 };
