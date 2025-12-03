@@ -11,7 +11,6 @@ export const user = pgTable("users", {
   image: text("image"),
   username: text("username"),
   bio: text("bio"),
-  language: text("language").default("en"),
   role: text("role", { enum: userRoleEnum }).default("user").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at")

@@ -10,7 +10,6 @@ export const updateAccount = protectedProcedure
       .update(user)
       .set({
         name: input.name,
-        language: input.language,
         image: input.image,
         updatedAt: new Date(),
       })

@@ -9,33 +9,16 @@ import {
   FormLabel,
   FormMessage,
   Input,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
 } from "@selectio/ui";
-import { toast } from "sonner";
 import {
   type AccountFormValues,
   accountFormSchema,
 } from "@selectio/validators";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 
 import { useTRPC } from "~/trpc/react";
-
-const languages = [
-  { label: "Английский", value: "en" },
-  { label: "Французский", value: "fr" },
-  { label: "Немецкий", value: "de" },
-  { label: "Испанский", value: "es" },
-  { label: "Португальский", value: "pt" },
-  { label: "Русский", value: "ru" },
-  { label: "Японский", value: "ja" },
-  { label: "Корейский", value: "ko" },
-  { label: "Китайский", value: "zh" },
-];
 
 export function AccountForm({
   initialData,
@@ -81,35 +64,6 @@ export function AccountForm({
               <Input placeholder="Ваше имя" {...field} />
               <p className="text-sm text-amber-700/70">
                 Это имя будет отображаться в вашем профиле и в письмах.
-              </p>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        {/* Language Field */}
-        <FormField
-          control={form.control}
-          name="language"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-foreground font-medium">
-                Язык
-              </FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Выберите язык" />
-                </SelectTrigger>
-                <SelectContent>
-                  {languages.map((language) => (
-                    <SelectItem key={language.value} value={language.value}>
-                      {language.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <p className="text-sm text-amber-700/70">
-                Этот язык будет использоваться в панели управления.
               </p>
               <FormMessage />
             </FormItem>
