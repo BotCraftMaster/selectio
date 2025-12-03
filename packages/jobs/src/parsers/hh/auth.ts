@@ -7,7 +7,7 @@ export async function performLogin(
   log: Log,
   email: string,
   password: string,
-  workspaceId?: string,
+  workspaceId: string,
 ) {
   log.info("🔍 Поиск поля email...");
   await page.waitForSelector('input[type="text"][name="username"]', {

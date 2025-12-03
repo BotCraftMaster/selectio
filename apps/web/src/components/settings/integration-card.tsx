@@ -21,6 +21,7 @@ interface IntegrationCardProps {
   availableIntegration: (typeof AVAILABLE_INTEGRATIONS)[number];
   integration?: Integration;
   onEdit: () => void;
+  workspaceId: string;
 }
 
 const INTEGRATION_ICONS: Record<string, React.ReactNode> = {
@@ -31,6 +32,7 @@ export function IntegrationCard({
   availableIntegration,
   integration,
   onEdit,
+  workspaceId,
 }: IntegrationCardProps) {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
@@ -38,8 +40,10 @@ export function IntegrationCard({
   const deleteMutation = useMutation(
     trpc.integration.delete.mutationOptions({
       onSuccess: () => {
+        // Инвалидируем все запросы integration.list
         queryClient.invalidateQueries({
-          queryKey: trpc.integration.list.queryKey(),
+          predicate: (query) =>
+            query.queryKey[0] === "integration" && query.queryKey[1] === "list",
         });
       },
     }),
@@ -118,7 +122,10 @@ export function IntegrationCard({
                 variant="outline"
                 size="sm"
                 onClick={() =>
-                  deleteMutation.mutate({ type: availableIntegration.type })
+                  deleteMutation.mutate({
+                    type: availableIntegration.type,
+                    workspaceId,
+                  })
                 }
                 disabled={deleteMutation.isPending}
               >

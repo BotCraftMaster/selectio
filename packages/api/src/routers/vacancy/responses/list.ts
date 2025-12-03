@@ -111,7 +111,7 @@ export const list = protectedProcedure
     }
 
     // Добавляем поиск по ФИО кандидата
-    if (search && search.trim()) {
+    if (search?.trim()) {
       whereConditions.push(
         ilike(vacancyResponse.candidateName, `%${search.trim()}%`),
       );

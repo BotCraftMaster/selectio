@@ -11,13 +11,13 @@ puppeteer.use(StealthPlugin());
 
 export { refreshVacancyResponses } from "./refresh-responses";
 
-export async function runHHParser(options?: {
+export async function runHHParser(options: {
   skipResponses?: boolean;
-  workspaceId?: string;
+  workspaceId: string;
 }) {
   const integration = await getIntegrationWithCredentials(
     "hh",
-    options?.workspaceId,
+    options.workspaceId,
   );
   if (!integration?.credentials?.email || !integration?.credentials?.password) {
     throw new Error("HH credentials не найдены в интеграциях");

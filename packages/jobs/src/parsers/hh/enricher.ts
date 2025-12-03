@@ -79,7 +79,7 @@ async function checkAndPerformLogin(
   page: Page,
   email: string,
   password: string,
-  workspaceId?: string,
+  workspaceId: string,
 ) {
   console.log("🔐 Проверка авторизации...");
 
@@ -107,7 +107,7 @@ async function checkAndPerformLogin(
   await saveCookies("hh", cookies, workspaceId);
 }
 
-export async function runEnricher(workspaceId?: string) {
+export async function runEnricher(workspaceId: string) {
   const credentials = await getIntegrationCredentials("hh", workspaceId);
   if (!credentials?.email || !credentials?.password) {
     throw new Error("HH credentials не найдены в интеграциях");

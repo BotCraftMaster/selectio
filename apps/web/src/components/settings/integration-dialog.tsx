@@ -93,9 +93,13 @@ export function IntegrationDialog({
     trpc.integration.create.mutationOptions({
       onSuccess: () => {
         toast.success("Интеграция успешно создана");
-        queryClient.invalidateQueries({
-          queryKey: trpc.integration.list.queryKey(),
-        });
+        if (workspaceData?.workspace?.id) {
+          queryClient.invalidateQueries({
+            queryKey: trpc.integration.list.queryKey({
+              workspaceId: workspaceData.workspace.id,
+            }),
+          });
+        }
         handleClose();
       },
       onError: (err) => {

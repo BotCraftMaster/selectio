@@ -10,7 +10,7 @@ import type { Cookie } from "crawlee";
 export async function saveCookies(
   integrationType: string,
   cookies: Cookie[],
-  workspaceId?: string,
+  workspaceId: string,
 ): Promise<void> {
   try {
     await saveCookiesForIntegration(integrationType, cookies, workspaceId);
@@ -26,7 +26,7 @@ export async function saveCookies(
  */
 export async function loadCookies(
   integrationType: string,
-  workspaceId?: string,
+  workspaceId: string,
 ): Promise<Cookie[] | null> {
   try {
     const cookies = await loadCookiesForIntegration(

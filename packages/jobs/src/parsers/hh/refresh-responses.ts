@@ -14,7 +14,7 @@ puppeteer.use(StealthPlugin());
  */
 export async function refreshVacancyResponses(
   vacancyId: string,
-  workspaceId?: string,
+  workspaceId: string,
 ): Promise<{ newCount: number }> {
   console.log(`🔄 Обновление откликов для вакансии ${vacancyId}...`);
 

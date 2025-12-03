@@ -31,7 +31,6 @@ export default function AccountSettingsPage() {
   const [avatar, setAvatar] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
-  // Инициализация данных
   useEffect(() => {
     if (user) {
       setName(user.name || "");
@@ -49,7 +48,6 @@ export default function AccountSettingsPage() {
     try {
       await authClient.updateUser(data);
       toast.success("Изменения сохранены");
-      // Обновляем локальные данные из сессии
       await queryClient.invalidateQueries(trpc.user.pathFilter());
     } catch {
       toast.error("Не удалось сохранить изменения");

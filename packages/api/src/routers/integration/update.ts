@@ -5,6 +5,7 @@ import { protectedProcedure } from "../../trpc";
 export const updateIntegration = protectedProcedure
   .input(
     z.object({
+      workspaceId: z.string(),
       type: z.string(),
       name: z.string().optional(),
       credentials: z.record(z.string(), z.string()).optional(),
@@ -13,14 +14,14 @@ export const updateIntegration = protectedProcedure
     }),
   )
   .mutation(async ({ input }) => {
-    const integration = await getIntegration(input.type);
+    const integration = await getIntegration(input.type, input.workspaceId);
 
     if (!integration) {
       throw new Error("Интеграция не найдена");
     }
 
     const updated = await upsertIntegration({
-      workspaceId: integration.workspaceId,
+      workspaceId: input.workspaceId,
       type: input.type,
       name: input.name ?? integration.name,
       credentials: input.credentials ?? integration.credentials,

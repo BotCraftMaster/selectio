@@ -75,6 +75,7 @@ async function checkAndPerformLogin(
   page: Page,
   email: string,
   password: string,
+  workspaceId: string,
 ) {
   await page.goto(HH_CONFIG.urls.login, {
     waitUntil: "domcontentloaded",
@@ -88,11 +89,11 @@ async function checkAndPerformLogin(
   const loginInput = await page.$('input[type="text"][name="username"]');
   if (loginInput) {
     const log = new Log();
-    await performLogin(page, log, email, password);
+    await performLogin(page, log, email, password, workspaceId);
   }
 
   const cookies = await page.cookies();
-  await saveCookies("hh", cookies);
+  await saveCookies("hh", cookies, workspaceId);
 }
 
 /**
@@ -119,17 +120,31 @@ export const refreshSingleResumeFunction = inngest.createFunction(
           resumeUrl: true,
           candidateName: true,
         },
+        with: {
+          vacancy: {
+            columns: {
+              workspaceId: true,
+            },
+          },
+        },
       });
 
       if (!result) {
         throw new Error(`Отклик ${responseId} не найден`);
       }
 
+      if (!result.vacancy?.workspaceId) {
+        throw new Error(`WorkspaceId не найден для отклика ${responseId}`);
+      }
+
       return result;
     });
 
     const credentials = await step.run("get-credentials", async () => {
-      const creds = await getIntegrationCredentials("hh");
+      const creds = await getIntegrationCredentials(
+        "hh",
+        response.vacancy.workspaceId,
+      );
       if (!creds?.email || !creds?.password) {
         throw new Error("HH credentials не найдены в интеграциях");
       }
@@ -137,7 +152,7 @@ export const refreshSingleResumeFunction = inngest.createFunction(
     });
 
     await step.run("parse-resume", async () => {
-      const savedCookies = await loadCookies("hh");
+      const savedCookies = await loadCookies("hh", response.vacancy.workspaceId);
       const browser = await setupBrowser();
 
       try {
@@ -146,6 +161,7 @@ export const refreshSingleResumeFunction = inngest.createFunction(
           page,
           credentials.email,
           credentials.password,
+          response.vacancy.workspaceId,
         );
 
         console.log(`📊 Парсинг резюме: ${response.candidateName}`);

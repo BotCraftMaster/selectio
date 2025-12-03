@@ -17,27 +17,13 @@ export interface Cookie {
 /**
  * Получить интеграцию по типу и workspace_id
  */
-export async function getIntegration(type: string, workspaceId?: string) {
-  if (workspaceId) {
-    const result = await db
-      .select()
-      .from(integration)
-      .where(
-        and(
-          eq(integration.type, type),
-          eq(integration.workspaceId, workspaceId),
-        ),
-      )
-      .limit(1);
-
-    return result[0] ?? null;
-  }
-
-  // Fallback: если workspaceId не передан, ищем первую интеграцию по типу
+export async function getIntegration(type: string, workspaceId: string) {
   const result = await db
     .select()
     .from(integration)
-    .where(eq(integration.type, type))
+    .where(
+      and(eq(integration.type, type), eq(integration.workspaceId, workspaceId)),
+    )
     .limit(1);
 
   return result[0] ?? null;
@@ -47,7 +33,7 @@ export async function getIntegration(type: string, workspaceId?: string) {
  * Создать или обновить интеграцию
  */
 export async function upsertIntegration(data: NewIntegration) {
-  const existing = await getIntegration(data.type);
+  const existing = await getIntegration(data.type, data.workspaceId);
 
   // Шифруем credentials перед сохранением
   const encryptedData = {
@@ -83,7 +69,7 @@ export async function upsertIntegration(data: NewIntegration) {
 export async function saveCookiesForIntegration(
   type: string,
   cookies: Cookie[],
-  workspaceId?: string,
+  workspaceId: string,
 ) {
   const existing = await getIntegration(type, workspaceId);
 
@@ -106,7 +92,7 @@ export async function saveCookiesForIntegration(
  */
 export async function loadCookiesForIntegration(
   type: string,
-  workspaceId?: string,
+  workspaceId: string,
 ): Promise<Cookie[] | null> {
   const result = await getIntegration(type, workspaceId);
 
@@ -122,7 +108,7 @@ export async function loadCookiesForIntegration(
  */
 export async function getIntegrationCredentials(
   type: string,
-  workspaceId?: string,
+  workspaceId: string,
 ): Promise<Record<string, string> | null> {
   const result = await getIntegration(type, workspaceId);
   if (!result?.credentials) {
@@ -138,7 +124,7 @@ export async function getIntegrationCredentials(
  */
 export async function getIntegrationWithCredentials(
   type: string,
-  workspaceId?: string,
+  workspaceId: string,
 ): Promise<{
   credentials: Record<string, string>;
   workspaceId: string;
@@ -159,7 +145,7 @@ export async function getIntegrationWithCredentials(
 /**
  * Обновить время последнего использования
  */
-export async function updateLastUsed(type: string, workspaceId?: string) {
+export async function updateLastUsed(type: string, workspaceId: string) {
   const existing = await getIntegration(type, workspaceId);
 
   if (existing) {
@@ -180,9 +166,19 @@ export async function getAllIntegrations() {
 }
 
 /**
+ * Получить интеграции по workspace
+ */
+export async function getIntegrationsByWorkspace(workspaceId: string) {
+  return db
+    .select()
+    .from(integration)
+    .where(eq(integration.workspaceId, workspaceId));
+}
+
+/**
  * Удалить интеграцию
  */
-export async function deleteIntegration(type: string, workspaceId?: string) {
+export async function deleteIntegration(type: string, workspaceId: string) {
   const existing = await getIntegration(type, workspaceId);
 
   if (existing) {

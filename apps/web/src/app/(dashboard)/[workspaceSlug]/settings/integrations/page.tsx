@@ -11,19 +11,26 @@ import { AVAILABLE_INTEGRATIONS } from "~/lib/integrations";
 import { useTRPC } from "~/trpc/react";
 
 export default function IntegrationsPage() {
-  const trpc = useTRPC();
+  const api = useTRPC();
   const params = useParams();
   const workspaceSlug = params.workspaceSlug as string;
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingType, setEditingType] = useState<string | null>(null);
 
-  const { data: workspace } = useQuery(
-    trpc.workspace.bySlug.queryOptions({ slug: workspaceSlug }),
-  );
+  const workspaceQueryOptions = api.workspace.bySlug.queryOptions({
+    slug: workspaceSlug,
+  });
+  const { data: workspaceData } = useQuery(workspaceQueryOptions);
 
-  const { data: integrations, isLoading } = useQuery(
-    trpc.integration.list.queryOptions(),
-  );
+  const workspaceId = workspaceData?.workspace?.id || "";
+
+  const integrationsQueryOptions = api.integration.list.queryOptions({
+    workspaceId,
+  });
+  const { data: integrations, isLoading } = useQuery({
+    ...integrationsQueryOptions,
+    enabled: !!workspaceId,
+  });
 
   const handleEdit = (type: string) => {
     setEditingType(type);
@@ -44,16 +51,14 @@ export default function IntegrationsPage() {
     );
   }
 
-  const workspaceId = workspace?.workspace?.id || "";
-
   return (
     <div className="space-y-6">
       {workspaceId && <TelegramSessionsCard workspaceId={workspaceId} />}
 
       <div className="grid gap-4">
         {AVAILABLE_INTEGRATIONS.map((availableIntegration) => {
-          const existingIntegration = integrations?.find(
-            (i) => i.type === availableIntegration.type,
+          const existingIntegration = (integrations as any)?.find(
+            (i: { type: string }) => i.type === availableIntegration.type,
           );
 
           return (
@@ -62,6 +67,7 @@ export default function IntegrationsPage() {
               availableIntegration={availableIntegration}
               integration={existingIntegration}
               onEdit={() => handleEdit(availableIntegration.type)}
+              workspaceId={workspaceId}
             />
           );
         })}
