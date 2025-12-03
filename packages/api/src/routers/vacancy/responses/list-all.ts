@@ -8,6 +8,7 @@ export const listAll = protectedProcedure.query(({ ctx }) => {
     with: {
       vacancy: true,
       screening: true,
+      telegramInterviewScoring: true,
     },
   });
 });

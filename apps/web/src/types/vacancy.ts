@@ -6,6 +6,11 @@ export type VacancyResponse = DbVacancyResponse & {
     detailedScore: number;
     analysis: string | null;
   } | null;
+  telegramInterviewScoring?: {
+    score: number;
+    detailedScore: number;
+    analysis: string | null;
+  } | null;
   conversation?: {
     id: string;
     chatId: string;

@@ -13,6 +13,7 @@ export const getById = protectedProcedure
         screening: true,
         conversation: true,
         resumePdfFile: true,
+        telegramInterviewScoring: true,
       },
     });
   });

@@ -89,13 +89,14 @@ export const sendMessageResponseSchema = z.object({
   success: z.boolean(),
   messageId: z.string(),
   chatId: z.string(),
+  senderId: z.string(),
 });
 
 export const sendMessageByPhoneResponseSchema = z.object({
   success: z.boolean(),
   messageId: z.string(),
   chatId: z.string(),
-  userId: z.string(),
+  senderId: z.string(),
 });
 
 export const healthResponseSchema = z.object({

@@ -153,6 +153,7 @@ export const list = protectedProcedure
             messages: true,
           },
         },
+        telegramInterviewScoring: true,
       },
     });
 

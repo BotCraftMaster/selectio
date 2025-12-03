@@ -91,6 +91,7 @@ export const sendCandidateWelcomeFunction = inngest.createFunction(
           success: boolean;
           messageId: string;
           chatId: string;
+          senderId?: string;
         } | null = null;
 
         // Пытаемся отправить по username, если он есть
@@ -228,6 +229,7 @@ export const sendCandidateWelcomeFunction = inngest.createFunction(
               responseId,
               vacancyId: response.vacancyId,
               username,
+              senderId: "senderId" in result ? result.senderId : result.chatId,
             }),
           })
           .onConflictDoUpdate({
@@ -240,6 +242,8 @@ export const sendCandidateWelcomeFunction = inngest.createFunction(
                 responseId,
                 vacancyId: response.vacancyId,
                 username,
+                senderId:
+                  "senderId" in result ? result.senderId : result.chatId,
               }),
             },
           })

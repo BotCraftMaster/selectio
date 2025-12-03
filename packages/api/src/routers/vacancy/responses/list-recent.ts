@@ -9,6 +9,7 @@ export const listRecent = protectedProcedure.query(({ ctx }) => {
     with: {
       vacancy: true,
       screening: true,
+      telegramInterviewScoring: true,
     },
   });
 });

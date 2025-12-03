@@ -1,6 +1,7 @@
 import { relations } from "drizzle-orm";
 import { file } from "../file";
 import { telegramConversation } from "../telegram/conversation";
+import { telegramInterviewScoring } from "../telegram/interview-scoring";
 import { workspace } from "../workspace/workspace";
 import { vacancyResponse } from "./response";
 import { responseScreening } from "./screening";
@@ -32,6 +33,10 @@ export const vacancyResponseRelations = relations(
     resumePdfFile: one(file, {
       fields: [vacancyResponse.resumePdfFileId],
       references: [file.id],
+    }),
+    telegramInterviewScoring: one(telegramInterviewScoring, {
+      fields: [vacancyResponse.id],
+      references: [telegramInterviewScoring.responseId],
     }),
   }),
 );

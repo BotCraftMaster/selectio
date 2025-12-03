@@ -112,6 +112,15 @@ export function ResponseRow({
         )}
       </TableCell>
       <TableCell>
+        {response.telegramInterviewScoring ? (
+          <ScreeningHoverCard screening={response.telegramInterviewScoring} />
+        ) : (
+          <Badge variant="outline" className="text-muted-foreground">
+            Не оценен
+          </Badge>
+        )}
+      </TableCell>
+      <TableCell>
         {response.hrSelectionStatus ? (
           <Badge variant="secondary" className="whitespace-nowrap">
             {HR_SELECTION_STATUS_LABELS[response.hrSelectionStatus]}

@@ -61,6 +61,7 @@ export function ResponseTableHeader({
             {renderSortIcon("detailedScore")}
           </button>
         </TableHead>
+        <TableHead>Интервью TG</TableHead>
         <TableHead>Отбор HR</TableHead>
         <TableHead>Контакты</TableHead>
         <TableHead>

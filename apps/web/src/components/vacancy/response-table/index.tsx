@@ -121,6 +121,9 @@ export function ResponseTable({ vacancyId, accessToken }: ResponseTableProps) {
             <Skeleton className="h-6 w-16" />
           </TableCell>
           <TableCell>
+            <Skeleton className="h-6 w-16" />
+          </TableCell>
+          <TableCell>
             <Skeleton className="h-6 w-20" />
           </TableCell>
           <TableCell>
@@ -137,7 +140,7 @@ export function ResponseTable({ vacancyId, accessToken }: ResponseTableProps) {
     }
 
     if (responses.length === 0) {
-      return <EmptyState hasResponses={total > 0} colSpan={8} />;
+      return <EmptyState hasResponses={total > 0} colSpan={9} />;
     }
 
     return responses.map((response: VacancyResponse) => (

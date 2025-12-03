@@ -1,5 +1,4 @@
 import { Hono } from "hono";
-import { send } from "process";
 import { createUserClient } from "../../user-client";
 import {
   sendMessageByPhoneSchema,
@@ -31,6 +30,7 @@ messages.post("/send", async (c) => {
       success: true,
       messageId: messageResult.id.toString(),
       chatId: messageResult.chat.id.toString(),
+      senderId: messageResult.sender.id.toString(),
     });
   } catch (error) {
     return c.json({ error: handleError(error, "Failed to send message") }, 500);
@@ -57,7 +57,7 @@ messages.post("/send-by-username", async (c) => {
       success: true,
       messageId: messageResult.id.toString(),
       chatId: messageResult.chat.id.toString(),
-      senderId: messageResult.sender.inputPeer,
+      senderId: messageResult.sender.id.toString(),
     });
   } catch (error) {
     return c.json({ error: handleError(error, "Failed to send message") }, 500);
@@ -120,7 +120,7 @@ messages.post("/send-by-phone", async (c) => {
       success: true,
       messageId: messageResult.id.toString(),
       chatId: messageResult.chat.id.toString(),
-      userId: user.id.toString(),
+      senderId: messageResult.sender.id.toString(),
     });
   } catch (error) {
     return c.json({ error: handleError(error, "Failed to send message") }, 500);

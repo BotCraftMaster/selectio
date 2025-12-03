@@ -58,11 +58,13 @@ export const sendTelegramMessageFunction = inngest.createFunction(
           );
         }
 
-        // Пытаемся получить username из metadata
+        // Пытаемся получить senderId или username из metadata
+        let senderId: string | undefined;
         let username: string | undefined;
         if (conversation.metadata) {
           try {
             const metadata = JSON.parse(conversation.metadata);
+            senderId = metadata.senderId;
             username = metadata.username;
           } catch (e) {
             console.warn("Не удалось распарсить metadata", e);
@@ -70,8 +72,24 @@ export const sendTelegramMessageFunction = inngest.createFunction(
         }
 
         // Отправляем сообщение через SDK
-        let result: { success: boolean; messageId: string; chatId: string };
-        if (username) {
+        let result: {
+          success: boolean;
+          messageId: string;
+          chatId: string;
+          senderId: string;
+        };
+
+        // Приоритет: senderId > username > chatId
+        if (senderId) {
+          console.log(`📨 Отправка по senderId: ${senderId}`);
+          result = await tgClientSDK.sendMessage({
+            apiId: Number.parseInt(session.apiId, 10),
+            apiHash: session.apiHash,
+            sessionData: session.sessionData as Record<string, string>,
+            chatId: Number(senderId),
+            text: content,
+          });
+        } else if (username) {
           console.log(`📨 Отправка по username: @${username}`);
           result = await tgClientSDK.sendMessageByUsername({
             apiId: Number.parseInt(session.apiId, 10),
