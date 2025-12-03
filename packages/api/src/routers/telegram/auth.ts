@@ -14,15 +14,16 @@ export const sendCodeRouter = protectedProcedure
     z.object({
       apiId: z.number(),
       apiHash: z.string(),
-      phone: z.string(),
+      phone: z.string().trim(),
     }),
   )
   .mutation(async ({ input }) => {
     try {
+      const phone = input.phone.trim().replace(/\s+/g, "");
       const result = await tgClientSDK.sendCode({
         apiId: input.apiId,
         apiHash: input.apiHash,
-        phone: input.phone,
+        phone,
       });
 
       return result;
@@ -45,18 +46,19 @@ export const signInRouter = protectedProcedure
       workspaceId: z.string(),
       apiId: z.number(),
       apiHash: z.string(),
-      phone: z.string(),
-      phoneCode: z.string(),
+      phone: z.string().trim(),
+      phoneCode: z.string().trim(),
       phoneCodeHash: z.string(),
     }),
   )
   .mutation(async ({ input }) => {
     try {
+      const phone = input.phone.trim().replace(/\s+/g, "");
       const result = await tgClientSDK.signIn({
         apiId: input.apiId,
         apiHash: input.apiHash,
-        phone: input.phone,
-        phoneCode: input.phoneCode,
+        phone,
+        phoneCode: input.phoneCode.trim(),
         phoneCodeHash: input.phoneCodeHash,
       });
 
@@ -67,7 +69,7 @@ export const signInRouter = protectedProcedure
           workspaceId: input.workspaceId,
           apiId: input.apiId.toString(),
           apiHash: input.apiHash,
-          phone: input.phone,
+          phone,
           sessionData: result.sessionData as Record<string, unknown>,
           userInfo: {
             id: result.user.id,
@@ -115,17 +117,18 @@ export const checkPasswordRouter = protectedProcedure
       workspaceId: z.string(),
       apiId: z.number(),
       apiHash: z.string(),
-      phone: z.string(),
+      phone: z.string().trim(),
       password: z.string(),
       sessionData: z.record(z.string(), z.string()),
     }),
   )
   .mutation(async ({ input }) => {
     try {
+      const phone = input.phone.trim().replace(/\s+/g, "");
       const result = await tgClientSDK.checkPassword({
         apiId: input.apiId,
         apiHash: input.apiHash,
-        phone: input.phone,
+        phone,
         password: input.password,
         sessionData: input.sessionData,
       });
@@ -137,7 +140,7 @@ export const checkPasswordRouter = protectedProcedure
           workspaceId: input.workspaceId,
           apiId: input.apiId.toString(),
           apiHash: input.apiHash,
-          phone: input.phone,
+          phone,
           sessionData: result.sessionData as Record<string, unknown>,
           userInfo: {
             id: result.user.id,

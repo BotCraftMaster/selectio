@@ -3,20 +3,23 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Button,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
   Form,
+  FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
   Input,
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
 } from "@selectio/ui";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Hash, Key, Phone, Send } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -114,6 +117,16 @@ export function TelegramAuthDialog({
         if (err.message === "SESSION_PASSWORD_NEEDED") {
           setStep(3);
           toast.info("Требуется пароль 2FA");
+        } else if (
+          err.message === "PHONE_CODE_EXPIRED" ||
+          err.message === "PHONE_CODE_INVALID"
+        ) {
+          const errorText =
+            err.message === "PHONE_CODE_EXPIRED"
+              ? "Код истёк. Отправьте новый код"
+              : "Неверный код";
+          toast.error(errorText);
+          form2.reset();
         } else {
           toast.error(err.message || "Ошибка авторизации");
         }
@@ -178,6 +191,16 @@ export function TelegramAuthDialog({
     });
   };
 
+  const handleResendCode = () => {
+    if (!apiData) return;
+
+    sendCodeMutation.mutate({
+      apiId: apiData.apiId,
+      apiHash: apiData.apiHash,
+      phone: apiData.phone,
+    });
+  };
+
   const onStep3Submit = (data: Step3Values) => {
     if (!apiData) return;
 
@@ -190,95 +213,122 @@ export function TelegramAuthDialog({
   };
 
   return (
-    <Sheet open={open} onOpenChange={(open: boolean) => !open && handleClose()}>
-      <SheetContent className="sm:max-w-md">
-        <SheetHeader className="space-y-3">
-          <SheetTitle>Подключить Telegram</SheetTitle>
-          <SheetDescription>
+    <Dialog
+      open={open}
+      onOpenChange={(open: boolean) => !open && handleClose()}
+    >
+      <DialogContent className="sm:max-w-lg">
+        <DialogHeader className="space-y-3">
+          <DialogTitle className="text-2xl font-semibold">
+            Подключить Telegram
+          </DialogTitle>
+          <DialogDescription className="text-base">
             {step === 1 && "Введите данные вашего Telegram приложения"}
             {step === 2 && "Введите код из SMS"}
             {step === 3 && "Введите пароль 2FA"}
-          </SheetDescription>
-        </SheetHeader>
+          </DialogDescription>
+        </DialogHeader>
 
         {step === 1 && (
           <Form {...form1}>
             <form
               onSubmit={form1.handleSubmit(onStep1Submit)}
-              className="flex flex-col h-full gap-6 mt-6"
+              className="space-y-6 pt-2"
             >
-              <div className="space-y-5 flex-1 overflow-y-auto px-6">
-                <div className="text-sm text-muted-foreground space-y-2 mb-4">
-                  <p>
-                    Для подключения Telegram нужно создать приложение на{" "}
-                    <a
-                      href="https://my.telegram.org/apps"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-primary hover:underline"
-                    >
-                      my.telegram.org/apps
-                    </a>
-                  </p>
-                </div>
-
-                <FormField
-                  control={form1.control}
-                  name="apiId"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>API ID</FormLabel>
-                      <Input placeholder="123456" {...field} />
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form1.control}
-                  name="apiHash"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>API Hash</FormLabel>
-                      <Input
-                        placeholder="0123456789abcdef0123456789abcdef"
-                        {...field}
-                      />
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form1.control}
-                  name="phone"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Номер телефона</FormLabel>
-                      <Input placeholder="+79991234567" {...field} />
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+              <div className="rounded-lg bg-muted/50 p-4 text-sm text-muted-foreground">
+                <p>
+                  Для подключения Telegram нужно создать приложение на{" "}
+                  <a
+                    href="https://my.telegram.org/apps"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-medium text-primary hover:underline"
+                  >
+                    my.telegram.org/apps
+                  </a>
+                </p>
               </div>
 
-              <SheetFooter className="gap-3 sm:gap-2">
+              <FormField
+                control={form1.control}
+                name="apiId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-medium flex items-center gap-2">
+                      <Hash className="h-4 w-4 text-muted-foreground" />
+                      API ID
+                    </FormLabel>
+                    <FormControl>
+                      <Input placeholder="123456" className="h-11" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form1.control}
+                name="apiHash"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-medium flex items-center gap-2">
+                      <Key className="h-4 w-4 text-muted-foreground" />
+                      API Hash
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="0123456789abcdef0123456789abcdef"
+                        className="h-11"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form1.control}
+                name="phone"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-medium flex items-center gap-2">
+                      <Phone className="h-4 w-4 text-muted-foreground" />
+                      Номер телефона
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="+79991234567"
+                        className="h-11"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormDescription className="text-xs">
+                      Введите номер в международном формате
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <DialogFooter className="gap-2">
                 <Button
                   type="button"
                   variant="outline"
                   onClick={handleClose}
-                  className="flex-1 sm:flex-none"
+                  className="h-11"
                 >
                   Отмена
                 </Button>
                 <Button
                   type="submit"
                   disabled={sendCodeMutation.isPending}
-                  className="flex-1 sm:flex-none"
+                  className="h-11"
                 >
+                  <Send className="mr-2 h-4 w-4" />
                   {sendCodeMutation.isPending ? "Отправка..." : "Отправить код"}
                 </Button>
-              </SheetFooter>
+              </DialogFooter>
             </form>
           </Form>
         )}
@@ -287,39 +337,63 @@ export function TelegramAuthDialog({
           <Form {...form2}>
             <form
               onSubmit={form2.handleSubmit(onStep2Submit)}
-              className="flex flex-col h-full gap-6 mt-6"
+              className="space-y-6 pt-2"
             >
-              <div className="space-y-5 flex-1 px-6">
-                <FormField
-                  control={form2.control}
-                  name="phoneCode"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Код из SMS</FormLabel>
-                      <Input placeholder="12345" {...field} />
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+              <FormField
+                control={form2.control}
+                name="phoneCode"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-medium flex items-center gap-2">
+                      <Send className="h-4 w-4 text-muted-foreground" />
+                      Код из SMS
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="12345"
+                        className="h-11 text-center text-lg tracking-widest"
+                        maxLength={5}
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormDescription className="text-xs text-center">
+                      Код отправлен на {apiData?.phone}
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-              <SheetFooter className="gap-3 sm:gap-2">
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={handleResendCode}
+                disabled={sendCodeMutation.isPending}
+                className="w-full h-10"
+              >
+                {sendCodeMutation.isPending
+                  ? "Отправка..."
+                  : "Отправить код повторно"}
+              </Button>
+
+              <DialogFooter className="gap-2">
                 <Button
                   type="button"
                   variant="outline"
                   onClick={handleClose}
-                  className="flex-1 sm:flex-none"
+                  className="h-11"
                 >
                   Отмена
                 </Button>
                 <Button
                   type="submit"
                   disabled={signInMutation.isPending}
-                  className="flex-1 sm:flex-none"
+                  className="h-11"
                 >
                   {signInMutation.isPending ? "Проверка..." : "Войти"}
                 </Button>
-              </SheetFooter>
+              </DialogFooter>
             </form>
           </Form>
         )}
@@ -328,47 +402,54 @@ export function TelegramAuthDialog({
           <Form {...form3}>
             <form
               onSubmit={form3.handleSubmit(onStep3Submit)}
-              className="flex flex-col h-full gap-6 mt-6"
+              className="space-y-6 pt-2"
             >
-              <div className="space-y-5 flex-1 px-6">
-                <FormField
-                  control={form3.control}
-                  name="password"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Пароль 2FA</FormLabel>
+              <FormField
+                control={form3.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-medium flex items-center gap-2">
+                      <Key className="h-4 w-4 text-muted-foreground" />
+                      Пароль 2FA
+                    </FormLabel>
+                    <FormControl>
                       <Input
                         type="password"
                         placeholder="••••••••"
+                        className="h-11"
                         {...field}
                       />
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+                    </FormControl>
+                    <FormDescription className="text-xs">
+                      Введите пароль двухфакторной аутентификации
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-              <SheetFooter className="gap-3 sm:gap-2">
+              <DialogFooter className="gap-2">
                 <Button
                   type="button"
                   variant="outline"
                   onClick={handleClose}
-                  className="flex-1 sm:flex-none"
+                  className="h-11"
                 >
                   Отмена
                 </Button>
                 <Button
                   type="submit"
                   disabled={checkPasswordMutation.isPending}
-                  className="flex-1 sm:flex-none"
+                  className="h-11"
                 >
                   {checkPasswordMutation.isPending ? "Проверка..." : "Войти"}
                 </Button>
-              </SheetFooter>
+              </DialogFooter>
             </form>
           </Form>
         )}
-      </SheetContent>
-    </Sheet>
+      </DialogContent>
+    </Dialog>
   );
 }

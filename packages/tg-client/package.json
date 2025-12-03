@@ -25,7 +25,8 @@
   "dependencies": {
     "@mtcute/bun": "0.27.1",
     "@selectio/config": "workspace:*",
-    "hono": "^4.10.7"
+    "hono": "^4.10.7",
+    "zod": "^4.1.13"
   },
   "devDependencies": {
     "@selectio/tsconfig": "workspace:*",
