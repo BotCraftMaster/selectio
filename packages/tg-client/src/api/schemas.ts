@@ -60,6 +60,47 @@ export const sendMessageByPhoneSchema = z.object({
   firstName: z.string().optional(),
 });
 
+// Response schemas
+export const userSchema = z.object({
+  id: z.string(),
+  firstName: z.string(),
+  lastName: z.string(),
+  username: z.string(),
+  phone: z.string(),
+});
+
+export const sendCodeResponseSchema = z.object({
+  success: z.boolean(),
+  phoneCodeHash: z.string(),
+  timeout: z.number(),
+  sessionData: z.string(),
+});
+
+export const authResponseSchema = z.object({
+  success: z.boolean(),
+  sessionData: z.string(),
+  user: userSchema,
+});
+
+export const sendMessageResponseSchema = z.object({
+  success: z.boolean(),
+  messageId: z.string(),
+  chatId: z.string(),
+});
+
+export const sendMessageByPhoneResponseSchema = z.object({
+  success: z.boolean(),
+  messageId: z.string(),
+  chatId: z.string(),
+  userId: z.string(),
+});
+
+export const healthResponseSchema = z.object({
+  status: z.string(),
+  service: z.string(),
+});
+
+// Input types
 export type SendCodeInput = z.infer<typeof sendCodeSchema>;
 export type SignInInput = z.infer<typeof signInSchema>;
 export type CheckPasswordInput = z.infer<typeof checkPasswordSchema>;
@@ -68,3 +109,13 @@ export type SendMessageByUsernameInput = z.infer<
   typeof sendMessageByUsernameSchema
 >;
 export type SendMessageByPhoneInput = z.infer<typeof sendMessageByPhoneSchema>;
+
+// Response types
+export type User = z.infer<typeof userSchema>;
+export type SendCodeResponse = z.infer<typeof sendCodeResponseSchema>;
+export type AuthResponse = z.infer<typeof authResponseSchema>;
+export type SendMessageResponse = z.infer<typeof sendMessageResponseSchema>;
+export type SendMessageByPhoneResponse = z.infer<
+  typeof sendMessageByPhoneResponseSchema
+>;
+export type HealthResponse = z.infer<typeof healthResponseSchema>;

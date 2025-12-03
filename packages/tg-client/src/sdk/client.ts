@@ -1,3 +1,17 @@
+import type {
+  AuthResponse,
+  CheckPasswordInput,
+  HealthResponse,
+  SendCodeInput,
+  SendCodeResponse,
+  SendMessageByPhoneInput,
+  SendMessageByPhoneResponse,
+  SendMessageByUsernameInput,
+  SendMessageInput,
+  SendMessageResponse,
+  SignInInput,
+} from "../api/schemas";
+
 /**
  * Кастомная ошибка для передачи дополнительных данных
  */
@@ -50,125 +64,55 @@ export class TgClientSDK {
   /**
    * Отправить код авторизации на телефон
    */
-  async sendCode(params: {
-    apiId: number;
-    apiHash: string;
-    phone: string;
-  }): Promise<{
-    success: boolean;
-    phoneCodeHash: string;
-    timeout: number;
-    sessionData: string;
-  }> {
+  async sendCode(params: SendCodeInput): Promise<SendCodeResponse> {
     return this.request("/auth/send-code", params);
   }
 
   /**
    * Войти с кодом из SMS
    */
-  async signIn(params: {
-    apiId: number;
-    apiHash: string;
-    phone: string;
-    phoneCode: string;
-    phoneCodeHash: string;
-    sessionData?: string;
-  }): Promise<{
-    success: boolean;
-    sessionData: string;
-    user: {
-      id: string;
-      firstName: string;
-      lastName: string;
-      username: string;
-      phone: string;
-    };
-  }> {
+  async signIn(params: SignInInput): Promise<AuthResponse> {
     return this.request("/auth/sign-in", params);
   }
 
   /**
    * Войти с паролем 2FA
    */
-  async checkPassword(params: {
-    apiId: number;
-    apiHash: string;
-    phone: string;
-    password: string;
-    sessionData: string;
-  }): Promise<{
-    success: boolean;
-    sessionData: string;
-    user: {
-      id: string;
-      firstName: string;
-      lastName: string;
-      username: string;
-      phone: string;
-    };
-  }> {
+  async checkPassword(params: CheckPasswordInput): Promise<AuthResponse> {
     return this.request("/auth/check-password", params);
   }
 
   /**
    * Отправить сообщение
    */
-  async sendMessage(params: {
-    apiId: number;
-    apiHash: string;
-    sessionData: Record<string, string>;
-    chatId: string;
-    text: string;
-  }): Promise<{
-    success: boolean;
-    messageId: string;
-    chatId: string;
-  }> {
+  async sendMessage(params: SendMessageInput): Promise<SendMessageResponse> {
     return this.request("/messages/send", params);
   }
 
   /**
    * Отправить сообщение по username
    */
-  async sendMessageByUsername(params: {
-    apiId: number;
-    apiHash: string;
-    sessionData: Record<string, string>;
-    username: string;
-    text: string;
-  }): Promise<{
-    success: boolean;
-    messageId: string;
-    chatId: string;
-  }> {
+  async sendMessageByUsername(
+    params: SendMessageByUsernameInput,
+  ): Promise<SendMessageResponse> {
     return this.request("/messages/send-by-username", params);
   }
 
   /**
    * Отправить сообщение по телефону
    */
-  async sendMessageByPhone(params: {
-    apiId: number;
-    apiHash: string;
-    sessionData: Record<string, string>;
-    phone: string;
-    text: string;
-    firstName?: string;
-  }): Promise<{
-    success: boolean;
-    messageId: string;
-    chatId: string;
-    userId: string;
-  }> {
+  async sendMessageByPhone(
+    params: SendMessageByPhoneInput,
+  ): Promise<SendMessageByPhoneResponse> {
     return this.request("/messages/send-by-phone", params);
   }
 
   /**
    * Проверить здоровье сервиса
    */
-  async health(): Promise<{ status: string; service: string }> {
+  async health(): Promise<HealthResponse> {
     const response = await fetch(`${this.baseUrl}/health`);
-    return (await response.json()) as { status: string; service: string };
+    return (await response.json()) as HealthResponse;
   }
 }
 
