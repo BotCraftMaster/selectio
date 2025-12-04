@@ -5,24 +5,27 @@ export async function proxy(request: NextRequest) {
   const sessionCookie = getSessionCookie(request);
   const { pathname } = request.nextUrl;
 
-  // Публичные маршруты
-  const publicPaths = ["/auth", "/api"];
+  // Публичные маршруты (не требуют аутентификации)
+  const publicPaths = ["/auth", "/api", "/invite"];
   const isPublicPath = publicPaths.some((path) => pathname.startsWith(path));
 
-  // Если нет сессии и пытается зайти на защищенный маршрут
+  // Если нет cookie сессии и пытается зайти на защищенный маршрут
   if (!sessionCookie && !isPublicPath) {
     const signInUrl = new URL("/auth/signin", request.url);
     // Сохраняем redirect только для не-корневых путей
-    if (pathname !== "/") {
+    if (
+      pathname !== "/" &&
+      pathname !== "/onboarding" &&
+      pathname !== "/invitations"
+    ) {
       signInUrl.searchParams.set("redirect", pathname);
     }
     return NextResponse.redirect(signInUrl);
   }
 
-  // Если есть сессия и пытается зайти на /auth/*
-  if (sessionCookie && pathname.startsWith("/auth")) {
-    return NextResponse.redirect(new URL("/", request.url));
-  }
+  // Если есть cookie сессии и пытается зайти на страницы авторизации
+  // НЕ редиректим автоматически - пусть auth/layout решает
+  // Это предотвращает циклы когда сессия невалидна
 
   return NextResponse.next();
 }

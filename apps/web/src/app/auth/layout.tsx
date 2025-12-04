@@ -1,10 +1,18 @@
+import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
+import { getSession } from "~/auth/server";
 
 export default async function AuthLayout({
   children,
 }: {
   children: ReactNode;
 }) {
-  // Редирект обрабатывается в middleware
+  const session = await getSession();
+
+  // Если пользователь уже авторизован, редиректим на главную
+  if (session?.user) {
+    redirect("/");
+  }
+
   return <>{children}</>;
 }

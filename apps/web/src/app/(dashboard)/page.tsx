@@ -5,8 +5,9 @@ import { api } from "~/trpc/server";
 export default async function Page() {
   const session = await getSession();
 
+  // Редирект на /auth/signin обрабатывается в proxy
   if (!session?.user) {
-    redirect("/auth/signin");
+    return null;
   }
 
   const caller = await api();
