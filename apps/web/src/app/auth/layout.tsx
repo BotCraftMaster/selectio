@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
-
 import { getSession } from "~/auth/server";
 
 export default async function AuthLayout({
@@ -10,7 +9,7 @@ export default async function AuthLayout({
 }) {
   const session = await getSession();
 
-  // If user is already authenticated, redirect to dashboard
+  // Если пользователь уже авторизован, редиректим на главную
   if (session?.user) {
     redirect("/");
   }

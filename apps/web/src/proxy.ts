@@ -3,23 +3,42 @@ import { type NextRequest, NextResponse } from "next/server";
 
 export async function proxy(request: NextRequest) {
   const sessionCookie = getSessionCookie(request);
+  const { pathname } = request.nextUrl;
 
-  // Публичные маршруты
+  // Публичные маршруты (не требуют аутентификации)
   const publicPaths = ["/auth", "/api", "/invite"];
-  const isPublicPath = publicPaths.some((path) =>
-    request.nextUrl.pathname.startsWith(path),
-  );
+  const isPublicPath = publicPaths.some((path) => pathname.startsWith(path));
 
-  // THIS IS NOT SECURE!
-  // This is the recommended approach to optimistically redirect users
-  // We recommend handling auth checks in each page/route
+  // Если нет cookie сессии и пытается зайти на защищенный маршрут
   if (!sessionCookie && !isPublicPath) {
-    return NextResponse.redirect(new URL("/auth/signin", request.url));
+    const signInUrl = new URL("/auth/signin", request.url);
+    // Сохраняем redirect только для не-корневых путей
+    if (
+      pathname !== "/" &&
+      pathname !== "/onboarding" &&
+      pathname !== "/invitations"
+    ) {
+      signInUrl.searchParams.set("redirect", pathname);
+    }
+    return NextResponse.redirect(signInUrl);
   }
+
+  // Если есть cookie сессии и пытается зайти на страницы авторизации
+  // НЕ редиректим автоматически - пусть auth/layout решает
+  // Это предотвращает циклы когда сессия невалидна
 
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/((?!api|_next/static|_next/image|auth|favicon.ico).*)"],
+  matcher: [
+    /*
+     * Match all request paths except:
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     * - public files (public folder)
+     */
+    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+  ],
 };
