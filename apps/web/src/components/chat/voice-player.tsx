@@ -24,6 +24,7 @@ export function VoicePlayer({
   isTranscribing = false,
 }: VoicePlayerProps) {
   const audioRef = useRef<HTMLAudioElement>(null);
+  const lastSrcRef = useRef<string>("");
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [totalDuration, setTotalDuration] = useState(0);
@@ -36,9 +37,10 @@ export function VoicePlayer({
     if (!audio) return;
 
     // Устанавливаем src только если он изменился
-    if (audio.src !== audioSrc) {
+    if (lastSrcRef.current !== audioSrc) {
       audio.src = audioSrc;
       audio.load();
+      lastSrcRef.current = audioSrc;
     }
 
     const handleTimeUpdate = () => setCurrentTime(audio.currentTime);

@@ -136,6 +136,14 @@ export class WorkspaceRepository {
     });
   }
 
+  // Найти пользователя по email
+  async findUserByEmail(email: string) {
+    const { user } = await import("../schema");
+    return db.query.user.findFirst({
+      where: eq(user.email, email),
+    });
+  }
+
   // Создать invite link
   async createInviteLink(
     workspaceId: string,
