@@ -1,10 +1,15 @@
-import { customSessionClient, emailOTPClient } from "better-auth/client/plugins";
+import {
+  customSessionClient,
+  emailOTPClient,
+} from "better-auth/client/plugins";
 import { createAuthClient } from "better-auth/react";
 import type { auth } from "./server";
 
 export const authClient = createAuthClient({
-  plugins: [
-    emailOTPClient(),
-    customSessionClient<typeof auth>(),
-  ],
+  baseURL:
+    typeof window !== "undefined"
+      ? window.location.origin
+      : "http://localhost:3000",
+  basePath: "/api/auth",
+  plugins: [emailOTPClient(), customSessionClient<typeof auth>()],
 });
