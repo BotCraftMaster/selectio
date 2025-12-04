@@ -23,6 +23,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { authClient } from "~/auth/client";
+import { isValidInternalPath } from "~/lib/auth-utils";
 
 export function LoginForm({
   className,
@@ -39,16 +40,6 @@ export function LoginForm({
       email: "",
     },
   });
-
-  const isValidInternalPath = (path: string): boolean => {
-    // Проверяем, что путь начинается с '/' и не содержит протокол или '//'
-    return (
-      path.startsWith("/") &&
-      !path.includes("//") &&
-      !path.toLowerCase().includes("http:") &&
-      !path.toLowerCase().includes("https:")
-    );
-  };
 
   const onSubmit = async (data: LoginFormData) => {
     setLoading(true);
