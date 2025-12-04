@@ -40,11 +40,15 @@ export function TelegramSessionsCard({ workspaceId }: { workspaceId: string }) {
   return (
     <>
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-          <CardTitle className="text-lg font-medium">
+        <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0 pb-4">
+          <CardTitle className="text-base sm:text-lg font-medium">
             Telegram аккаунты
           </CardTitle>
-          <Button size="sm" onClick={() => setDialogOpen(true)}>
+          <Button
+            size="sm"
+            onClick={() => setDialogOpen(true)}
+            className="w-full sm:w-auto"
+          >
             <Plus className="h-4 w-4 mr-2" />
             Добавить аккаунт
           </Button>
@@ -57,18 +61,18 @@ export function TelegramSessionsCard({ workspaceId }: { workspaceId: string }) {
               {sessions.map((session) => (
                 <div
                   key={session.id}
-                  className="flex items-center justify-between p-3 border rounded-lg"
+                  className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3 border rounded-lg"
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
                       <User className="h-5 w-5 text-primary" />
                     </div>
-                    <div>
-                      <div className="font-medium">
+                    <div className="flex-1 min-w-0">
+                      <div className="font-medium text-sm sm:text-base truncate">
                         {session.userInfo?.firstName}{" "}
                         {session.userInfo?.lastName}
                       </div>
-                      <div className="text-sm text-muted-foreground">
+                      <div className="text-xs sm:text-sm text-muted-foreground truncate">
                         {session.phone}
                         {session.userInfo?.username &&
                           ` • @${session.userInfo.username}`}
@@ -79,10 +83,22 @@ export function TelegramSessionsCard({ workspaceId }: { workspaceId: string }) {
                         ) : (
                           <span className="text-red-600">Неактивна</span>
                         )}
-                        {session.lastUsedAt &&
-                          ` • Последнее использование: ${new Date(
-                            session.lastUsedAt,
-                          ).toLocaleDateString()}`}
+                        {session.lastUsedAt && (
+                          <>
+                            <span className="hidden sm:inline">
+                              {" "}
+                              • Последнее использование:{" "}
+                              {new Date(
+                                session.lastUsedAt,
+                              ).toLocaleDateString()}
+                            </span>
+                            <span className="block sm:hidden">
+                              {new Date(
+                                session.lastUsedAt,
+                              ).toLocaleDateString()}
+                            </span>
+                          </>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -91,14 +107,16 @@ export function TelegramSessionsCard({ workspaceId }: { workspaceId: string }) {
                     size="sm"
                     onClick={() => handleDelete(session.id)}
                     disabled={deleteMutation.isPending}
+                    className="self-end sm:self-auto"
                   >
                     <Trash2 className="h-4 w-4 text-destructive" />
+                    <span className="ml-2 sm:hidden">Удалить</span>
                   </Button>
                 </div>
               ))}
             </div>
           ) : (
-            <div className="text-sm text-muted-foreground text-center py-8">
+            <div className="text-xs sm:text-sm text-muted-foreground text-center py-8">
               Нет подключенных аккаунтов. Добавьте первый аккаунт для работы с
               Telegram.
             </div>
