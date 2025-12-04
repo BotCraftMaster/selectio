@@ -18,7 +18,7 @@
     "with-env": "bun run --env-file ../../.env"
   },
   "dependencies": {
-    "@ai-sdk/openai": "2.0.76",
+    "@ai-sdk/openai": "2.0.77",
     "@selectio/config": "workspace:*",
     "@selectio/db": "workspace:*",
     "@selectio/lib": "workspace:*",
