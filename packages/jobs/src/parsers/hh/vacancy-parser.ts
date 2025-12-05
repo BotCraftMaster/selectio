@@ -3,7 +3,7 @@ import {
   hasVacancyDescription,
   saveBasicVacancy,
   updateVacancyDescription,
-} from "../../services/vacancy-service";
+} from "../../services/vacancy";
 import type { VacancyData } from "../types";
 import { HH_CONFIG } from "./config";
 import { humanBrowse, humanDelay, randomDelay } from "./human-behavior";

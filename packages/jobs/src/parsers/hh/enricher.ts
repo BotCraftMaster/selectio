@@ -7,8 +7,9 @@ import StealthPlugin from "puppeteer-extra-plugin-stealth";
 import {
   getResponsesWithoutDetails,
   updateResponseDetails,
-} from "../../services/response-service";
-import { extractTelegramUsername } from "../../services/telegram-username-service";
+  uploadResumePdf,
+} from "../../services/response";
+import { extractTelegramUsername } from "../../services/messaging";
 import { loadCookies, performLogin, saveCookies } from "./auth";
 import { HH_CONFIG } from "./config";
 import { parseResumeExperience } from "./resume-parser";
@@ -118,7 +119,11 @@ export async function runEnricher(workspaceId: string) {
   console.log("🚀 Запуск обогащения данных резюме...");
 
   // Получаем список откликов без деталей
-  const responsesToEnrich = await getResponsesWithoutDetails();
+  const responsesToEnrichResult = await getResponsesWithoutDetails();
+  if (!responsesToEnrichResult.success) {
+    throw new Error(responsesToEnrichResult.error);
+  }
+  const responsesToEnrich = responsesToEnrichResult.data;
   console.log(
     `📋 Найдено ${responsesToEnrich.length} откликов без детальной информации`,
   );
@@ -171,16 +176,15 @@ export async function runEnricher(workspaceId: string) {
           }
         }
 
-        // Загружаем PDF в S3
         let resumePdfFileId: string | null = null;
         if (experienceData.pdfBuffer) {
-          const { uploadResumePdf } = await import(
-            "../../services/response-service"
-          );
-          resumePdfFileId = await uploadResumePdf(
+          const uploadResult = await uploadResumePdf(
             experienceData.pdfBuffer,
             resumeId,
           );
+          if (uploadResult.success) {
+            resumePdfFileId = uploadResult.data;
+          }
         }
 
         await updateResponseDetails({
