@@ -375,6 +375,51 @@ async function handleVoiceMessage(
 }
 
 /**
+ * Нормализовать MIME subtype в расширение файла
+ */
+function normalizeAudioExtension(mimeType: string): string {
+  // Получаем subtype из MIME type (например, "audio/x-wav" -> "x-wav")
+  const subtype = mimeType.split("/")[1] || "mpeg";
+
+  // Удаляем vendor префиксы (x-, vnd.)
+  let normalized = subtype.replace(/^(x-|vnd\.)/, "");
+
+  // Удаляем суффиксы после "+" (например, "opus+ogg" -> "opus")
+  normalized = normalized.split("+")[0] || normalized;
+
+  // Обрабатываем специальные случаи с разделителями
+  if (normalized.includes(".") || normalized.includes("-")) {
+    // Маппинг известных форматов
+    const knownMappings: Record<string, string> = {
+      wave: "wav",
+      "vnd.wave": "wav",
+      "x-wav": "wav",
+      "x-m4a": "m4a",
+      "x-aiff": "aiff",
+      "x-flac": "flac",
+      mpeg: "mp3",
+      mp4: "m4a",
+    };
+
+    const mapped = knownMappings[subtype.toLowerCase()];
+    if (mapped) {
+      return mapped;
+    }
+
+    // Берем последний токен после разделителя
+    const tokens = normalized.split(/[.-]/);
+    normalized = tokens[tokens.length - 1] || normalized;
+  }
+
+  // Финальная проверка: если пусто или неизвестно, возвращаем mp3
+  if (!normalized || normalized.length === 0) {
+    return "mp3";
+  }
+
+  return normalized;
+}
+
+/**
  * Обработчик аудиофайлов (mp3, m4a, wav и т.д.)
  */
 async function handleAudioFile(
@@ -418,7 +463,7 @@ async function handleAudioFile(
 
     // Определяем расширение из mimeType или используем mp3 по умолчанию
     const mimeType = message.media.mimeType || "audio/mpeg";
-    const extension = mimeType.split("/")[1] || "mp3";
+    const extension = normalizeAudioExtension(mimeType);
     const fileName = `audio_${message.id}.${extension}`;
 
     // Загружаем в S3
