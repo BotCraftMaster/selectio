@@ -272,7 +272,7 @@ class BotManager {
             workspaceId,
             phone,
             authCheck.errorType || "AUTH_ERROR",
-            authCheck.errorMessage || "Unknown auth error",
+            authCheck.errorMessage || "Неизвестная ошибка аутентификации",
           );
           throw new Error(
             `Сессия не авторизована для workspace ${workspaceId}: ${authCheck.errorType}. Требуется повторная авторизация.`,
@@ -324,7 +324,7 @@ class BotManager {
               workspaceId,
               phone,
               authCheck.errorType || "AUTH_ERROR",
-              authCheck.errorMessage || "Unknown auth error",
+              authCheck.errorMessage || "Неизвестная ошибка аутентификации",
             );
             return;
           }
@@ -342,7 +342,7 @@ class BotManager {
             workspaceId,
             phone,
             authCheck.errorType || "AUTH_ERROR",
-            authCheck.errorMessage || "Unknown auth error",
+            authCheck.errorMessage || "Неизвестная ошибка аутентификации",
           );
           return true; // Stop processing
         }

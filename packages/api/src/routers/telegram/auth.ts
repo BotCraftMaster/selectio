@@ -18,14 +18,38 @@ function handle2FAError(
     (error.message.includes("SESSION_PASSWORD_NEEDED") ||
       error.message.includes("2FA is enabled"))
   ) {
-    const sessionData =
-      "data" in error && error.data
-        ? (error.data as { sessionData?: string }).sessionData
-        : fallbackSessionData;
+    let sessionData: string | undefined;
+
+    // Проверяем наличие data в error с type guard
+    if ("data" in error && error.data && typeof error.data === "object") {
+      const errorData = error.data as Record<string, unknown>;
+      if (
+        "sessionData" in errorData &&
+        typeof errorData.sessionData === "string" &&
+        errorData.sessionData.length > 0
+      ) {
+        sessionData = errorData.sessionData;
+      }
+    }
+
+    // Используем fallback только если он валидный
+    if (
+      !sessionData &&
+      fallbackSessionData &&
+      typeof fallbackSessionData === "string" &&
+      fallbackSessionData.length > 0
+    ) {
+      sessionData = fallbackSessionData;
+    }
+
+    // Если нет валидного sessionData, возвращаем null
+    if (!sessionData) {
+      return null;
+    }
 
     return {
       requiresPassword: true,
-      sessionData: sessionData || "",
+      sessionData,
     };
   }
   return null;

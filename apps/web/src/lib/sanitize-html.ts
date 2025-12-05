@@ -1,14 +1,9 @@
-import DOMPurify from "dompurify";
+import DOMPurify from "isomorphic-dompurify";
 
 /**
  * Sanitize HTML content to prevent XSS attacks
  */
 export function sanitizeHtml(html: string): string {
-  if (typeof window === "undefined") {
-    // Server-side: return as-is (will be sanitized on client)
-    return html;
-  }
-
   return DOMPurify.sanitize(html, {
     ALLOWED_TAGS: [
       "p",

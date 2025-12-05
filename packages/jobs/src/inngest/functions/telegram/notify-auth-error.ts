@@ -69,42 +69,51 @@ export const notifyTelegramAuthErrorFunction = inngest.createFunction(
     });
 
     // Send email to each admin in separate idempotent steps
-    const emailResults = await Promise.allSettled(
+    const emailSettledResults = await Promise.allSettled(
       workspaceData.admins
         .filter((admin) => admin.email)
         .map((admin) =>
-          step
-            .run(`send-email-${admin.userId}`, async () => {
-              const reauthorizeLink = `${env.APP_URL}/workspaces/${workspaceData.workspace.slug}/settings/telegram`;
+          step.run(`send-email-${admin.userId}`, async () => {
+            const reauthorizeLink = `${env.APP_URL}/workspaces/${workspaceData.workspace.slug}/settings/telegram`;
 
-              await sendEmail({
-                to: [admin.email],
-                subject: `⚠️ Telegram авторизация слетела: ${workspaceData.workspace.name}`,
-                react: TelegramAuthErrorEmail({
-                  workspaceName: workspaceData.workspace.name,
-                  phone,
-                  errorType,
-                  errorMessage,
-                  reauthorizeLink,
-                }),
-              });
+            await sendEmail({
+              to: [admin.email],
+              subject: `⚠️ Telegram авторизация слетела: ${workspaceData.workspace.name}`,
+              react: TelegramAuthErrorEmail({
+                workspaceName: workspaceData.workspace.name,
+                phone,
+                errorType,
+                errorMessage,
+                reauthorizeLink,
+              }),
+            });
 
-              console.log(`✅ Email sent to ${admin.email}`);
-              return { email: admin.email, success: true };
-            })
-            .catch((error) => {
-              const errorMsg =
-                error instanceof Error ? error.message : "Unknown error";
-              console.error(
-                `❌ Failed to send email to ${admin.email}:`,
-                error,
-              );
-              return { email: admin.email, success: false, error: errorMsg };
-            }),
+            console.log(`✅ Email sent to ${admin.email}`);
+            return { email: admin.email, success: true };
+          }),
         ),
-    ).then((results) =>
-      results.map((r) => (r.status === "fulfilled" ? r.value : r.reason)),
     );
+
+    // Map settled results to success/failure records
+    const emailResults = emailSettledResults.map((result, index) => {
+      const admin = workspaceData.admins.filter((a) => a.email)[index];
+      if (result.status === "fulfilled") {
+        return result.value;
+      }
+      const errorMsg =
+        result.reason instanceof Error
+          ? result.reason.message
+          : "Unknown error";
+      console.error(
+        `❌ Failed to send email to ${admin?.email}:`,
+        result.reason,
+      );
+      return {
+        email: admin?.email || "unknown",
+        success: false,
+        error: errorMsg,
+      };
+    });
 
     const successCount = emailResults.filter((r) => r.success).length;
     const failCount = emailResults.filter((r) => !r.success).length;
