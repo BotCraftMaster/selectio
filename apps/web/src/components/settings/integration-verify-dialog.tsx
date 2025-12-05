@@ -14,13 +14,17 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { CheckCircle2, Loader2, XCircle } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { fetchVerifyIntegrationToken } from "~/actions/realtime";
+import {
+  fetchVerifyIntegrationToken,
+  triggerVerifyIntegrationHH,
+} from "~/actions/realtime";
 import { useTRPC } from "~/trpc/react";
 
 interface IntegrationVerifyDialogProps {
   open: boolean;
   onClose: () => void;
   workspaceId: string;
+  integrationId: string;
   integrationType: string;
   integrationName: string;
 }
@@ -31,6 +35,7 @@ export function IntegrationVerifyDialog({
   open,
   onClose,
   workspaceId,
+  integrationId,
   integrationType,
   integrationName,
 }: IntegrationVerifyDialogProps) {
@@ -45,12 +50,17 @@ export function IntegrationVerifyDialog({
   });
 
   const verifyMutation = useMutation({
-    mutationFn: async (input: { workspaceId: string; type: string }) => {
-      // @ts-expect-error - verify endpoint exists but types not yet updated
-      return await trpc.integration.verify.mutate(input);
+    mutationFn: async () => {
+      return await triggerVerifyIntegrationHH(workspaceId, integrationId);
     },
-    onSuccess: () => {
-      setState("verifying");
+    onSuccess: (result) => {
+      if (result.success) {
+        setState("verifying");
+      } else {
+        setState("error");
+        setErrorMessage(result.error || "Неизвестная ошибка");
+        toast.error(`Ошибка: ${result.error}`);
+      }
     },
     onError: (error: Error) => {
       setState("error");
@@ -91,12 +101,8 @@ export function IntegrationVerifyDialog({
   }, [latestData, state, integrationType, queryClient, workspaceId, trpc]);
 
   const handleVerify = () => {
-    setState("verifying");
     setErrorMessage("");
-    verifyMutation.mutate({
-      workspaceId,
-      type: integrationType,
-    });
+    verifyMutation.mutate();
   };
 
   const handleClose = () => {

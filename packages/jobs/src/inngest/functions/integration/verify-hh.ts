@@ -39,6 +39,27 @@ export const verifyHHIntegrationFunction = inngest.createFunction(
         throw new Error("Cookies для HH не найдены");
       }
 
+      // Проверяем наличие credentials
+      if (!hhIntegration.credentials) {
+        throw new Error("Credentials для HH не найдены");
+      }
+
+      // Извлекаем username и password из credentials
+      const credentials = hhIntegration.credentials as {
+        username?: string;
+        email?: string;
+        password?: string;
+      };
+
+      const username = credentials.username || credentials.email;
+      const password = credentials.password;
+
+      if (!username || !password) {
+        throw new Error(
+          "Некорректные credentials: отсутствует username/email или password",
+        );
+      }
+
       // Формируем Cookie header
       const cookieHeader = hhIntegration.cookies
         .map((cookie) => `${cookie.name}=${cookie.value}`)
@@ -94,8 +115,8 @@ export const verifyHHIntegrationFunction = inngest.createFunction(
         formData.append("accountType", "EMPLOYER");
         formData.append("role", "employer");
         formData.append("remember", "yes");
-        formData.append("username", "kodermax@gmail.com");
-        formData.append("password", "qwertymax");
+        formData.append("username", username);
+        formData.append("password", password);
 
         // Делаем POST запрос для проверки авторизации
         const response = await axios.post(

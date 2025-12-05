@@ -62,3 +62,32 @@ export async function fetchVerifyIntegrationToken(workspaceId: string) {
 
   return token;
 }
+
+/**
+ * Server action для триггера проверки интеграции
+ */
+export async function triggerVerifyIntegrationHH(
+  workspaceId: string,
+  integrationId: string,
+) {
+  try {
+    const { inngest } = await import("@selectio/jobs/client");
+    await inngest.send({
+      name: `integration/hh.verify`,
+      data: {
+        workspaceId,
+        integrationId,
+      },
+    });
+    return { success: true as const };
+  } catch (error) {
+    console.error("Failed to trigger verify-integration:", error);
+    return {
+      success: false as const,
+      error:
+        error instanceof Error
+          ? error.message
+          : "Failed to trigger verification",
+    };
+  }
+}

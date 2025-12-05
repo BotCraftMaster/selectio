@@ -5,8 +5,8 @@ import { z } from "zod";
  */
 
 export const verifyHHIntegrationDataSchema = z.object({
-  integrationId: z.string().min(1, "Integration ID is required"),
-  workspaceId: z.string().min(1, "Workspace ID is required"),
+  integrationId: z.string().min(1, "Требуется идентификатор интеграции"),
+  workspaceId: z.string().min(1, "Требуется идентификатор рабочей области"),
 });
 
 /**
