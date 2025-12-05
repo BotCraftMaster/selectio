@@ -107,6 +107,19 @@ export const signInRouter = protectedProcedure
   )
   .mutation(async ({ input }) => {
     try {
+      // Проверяем, есть ли уже сессия для этого workspace
+      const existingSession = await db.query.telegramSession.findFirst({
+        where: eq(telegramSession.workspaceId, input.workspaceId),
+      });
+
+      if (existingSession) {
+        throw new TRPCError({
+          code: "CONFLICT",
+          message:
+            "В этом workspace уже подключен Telegram аккаунт. Удалите существующий аккаунт перед добавлением нового.",
+        });
+      }
+
       const phone = input.phone.trim().replace(/\s+/g, "");
       const result = await tgClientSDK.signIn({
         apiId: input.apiId,
@@ -177,6 +190,19 @@ export const checkPasswordRouter = protectedProcedure
   )
   .mutation(async ({ input }) => {
     try {
+      // Проверяем, есть ли уже сессия для этого workspace
+      const existingSession = await db.query.telegramSession.findFirst({
+        where: eq(telegramSession.workspaceId, input.workspaceId),
+      });
+
+      if (existingSession) {
+        throw new TRPCError({
+          code: "CONFLICT",
+          message:
+            "В этом workspace уже подключен Telegram аккаунт. Удалите существующий аккаунт перед добавлением нового.",
+        });
+      }
+
       const phone = input.phone.trim().replace(/\s+/g, "");
       const result = await tgClientSDK.checkPassword({
         apiId: input.apiId,

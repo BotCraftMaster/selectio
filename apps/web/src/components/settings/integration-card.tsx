@@ -20,6 +20,7 @@ interface Integration {
 interface IntegrationCardProps {
   availableIntegration: (typeof AVAILABLE_INTEGRATIONS)[number];
   integration?: Integration;
+  onCreate: () => void;
   onEdit: () => void;
   workspaceId: string;
   userRole?: string;
@@ -32,6 +33,7 @@ const INTEGRATION_ICONS: Record<string, React.ReactNode> = {
 export function IntegrationCard({
   availableIntegration,
   integration,
+  onCreate,
   onEdit,
   workspaceId,
   userRole,
@@ -144,7 +146,7 @@ export function IntegrationCard({
                 </Button>
               </>
             ) : (
-              <Button size="sm" onClick={onEdit} className="w-full sm:w-auto">
+              <Button size="sm" onClick={onCreate} className="w-full sm:w-auto">
                 <Plus className="h-4 w-4 mr-2" />
                 Подключить
               </Button>

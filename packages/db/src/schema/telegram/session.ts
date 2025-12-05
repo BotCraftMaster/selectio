@@ -6,8 +6,10 @@ export const telegramSession = pgTable("telegram_sessions", {
   id: uuid("id").primaryKey().default(sql`uuid_generate_v7()`),
 
   // Workspace к которому принадлежит сессия
+  // Один workspace - один Telegram аккаунт
   workspaceId: text("workspace_id")
     .notNull()
+    .unique()
     .references(() => workspace.id, { onDelete: "cascade" }),
 
   // API ID и Hash приложения
