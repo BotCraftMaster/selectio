@@ -2,9 +2,58 @@ import { db } from "@selectio/db/client";
 import { telegramSession } from "@selectio/db/schema";
 import { tgClientSDK } from "@selectio/tg-client/sdk";
 import { TRPCError } from "@trpc/server";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { protectedProcedure } from "../../trpc";
+
+/**
+ * Проверяет, требуется ли 2FA и возвращает соответствующий ответ
+ */
+function handle2FAError(
+  error: unknown,
+  fallbackSessionData?: string,
+): { requiresPassword: true; sessionData: string } | null {
+  if (
+    error instanceof Error &&
+    (error.message.includes("SESSION_PASSWORD_NEEDED") ||
+      error.message.includes("2FA is enabled"))
+  ) {
+    let sessionData: string | undefined;
+
+    // Проверяем наличие data в error с type guard
+    if ("data" in error && error.data && typeof error.data === "object") {
+      const errorData = error.data as Record<string, unknown>;
+      if (
+        "sessionData" in errorData &&
+        typeof errorData.sessionData === "string" &&
+        errorData.sessionData.length > 0
+      ) {
+        sessionData = errorData.sessionData;
+      }
+    }
+
+    // Используем fallback только если он валидный
+    if (
+      !sessionData &&
+      fallbackSessionData &&
+      typeof fallbackSessionData === "string" &&
+      fallbackSessionData.length > 0
+    ) {
+      sessionData = fallbackSessionData;
+    }
+
+    // Если нет валидного sessionData, возвращаем null
+    if (!sessionData) {
+      return null;
+    }
+
+    return {
+      requiresPassword: true,
+      sessionData,
+    };
+  }
+  return null;
+}
 
 /**
  * Отправить код авторизации на телефон
@@ -97,23 +146,11 @@ export const signInRouter = protectedProcedure
     } catch (error) {
       console.error("Ошибка авторизации:", error);
 
-      // Проверяем нужен ли пароль 2FA
-      if (
-        error instanceof Error &&
-        (error.message.includes("SESSION_PASSWORD_NEEDED") ||
-          error.message.includes("2FA is enabled"))
-      ) {
-        // Получаем sessionData из ошибки если это TgClientError
-        const sessionData =
-          "data" in error && error.data
-            ? (error.data as { sessionData?: string }).sessionData
-            : input.sessionData;
-
-        // Возвращаем специальный ответ вместо ошибки
+      const twoFAResponse = handle2FAError(error, input.sessionData);
+      if (twoFAResponse) {
         return {
           success: false,
-          requiresPassword: true,
-          sessionData: sessionData || "",
+          ...twoFAResponse,
         };
       }
 
@@ -211,11 +248,24 @@ export const getSessionsRouter = protectedProcedure
  * Удалить сессию
  */
 export const deleteSessionRouter = protectedProcedure
-  .input(z.object({ sessionId: z.string() }))
+  .input(z.object({ sessionId: z.string(), workspaceId: z.string() }))
   .mutation(async ({ input }) => {
-    await db
+    const result = await db
       .delete(telegramSession)
-      .where(eq(telegramSession.id, input.sessionId));
+      .where(
+        and(
+          eq(telegramSession.id, input.sessionId),
+          eq(telegramSession.workspaceId, input.workspaceId),
+        ),
+      )
+      .returning();
+
+    if (result.length === 0) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "Сессия не найдена",
+      });
+    }
 
     return { success: true };
   });
@@ -224,12 +274,17 @@ export const deleteSessionRouter = protectedProcedure
  * Получить статус сессии
  */
 export const getSessionStatusRouter = protectedProcedure
-  .input(z.object({ sessionId: z.string() }))
+  .input(z.object({ sessionId: z.string(), workspaceId: z.string() }))
   .query(async ({ input }) => {
     const [session] = await db
       .select()
       .from(telegramSession)
-      .where(eq(telegramSession.id, input.sessionId))
+      .where(
+        and(
+          eq(telegramSession.id, input.sessionId),
+          eq(telegramSession.workspaceId, input.workspaceId),
+        ),
+      )
       .limit(1);
 
     if (!session) {
@@ -255,9 +310,9 @@ export const getSessionStatusRouter = protectedProcedure
  * Очистить ошибку авторизации (перед повторной авторизацией)
  */
 export const clearAuthErrorRouter = protectedProcedure
-  .input(z.object({ sessionId: z.string() }))
+  .input(z.object({ sessionId: z.string(), workspaceId: z.string() }))
   .mutation(async ({ input }) => {
-    await db
+    const result = await db
       .update(telegramSession)
       .set({
         authError: null,
@@ -265,7 +320,20 @@ export const clearAuthErrorRouter = protectedProcedure
         authErrorNotifiedAt: null,
         isActive: "true",
       })
-      .where(eq(telegramSession.id, input.sessionId));
+      .where(
+        and(
+          eq(telegramSession.id, input.sessionId),
+          eq(telegramSession.workspaceId, input.workspaceId),
+        ),
+      )
+      .returning();
+
+    if (result.length === 0) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "Сессия не найдена",
+      });
+    }
 
     return { success: true };
   });
@@ -277,13 +345,14 @@ export const reauthorizeSessionRouter = protectedProcedure
   .input(
     z.object({
       sessionId: z.string(),
+      workspaceId: z.string(),
       apiId: z.number(),
       apiHash: z.string(),
       phone: z.string().trim(),
       phoneCode: z.string().trim(),
       phoneCodeHash: z.string(),
       sessionData: z.string().optional(),
-    })
+    }),
   )
   .mutation(async ({ input }) => {
     try {
@@ -297,9 +366,9 @@ export const reauthorizeSessionRouter = protectedProcedure
         sessionData: input.sessionData,
       });
 
-      // Обновляем существующую сессию
+      // Обновляем существующую сессию с проверкой workspace
       const sessionDataObj = JSON.parse(result.sessionData);
-      await db
+      const updated = await db
         .update(telegramSession)
         .set({
           sessionData: sessionDataObj as Record<string, unknown>,
@@ -316,7 +385,20 @@ export const reauthorizeSessionRouter = protectedProcedure
           authErrorNotifiedAt: null,
           lastUsedAt: new Date(),
         })
-        .where(eq(telegramSession.id, input.sessionId));
+        .where(
+          and(
+            eq(telegramSession.id, input.sessionId),
+            eq(telegramSession.workspaceId, input.workspaceId),
+          ),
+        )
+        .returning();
+
+      if (updated.length === 0) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Сессия не найдена",
+        });
+      }
 
       return {
         success: true,
@@ -326,21 +408,11 @@ export const reauthorizeSessionRouter = protectedProcedure
     } catch (error) {
       console.error("Ошибка реавторизации:", error);
 
-      // Проверяем нужен ли пароль 2FA
-      if (
-        error instanceof Error &&
-        (error.message.includes("SESSION_PASSWORD_NEEDED") ||
-          error.message.includes("2FA is enabled"))
-      ) {
-        const sessionData =
-          "data" in error && error.data
-            ? (error.data as { sessionData?: string }).sessionData
-            : input.sessionData;
-
+      const twoFAResponse = handle2FAError(error, input.sessionData);
+      if (twoFAResponse) {
         return {
           success: false,
-          requiresPassword: true,
-          sessionData: sessionData || "",
+          ...twoFAResponse,
         };
       }
 
@@ -351,4 +423,3 @@ export const reauthorizeSessionRouter = protectedProcedure
       });
     }
   });
-

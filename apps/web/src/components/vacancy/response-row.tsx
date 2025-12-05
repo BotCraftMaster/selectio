@@ -1,5 +1,6 @@
 "use client";
 
+import type { RouterOutputs } from "@selectio/api";
 import {
   HR_SELECTION_STATUS_LABELS,
   RESPONSE_STATUS_LABELS,
@@ -16,14 +17,13 @@ import {
 } from "@selectio/ui";
 import { Send, User } from "lucide-react";
 import { ResponseActions } from "~/components/response";
-import type { VacancyResponse } from "~/types/vacancy";
 import { ChatIndicator } from "./chat-indicator";
 import { ContactInfo } from "./contact-info";
 import { ScreenResponseButton } from "./screen-response-button";
 import { ScreeningHoverCard } from "./screening-hover-card";
 
 interface ResponseRowProps {
-  response: VacancyResponse;
+  response: RouterOutputs["vacancy"]["responses"]["list"]["responses"][0];
   workspaceSlug: string;
   accessToken: string | undefined;
   isSelected?: boolean;
