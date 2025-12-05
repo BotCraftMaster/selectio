@@ -6,6 +6,7 @@ import {
   buildInterviewScoringPrompt,
 } from "@selectio/prompts";
 import { stripHtml } from "string-strip-html";
+import type { z } from "zod";
 import { generateText } from "../lib/ai-client";
 import {
   type InterviewAnalysis,
@@ -15,6 +16,33 @@ import {
 } from "../schemas/interview";
 import { extractJsonFromText } from "../utils/json-extractor";
 
+// ==================== CONSTANTS ====================
+
+/** Maximum number of interview questions */
+const MAX_INTERVIEW_QUESTIONS = 4;
+
+/** Default fallback score (1-5 scale) */
+const DEFAULT_FALLBACK_SCORE = 3;
+
+/** Default fallback detailed score (0-100 scale) */
+const DEFAULT_FALLBACK_DETAILED_SCORE = 50;
+
+/** Default fallback question when AI parsing fails */
+const DEFAULT_FALLBACK_QUESTION = "Расскажи подробнее о своем опыте";
+
+// ==================== TYPES ====================
+
+/** Question and answer pair from interview */
+interface QuestionAnswer {
+  question: string;
+  answer: string;
+}
+
+/** Typed metadata structure for conversation */
+interface ConversationMetadata {
+  questionAnswers?: QuestionAnswer[];
+}
+
 interface InterviewContext {
   conversationId: string;
   candidateName: string | null;
@@ -22,10 +50,53 @@ interface InterviewContext {
   vacancyDescription: string | null;
   currentAnswer: string;
   currentQuestion: string;
-  previousQA: Array<{ question: string; answer: string }>;
+  previousQA: QuestionAnswer[];
   questionNumber: number;
   responseId: string | null;
 }
+
+// ==================== HELPER FUNCTIONS ====================
+
+/**
+ * Safely parses JSON metadata string into typed object
+ */
+function parseMetadata(metadataStr: string | null): ConversationMetadata {
+  if (!metadataStr) return {};
+
+  try {
+    return JSON.parse(metadataStr) as ConversationMetadata;
+  } catch (error) {
+    console.error("Ошибка парсинга metadata:", error);
+    return {};
+  }
+}
+
+/**
+ * Parses AI response text and validates against Zod schema
+ * Returns fallback value if parsing fails
+ */
+function parseAIResponse<T>(
+  text: string,
+  schema: z.ZodSchema<T>,
+  fallback: T,
+  errorContext: string,
+): T {
+  try {
+    const extracted = extractJsonFromText(text);
+
+    if (!extracted) {
+      throw new Error("JSON не найден в ответе");
+    }
+
+    return schema.parse(extracted);
+  } catch (error) {
+    console.error(`Ошибка парсинга ${errorContext}:`, error);
+    console.error("Ответ AI:", text);
+    return fallback;
+  }
+}
+
+// ==================== MAIN FUNCTIONS ====================
 
 /**
  * Анализирует ответ кандидата и генерирует следующий вопрос
@@ -40,10 +111,11 @@ export async function analyzeAndGenerateNextQuestion(
     previousQA,
     candidateName,
     vacancyTitle,
+    vacancyDescription,
   } = context;
 
-  // Максимум 4 вопроса
-  if (questionNumber >= 4) {
+  // Check question limit
+  if (questionNumber >= MAX_INTERVIEW_QUESTIONS) {
     return {
       analysis: "Достигнут максимум вопросов",
       shouldContinue: false,
@@ -54,6 +126,7 @@ export async function analyzeAndGenerateNextQuestion(
   const prompt = buildInterviewQuestionPrompt({
     candidateName,
     vacancyTitle,
+    vacancyDescription,
     currentAnswer,
     currentQuestion,
     previousQA,
@@ -71,31 +144,24 @@ export async function analyzeAndGenerateNextQuestion(
     },
   });
 
-  // Парсим JSON ответ
-  try {
-    const extracted = extractJsonFromText(text);
+  const fallback: InterviewAnalysis = {
+    analysis: "Не удалось проанализировать ответ",
+    shouldContinue: questionNumber < MAX_INTERVIEW_QUESTIONS,
+    nextQuestion: DEFAULT_FALLBACK_QUESTION,
+  };
 
-    if (!extracted) {
-      throw new Error("JSON не найден в ответе");
-    }
+  const result = parseAIResponse(
+    text,
+    interviewAnalysisSchema,
+    fallback,
+    "ответа AI",
+  );
 
-    const result = interviewAnalysisSchema.parse(extracted);
-
-    return {
-      ...result,
-      shouldContinue: result.shouldContinue && questionNumber < 4,
-    };
-  } catch (error) {
-    console.error("Ошибка парсинга ответа AI:", error);
-    console.error("Ответ AI:", text);
-
-    // Fallback: пытаемся продолжить с дефолтным вопросом
-    return {
-      analysis: "Не удалось проанализировать ответ",
-      shouldContinue: questionNumber < 4,
-      nextQuestion: "Расскажи подробнее о своем опыте",
-    };
-  }
+  return {
+    ...result,
+    shouldContinue:
+      result.shouldContinue && questionNumber < MAX_INTERVIEW_QUESTIONS,
+  };
 }
 
 /**
@@ -124,19 +190,8 @@ export async function getInterviewContext(
     return null;
   }
 
-  // Парсим metadata
-  let metadata: Record<string, unknown> = {};
-  try {
-    metadata = conversation.metadata ? JSON.parse(conversation.metadata) : {};
-  } catch (e) {
-    console.error("Ошибка парсинга metadata:", e);
-  }
-
-  const questionAnswers =
-    (metadata.questionAnswers as Array<{
-      question: string;
-      answer: string;
-    }>) || [];
+  const metadata = parseMetadata(conversation.metadata);
+  const questionAnswers = metadata.questionAnswers ?? [];
 
   return {
     conversationId: conversation.id,
@@ -171,18 +226,8 @@ export async function saveQuestionAnswer(
     throw new Error(`Conversation ${conversationId} not found`);
   }
 
-  let metadata: Record<string, unknown> = {};
-  try {
-    metadata = conversation.metadata ? JSON.parse(conversation.metadata) : {};
-  } catch (e) {
-    console.error("Ошибка парсинга metadata:", e);
-  }
-
-  const questionAnswers =
-    (metadata.questionAnswers as Array<{
-      question: string;
-      answer: string;
-    }>) || [];
+  const metadata = parseMetadata(conversation.metadata);
+  const questionAnswers = metadata.questionAnswers ?? [];
 
   questionAnswers.push({ question, answer });
   metadata.questionAnswers = questionAnswers;
@@ -220,26 +265,11 @@ export async function createInterviewScoring(
     },
   });
 
-  // Парсим JSON ответ
-  try {
-    const extracted = extractJsonFromText(text);
+  const fallback: InterviewScoring = {
+    score: DEFAULT_FALLBACK_SCORE,
+    detailedScore: DEFAULT_FALLBACK_DETAILED_SCORE,
+    analysis: "Не удалось проанализировать интервью автоматически",
+  };
 
-    if (!extracted) {
-      throw new Error("JSON не найден в ответе");
-    }
-
-    const result = interviewScoringSchema.parse(extracted);
-
-    return result;
-  } catch (error) {
-    console.error("Ошибка парсинга скоринга:", error);
-    console.error("Ответ AI:", text);
-
-    // Fallback: возвращаем средние значения
-    return {
-      score: 3,
-      detailedScore: 50,
-      analysis: "Не удалось проанализировать интервью автоматически",
-    };
-  }
+  return parseAIResponse(text, interviewScoringSchema, fallback, "скоринга");
 }

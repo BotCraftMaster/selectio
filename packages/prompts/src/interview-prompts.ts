@@ -7,6 +7,7 @@ import { extractFirstName } from "./utils/name-extractor";
 export interface InterviewContext {
   candidateName: string | null;
   vacancyTitle: string | null;
+  vacancyDescription: string | null;
   currentAnswer: string;
   currentQuestion: string;
   previousQA: Array<{ question: string; answer: string }>;
@@ -22,6 +23,7 @@ export function buildInterviewQuestionPrompt(
   const {
     candidateName,
     vacancyTitle,
+    vacancyDescription,
     currentAnswer,
     currentQuestion,
     previousQA,
@@ -37,6 +39,7 @@ export function buildInterviewQuestionPrompt(
 КОНТЕКСТ:
 - Кандидат: ${name}
 - Вакансия: ${vacancyTitle || "не указана"}
+${vacancyDescription ? `- Описание вакансии: ${vacancyDescription}` : ""}
 - Текущий вопрос: ${questionNumber}
 - Максимум вопросов: 4
 
