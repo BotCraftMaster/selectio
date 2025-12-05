@@ -101,7 +101,9 @@ export function IntegrationDialog({
       form.setValue("type", selectedType);
       if (isEditing && existingIntegration) {
         form.setValue("name", existingIntegration.name || "");
-        form.setValue("email", existingIntegration.email || "");
+        // Backend расшифровывает credentials и возвращает email как отдельное поле
+        const email = (existingIntegration as { email?: string | null }).email;
+        form.setValue("email", email || "");
       } else if (!isEditing) {
         form.setValue("name", "");
         form.setValue("email", "");

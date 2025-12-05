@@ -1,5 +1,6 @@
 import { sql } from "drizzle-orm";
 import {
+  boolean,
   jsonb,
   pgTable,
   text,
@@ -49,7 +50,7 @@ export const integration = pgTable(
     metadata: jsonb("metadata").$type<Record<string, unknown>>(),
 
     // Активна ли интеграция
-    isActive: text("is_active").default("true").notNull(),
+    isActive: boolean("is_active").default(true).notNull(),
 
     // Дата последнего использования
     lastUsedAt: timestamp("last_used_at"),
