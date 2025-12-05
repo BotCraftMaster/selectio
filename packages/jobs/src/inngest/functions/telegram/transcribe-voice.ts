@@ -1,5 +1,5 @@
 import { db, eq, file, telegramMessage } from "@selectio/db";
-import { transcribeAudio } from "../../../services/transcription-service";
+import { transcribeAudio } from "../../../services/media";
 import { inngest } from "../../client";
 
 /**
@@ -42,7 +42,18 @@ export const transcribeVoiceFunction = inngest.createFunction(
         const fileBuffer = Buffer.from(await response.arrayBuffer());
 
         // Транскрибируем аудио
-        const transcriptionText = await transcribeAudio(fileBuffer);
+        const transcriptionResult = await transcribeAudio(fileBuffer);
+
+        if (!transcriptionResult.success) {
+          console.error("❌ Ошибка транскрибации", {
+            messageId,
+            fileId,
+            error: transcriptionResult.error,
+          });
+          throw new Error(transcriptionResult.error);
+        }
+
+        const transcriptionText = transcriptionResult.data;
 
         if (transcriptionText) {
           console.log("✅ Транскрипция завершена", {

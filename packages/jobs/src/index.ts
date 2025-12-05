@@ -1,4 +1,4 @@
-// Inngest
+// ==================== Inngest ====================
 export {
   extractVacancyRequirementsFunction,
   inngest,
@@ -10,41 +10,93 @@ export {
   sendTelegramMessageFunction,
   transcribeVoiceFunction,
 } from "./inngest";
-export { generateWelcomeMessage } from "./services/candidate-welcome-service";
+
+// ==================== Services ====================
+// Re-export all services from new structure
 export {
-  triggerCandidateWelcome,
-  triggerResponseScreening,
-  triggerTelegramMessageSend,
-  triggerVacanciesUpdate,
-  triggerVacancyRequirementsExtraction as triggerVacancyRequirementsExtractionInngest,
-  triggerVacancyResponsesRefresh,
-  triggerVoiceTranscription,
-} from "./services/inngest-service";
-export {
+  // Base utilities
+  type Result,
+  err,
+  ok,
+  tryCatch,
+  unwrap,
+  unwrapOr,
+  createLogger,
+  logger,
+  AI,
+  INTERVIEW,
+  RESPONSE_STATUS,
+  SCREENING,
+  TELEGRAM,
+  type ResponseStatus,
+  // Vacancy
+  checkVacancyExists,
+  getVacanciesWithoutDescription,
+  getVacancyById,
+  hasVacancyDescription,
+  saveBasicVacancy,
+  saveVacancyToDb,
+  updateVacancyDescription,
+  extractVacancyRequirements,
+  getVacancyRequirements,
+  // Response
+  checkResponseExists,
+  getResponseById,
+  getResponseByResumeId,
+  getResponsesWithoutDetails,
+  hasDetailedInfo,
+  saveBasicResponse,
+  saveResponseToDb,
+  updateResponseDetails,
+  updateResponseStatus,
+  uploadResumePdf,
+  screenResponse,
+  extractContactsFromResponse,
+  extractContactsFromResponses,
+  // Interview
   analyzeAndGenerateNextQuestion,
   createInterviewScoring,
   getInterviewContext,
   saveQuestionAnswer,
-} from "./services/interview-service";
-export { screenResponse } from "./services/response-screening-service";
-export {
+  // Messaging
+  extractTelegramUsername,
+  generateWelcomeMessage,
+  sendHHChatMessage,
+  // Media
+  transcribeAudio,
+  // Screening
+  formatResumeForScreening,
   parseScreeningResult,
   prepareScreeningPrompt,
   screenResume,
   validateScreeningResult,
-} from "./services/resume-screening-service";
-// Screening services
-export {
-  extractVacancyRequirements,
-  getVacancyRequirements,
-} from "./services/screening-prompt-service";
-export { transcribeAudio } from "./services/transcription-service";
-export { triggerVacancyRequirementsExtraction } from "./services/trigger-service";
-// Types
+  // Triggers
+  triggerCandidateWelcome,
+  triggerResponseScreening,
+  triggerTelegramMessageSend,
+  triggerVacanciesUpdate,
+  triggerVacancyRequirementsExtraction,
+  triggerVacancyResponsesRefresh,
+  triggerVoiceTranscription,
+} from "./services";
+
+// ==================== Types ====================
 export type {
   ResumeScreeningData,
   ScreeningPromptData,
   ScreeningRecommendation,
   ScreeningResult,
+  VacancyRequirements,
 } from "./types/screening";
+
+export type {
+  ExtractedContacts,
+  HHContactEmail,
+  HHContactPhone,
+  HHContacts,
+  HHContactType,
+  HHPreferredContact,
+} from "./services/types";
+
+// ==================== Utils ====================
 export { loadCookies, saveCookies } from "./utils/cookies";

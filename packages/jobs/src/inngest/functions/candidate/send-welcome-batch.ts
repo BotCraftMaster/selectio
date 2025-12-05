@@ -6,8 +6,7 @@ import {
   vacancyResponse,
 } from "@selectio/db/schema";
 import { tgClientSDK } from "@selectio/tg-client/sdk";
-import { generateWelcomeMessage } from "../../../services/candidate-welcome-service";
-import { sendHHChatMessage } from "../../../services/hh-chat-service";
+import { generateWelcomeMessage, sendHHChatMessage } from "../../../services/messaging";
 import { inngest } from "../../client";
 
 /**
@@ -88,7 +87,11 @@ export const sendCandidateWelcomeBatchFunction = inngest.createFunction(
             }
 
             // Генерируем приветственное сообщение
-            const welcomeMessage = await generateWelcomeMessage(response.id);
+            const welcomeResult = await generateWelcomeMessage(response.id);
+            if (!welcomeResult.success) {
+              throw new Error(welcomeResult.error);
+            }
+            const welcomeMessage = welcomeResult.data;
 
             let sendResult: {
               success: boolean;

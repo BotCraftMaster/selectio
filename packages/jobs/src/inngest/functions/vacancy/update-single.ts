@@ -4,7 +4,7 @@ import { vacancy } from "@selectio/db/schema";
 import puppeteer from "puppeteer";
 import { HH_CONFIG } from "../../../parsers/hh/config";
 import { humanBrowse, humanDelay } from "../../../parsers/hh/human-behavior";
-import { updateVacancyDescription } from "../../../services/vacancy-service";
+import { updateVacancyDescription } from "../../../services/vacancy";
 import { inngest } from "../../client";
 
 /**

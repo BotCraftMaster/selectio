@@ -1,4 +1,4 @@
-import { screenResponse } from "../../../services/response-screening-service";
+import { screenResponse, unwrap } from "../../../services/response";
 import { inngest } from "../../client";
 
 /**
@@ -20,7 +20,8 @@ export const screenResponseFunction = inngest.createFunction(
       });
 
       try {
-        const result = await screenResponse(responseId);
+        const resultWrapper = await screenResponse(responseId);
+        const result = unwrap(resultWrapper);
 
         console.log("✅ Скрининг завершен", {
           responseId,

@@ -1,17 +1,23 @@
 import { createOpenAI } from "@ai-sdk/openai";
 import { env } from "@selectio/config";
 import { experimental_transcribe as transcribe } from "ai";
+import { type Result, createLogger, err, ok, tryCatch } from "../base";
 
+const logger = createLogger("Transcription");
+
+/**
+ * Transcribes audio buffer to text using OpenAI Whisper
+ */
 export async function transcribeAudio(
   audioBuffer: Buffer,
-): Promise<string | null> {
+): Promise<Result<string | null>> {
   if (!env.OPENAI_API_KEY) {
-    console.log("⏭️ Транскрибация пропущена: OPENAI_API_KEY не заполнен");
-    return null;
+    logger.info("Transcription skipped: OPENAI_API_KEY not set");
+    return ok(null);
   }
 
-  try {
-    // Используем наш прокси-сервис
+  return tryCatch(async () => {
+    // Use proxy service
     const proxyBaseUrl = env.APP_URL || "http://localhost:3000";
     const openaiProvider = createOpenAI({
       apiKey: env.OPENAI_API_KEY,
@@ -24,9 +30,7 @@ export async function transcribeAudio(
       providerOptions: { openai: { language: "ru" } },
     });
 
+    logger.info("Audio transcribed successfully");
     return result.text;
-  } catch (error) {
-    console.error("Ошибка при транскрибции аудио:", error);
-    return null;
-  }
+  }, "Failed to transcribe audio");
 }

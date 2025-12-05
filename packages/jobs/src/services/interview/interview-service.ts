@@ -7,28 +7,17 @@ import {
 } from "@selectio/prompts";
 import { stripHtml } from "string-strip-html";
 import type { z } from "zod";
-import { generateText } from "../lib/ai-client";
+import { generateText } from "../../lib/ai-client";
 import {
   type InterviewAnalysis,
   type InterviewScoring,
   interviewAnalysisSchema,
   interviewScoringSchema,
-} from "../schemas/interview";
-import { extractJsonFromText } from "../utils/json-extractor";
+} from "../../schemas/interview";
+import { extractJsonFromText } from "../../utils/json-extractor";
+import { AI, INTERVIEW, createLogger } from "../base";
 
-// ==================== CONSTANTS ====================
-
-/** Maximum number of interview questions */
-const MAX_INTERVIEW_QUESTIONS = 4;
-
-/** Default fallback score (1-5 scale) */
-const DEFAULT_FALLBACK_SCORE = 3;
-
-/** Default fallback detailed score (0-100 scale) */
-const DEFAULT_FALLBACK_DETAILED_SCORE = 50;
-
-/** Default fallback question when AI parsing fails */
-const DEFAULT_FALLBACK_QUESTION = "Расскажи подробнее о своем опыте";
+const logger = createLogger("Interview");
 
 // ==================== TYPES ====================
 
@@ -66,7 +55,7 @@ function parseMetadata(metadataStr: string | null): ConversationMetadata {
   try {
     return JSON.parse(metadataStr) as ConversationMetadata;
   } catch (error) {
-    console.error("Ошибка парсинга metadata:", error);
+    logger.error("Error parsing metadata", { error });
     return {};
   }
 }
@@ -85,13 +74,12 @@ function parseAIResponse<T>(
     const extracted = extractJsonFromText(text);
 
     if (!extracted) {
-      throw new Error("JSON не найден в ответе");
+      throw new Error("JSON not found in response");
     }
 
     return schema.parse(extracted);
   } catch (error) {
-    console.error(`Ошибка парсинга ${errorContext}:`, error);
-    console.error("Ответ AI:", text);
+    logger.error(`Error parsing ${errorContext}`, { error, aiResponse: text });
     return fallback;
   }
 }
@@ -99,7 +87,7 @@ function parseAIResponse<T>(
 // ==================== MAIN FUNCTIONS ====================
 
 /**
- * Анализирует ответ кандидата и генерирует следующий вопрос
+ * Analyzes candidate's answer and generates next question
  */
 export async function analyzeAndGenerateNextQuestion(
   context: InterviewContext,
@@ -115,11 +103,11 @@ export async function analyzeAndGenerateNextQuestion(
   } = context;
 
   // Check question limit
-  if (questionNumber >= MAX_INTERVIEW_QUESTIONS) {
+  if (questionNumber >= INTERVIEW.MAX_QUESTIONS) {
     return {
-      analysis: "Достигнут максимум вопросов",
+      analysis: "Reached maximum questions",
       shouldContinue: false,
-      reason: "Достигнут лимит вопросов",
+      reason: "Question limit reached",
     };
   }
 
@@ -135,7 +123,7 @@ export async function analyzeAndGenerateNextQuestion(
 
   const { text } = await generateText({
     prompt,
-    temperature: 0.8,
+    temperature: AI.TEMPERATURE_HIGH,
     generationName: "interview-next-question",
     entityId: context.conversationId,
     metadata: {
@@ -145,27 +133,27 @@ export async function analyzeAndGenerateNextQuestion(
   });
 
   const fallback: InterviewAnalysis = {
-    analysis: "Не удалось проанализировать ответ",
-    shouldContinue: questionNumber < MAX_INTERVIEW_QUESTIONS,
-    nextQuestion: DEFAULT_FALLBACK_QUESTION,
+    analysis: "Failed to analyze response",
+    shouldContinue: questionNumber < INTERVIEW.MAX_QUESTIONS,
+    nextQuestion: INTERVIEW.DEFAULT_FALLBACK_QUESTION,
   };
 
   const result = parseAIResponse(
     text,
     interviewAnalysisSchema,
     fallback,
-    "ответа AI",
+    "AI response",
   );
 
   return {
     ...result,
     shouldContinue:
-      result.shouldContinue && questionNumber < MAX_INTERVIEW_QUESTIONS,
+      result.shouldContinue && questionNumber < INTERVIEW.MAX_QUESTIONS,
   };
 }
 
 /**
- * Получает контекст интервью из базы данных
+ * Gets interview context from database
  */
 export async function getInterviewContext(
   conversationId: string,
@@ -209,7 +197,7 @@ export async function getInterviewContext(
 }
 
 /**
- * Сохраняет вопрос и ответ в metadata разговора
+ * Saves question and answer to conversation metadata
  */
 export async function saveQuestionAnswer(
   conversationId: string,
@@ -239,7 +227,7 @@ export async function saveQuestionAnswer(
 }
 
 /**
- * Создает финальный скоринг на основе всего интервью
+ * Creates final scoring based on entire interview
  */
 export async function createInterviewScoring(
   context: InterviewContext,
@@ -256,7 +244,7 @@ export async function createInterviewScoring(
 
   const { text } = await generateText({
     prompt,
-    temperature: 0.3,
+    temperature: AI.TEMPERATURE_MODERATE,
     generationName: "interview-scoring",
     entityId: context.conversationId,
     metadata: {
@@ -266,10 +254,10 @@ export async function createInterviewScoring(
   });
 
   const fallback: InterviewScoring = {
-    score: DEFAULT_FALLBACK_SCORE,
-    detailedScore: DEFAULT_FALLBACK_DETAILED_SCORE,
-    analysis: "Не удалось проанализировать интервью автоматически",
+    score: INTERVIEW.DEFAULT_FALLBACK_SCORE,
+    detailedScore: INTERVIEW.DEFAULT_FALLBACK_DETAILED_SCORE,
+    analysis: "Failed to analyze interview automatically",
   };
 
-  return parseAIResponse(text, interviewScoringSchema, fallback, "скоринга");
+  return parseAIResponse(text, interviewScoringSchema, fallback, "scoring");
 }

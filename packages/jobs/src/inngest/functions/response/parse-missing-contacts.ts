@@ -1,6 +1,6 @@
 import { db, inArray } from "@selectio/db";
 import { vacancyResponse } from "@selectio/db/schema";
-import { extractContactsFromResponses } from "../../../services/contacts-extractor-service";
+import { extractContactsFromResponses } from "../../../services/response";
 import { parseMissingContactsChannel } from "../../channels/client";
 import { inngest } from "../../client";
 
@@ -111,7 +111,11 @@ export const parseMissingContactsFunction = inngest.createFunction(
     // Извлекаем контакты из поля contacts
     const results = await step.run("extract-contacts", async () => {
       const responseIds = responses.map((r) => r.id);
-      return await extractContactsFromResponses(responseIds);
+      const result = await extractContactsFromResponses(responseIds);
+      if (!result.success) {
+        throw new Error(result.error);
+      }
+      return result.data;
     });
 
     // Отправляем финальный результат для каждой вакансии
@@ -138,3 +142,4 @@ export const parseMissingContactsFunction = inngest.createFunction(
     };
   },
 );
+

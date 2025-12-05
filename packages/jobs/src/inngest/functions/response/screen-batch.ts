@@ -1,6 +1,6 @@
 import { db, inArray } from "@selectio/db";
 import { vacancyResponse } from "@selectio/db/schema";
-import { screenResponse } from "../../../services/response-screening-service";
+import { screenResponse, unwrap } from "../../../services/response";
 import { inngest } from "../../client";
 
 /**
@@ -54,7 +54,8 @@ export const screenResponsesBatchFunction = inngest.createFunction(
           try {
             console.log(`🎯 Скрининг отклика: ${response.id}`);
 
-            const result = await screenResponse(response.id);
+            const resultWrapper = await screenResponse(response.id);
+            const result = unwrap(resultWrapper);
 
             console.log(`✅ Скрининг завершен: ${response.id}`, {
               score: result.score,
