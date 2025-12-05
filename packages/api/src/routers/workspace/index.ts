@@ -6,5 +6,5 @@ import { workspaceQueries } from "./queries";
 export const workspaceRouter = {
   ...workspaceQueries,
   ...workspaceMutations,
-  ...workspaceMembers,
+  members: workspaceMembers,
 } satisfies TRPCRouterRecord;
