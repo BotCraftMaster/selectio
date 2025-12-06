@@ -238,6 +238,11 @@ export function IntegrationDialog({
         setIsVerifying(true);
         setVerificationResult(null);
 
+        toast.info(
+          "Проверка данных может занять до 2 минут. Пожалуйста, подождите…",
+          { duration: 5000 },
+        );
+
         await triggerVerifyHHCredentials(
           data.email,
           data.password,
@@ -306,11 +311,12 @@ export function IntegrationDialog({
             onSubmit={form.handleSubmit(onSubmit)}
             className="space-y-6 pt-2"
           >
-            <div className="rounded-lg bg-muted/50 p-4 text-sm text-muted-foreground">
+            <div className="rounded-lg bg-muted/50 p-4 text-sm text-muted-foreground space-y-2">
               <p>
                 Для подключения HeadHunter используйте учетные данные вашего
                 аккаунта работодателя
               </p>
+              <p className="text-xs">Проверка данных может занять до 2 минут</p>
             </div>
 
             <FormField
@@ -449,13 +455,13 @@ export function IntegrationDialog({
                 className="h-11"
               >
                 {isVerifying
-                  ? "Проверка..."
+                  ? "Проверка данных…"
                   : isEditing
                     ? updateMutation.isPending
-                      ? "Обновление..."
+                      ? "Обновление…"
                       : "Обновить"
                     : createMutation.isPending
-                      ? "Подключение..."
+                      ? "Подключение…"
                       : "Подключить"}
               </Button>
             </DialogFooter>

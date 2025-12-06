@@ -1,6 +1,9 @@
+import { upsertIntegration } from "@selectio/db";
+import { Log } from "crawlee";
 import type { Browser } from "puppeteer";
 import puppeteer from "puppeteer";
-import { performLogin } from "../../../parsers/hh/auth";
+import { performLogin, saveCookies } from "../../../parsers/hh/auth";
+import { HH_CONFIG } from "../../../parsers/hh/config";
 import { inngest } from "../../client";
 
 export const verifyHHCredentialsFunction = inngest.createFunction(
@@ -15,40 +18,48 @@ export const verifyHHCredentialsFunction = inngest.createFunction(
     const result = await step.run("verify-credentials", async () => {
       let browser: Browser | undefined;
       try {
-        browser = await puppeteer.launch({
-          headless: true,
-          args: ["--no-sandbox", "--disable-setuid-sandbox"],
-        });
+        browser = await puppeteer.launch(HH_CONFIG.puppeteer);
 
         const page = await browser.newPage();
 
-        await page.setUserAgent(
-          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
-        );
+        await page.setUserAgent({ userAgent: HH_CONFIG.userAgent });
 
-        await page.goto(
-          "https://hh.ru/account/login?backurl=%2F&role=employer",
-          {
-            waitUntil: "networkidle2",
-          },
-        );
+        await page.goto(HH_CONFIG.urls.login, {
+          waitUntil: "domcontentloaded",
+          timeout: HH_CONFIG.timeouts.navigation,
+        });
 
-        const log = {
-          info: (msg: string) => console.log(msg),
-          error: (msg: string) => console.error(msg),
-          warning: (msg: string) => console.warn(msg),
-          debug: (msg: string) => console.debug(msg),
-        };
+        await page.waitForNetworkIdle({
+          timeout: HH_CONFIG.timeouts.networkIdle,
+        });
 
-        await performLogin(
-          page,
-          log as unknown as import("crawlee").Log,
-          email,
-          password,
-          workspaceId,
-        );
+        const loginInput = await page.$('input[type="text"][name="username"]');
+
+        if (loginInput) {
+          const log = new Log();
+          await performLogin(page, log, email, password, workspaceId, false);
+        } else {
+          console.log("✅ Успешно авторизованы");
+        }
+
+        // Получаем cookies ДО закрытия браузера
+        const cookies = await page.browserContext().cookies();
 
         await browser.close();
+
+        // Сначала создаём/обновляем интеграцию с credentials
+        await upsertIntegration({
+          workspaceId,
+          type: "hh",
+          name: "HeadHunter",
+          credentials: {
+            email,
+            password,
+          },
+        });
+
+        // Теперь сохраняем cookies (интеграция уже существует)
+        await saveCookies("hh", cookies, workspaceId);
 
         return {
           success: true,
