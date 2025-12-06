@@ -25,7 +25,7 @@ export const HH_CONFIG = {
     parseContacts: true,
   },
   puppeteer: {
-    headless: false,
+    headless: true,
     args: [
       "--no-sandbox",
       "--disable-setuid-sandbox",
@@ -33,8 +33,12 @@ export const HH_CONFIG = {
       "--disable-web-security",
       "--disable-features=IsolateOrigins,site-per-process",
       "--window-size=1920,1080",
+      "--disable-dev-shm-usage",
     ] as string[],
     ignoreDefaultArgs: ["--enable-automation"] as string[],
     slowMo: 100,
+    handleSIGINT: false,
+    handleSIGTERM: false,
+    handleSIGHUP: false,
   },
 };

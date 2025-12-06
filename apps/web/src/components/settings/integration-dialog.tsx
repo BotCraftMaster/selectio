@@ -27,7 +27,7 @@ import {
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Briefcase, Eye, EyeOff, Mail } from "lucide-react";
 import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -172,50 +172,62 @@ export function IntegrationDialog({
   );
 
   const [isVerifying, setIsVerifying] = useState(false);
-  const [verificationResult, setVerificationResult] = useState<{
-    success?: boolean;
-    isValid?: boolean;
-    error?: string;
-  } | null>(null);
 
-  const { data: verifyData } = useInngestSubscription({
+  const handleClose = useCallback(() => {
+    form.reset();
+    setShowPassword(false);
+    onClose();
+  }, [form, onClose]);
+
+  const { latestData, error } = useInngestSubscription({
     refreshToken: () =>
       fetchVerifyHHCredentialsToken(workspaceData?.workspace?.id || ""),
-    enabled: isVerifying && !!workspaceData?.workspace?.id,
+    enabled: true,
   });
 
   useEffect(() => {
-    if (verifyData) {
-      const result = verifyData as {
-        status?: string;
+    if (error && isVerifying) {
+      setIsVerifying(false);
+      toast.error("Ошибка подключения к серверу");
+    }
+  }, [error, isVerifying]);
+
+  useEffect(() => {
+    if (latestData?.topic === "result" && isVerifying) {
+      const result = latestData.data as {
         success?: boolean;
         isValid?: boolean;
         error?: string;
       };
 
-      if (result.status === "success") {
-        setVerificationResult({
-          success: true,
-          isValid: true,
-        });
-        setIsVerifying(false);
-      } else if (result.status === "error") {
-        setVerificationResult({
-          success: false,
-          isValid: false,
-          error: result.error || "Ошибка проверки данных",
-        });
-        setIsVerifying(false);
-        toast.error(result.error || "Ошибка проверки данных");
+      setIsVerifying(false);
+
+      if (result.success && result.isValid) {
+        toast.success("Данные успешно проверены");
+
+        // Интеграция уже создана на бэкенде, обновляем список
+        if (workspaceData?.workspace?.id) {
+          queryClient.invalidateQueries({
+            queryKey: trpc.integration.list.queryKey({
+              workspaceId: workspaceData.workspace.id,
+            }),
+          });
+        }
+
+        handleClose();
+      } else {
+        const error = result.error || "Ошибка проверки данных";
+        toast.error(error);
       }
     }
-  }, [verifyData]);
-
-  const handleClose = () => {
-    form.reset();
-    setShowPassword(false);
-    onClose();
-  };
+  }, [
+    latestData,
+    isVerifying,
+    workspaceData,
+    queryClient,
+    trpc.integration.list,
+    handleClose,
+  ]);
 
   const onSubmit = async (data: IntegrationFormValues) => {
     if (!workspaceData?.workspace?.id) {
@@ -234,51 +246,29 @@ export function IntegrationDialog({
     };
 
     if (data.type === "hh") {
+      setIsVerifying(true);
+
+      toast.info(
+        "Проверка данных может занять до 2 минут. Пожалуйста, подождите…",
+        { duration: 5000 },
+      );
+
       try {
-        setIsVerifying(true);
-        setVerificationResult(null);
-
-        toast.info(
-          "Проверка данных может занять до 2 минут. Пожалуйста, подождите…",
-          { duration: 5000 },
-        );
-
         await triggerVerifyHHCredentials(
           data.email,
           data.password,
           workspaceData.workspace.id,
         );
-
-        // Wait for verification result
-        await new Promise<void>((resolve, reject) => {
-          const checkInterval = setInterval(() => {
-            if (verificationResult) {
-              clearInterval(checkInterval);
-              if (verificationResult.success && verificationResult.isValid) {
-                resolve();
-              } else {
-                reject(
-                  new Error(
-                    verificationResult.error || "Ошибка проверки данных",
-                  ),
-                );
-              }
-            }
-          }, 100);
-
-          // Timeout after 2 minutes
-          setTimeout(() => {
-            clearInterval(checkInterval);
-            if (!verificationResult) {
-              setIsVerifying(false);
-              reject(new Error("Превышено время ожидания проверки"));
-            }
-          }, 120000);
-        });
-      } catch {
+      } catch (error) {
         setIsVerifying(false);
+        toast.error(
+          error instanceof Error ? error.message : "Ошибка отправки запроса",
+        );
         return;
       }
+
+      // Результат придёт через useInngestSubscription
+      return;
     }
 
     if (isEditing) {

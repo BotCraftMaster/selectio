@@ -4,6 +4,7 @@ import type { Browser } from "puppeteer";
 import puppeteer from "puppeteer";
 import { performLogin, saveCookies } from "../../../parsers/hh/auth";
 import { HH_CONFIG } from "../../../parsers/hh/config";
+import { verifyHHCredentialsChannel } from "../../channels";
 import { inngest } from "../../client";
 
 export const verifyHHCredentialsFunction = inngest.createFunction(
@@ -12,7 +13,7 @@ export const verifyHHCredentialsFunction = inngest.createFunction(
     name: "Verify HH Credentials",
   },
   { event: "integration/verify-hh-credentials" },
-  async ({ event, step }) => {
+  async ({ event, step, publish }) => {
     const { email, password, workspaceId } = event.data;
 
     const result = await step.run("verify-credentials", async () => {
@@ -45,8 +46,6 @@ export const verifyHHCredentialsFunction = inngest.createFunction(
         // Получаем cookies ДО закрытия браузера
         const cookies = await page.browserContext().cookies();
 
-        await browser.close();
-
         // Сначала создаём/обновляем интеграцию с credentials
         await upsertIntegration({
           workspaceId,
@@ -60,14 +59,30 @@ export const verifyHHCredentialsFunction = inngest.createFunction(
 
         // Теперь сохраняем cookies (интеграция уже существует)
         await saveCookies("hh", cookies, workspaceId);
+        // Закрываем браузер и ждём завершения процесса
+        try {
+          await browser.close();
+        } catch {
+          // Игнорируем ошибки при закрытии
+        }
 
-        return {
+        const successResult = {
           success: true,
           isValid: true,
         };
+
+        await publish(
+          verifyHHCredentialsChannel(workspaceId).result(successResult),
+        );
+
+        return successResult;
       } catch (error) {
         if (browser) {
-          await browser.close();
+          try {
+            await browser.close();
+          } catch {
+            // Игнорируем ошибки при закрытии
+          }
         }
 
         const errorMessage =
@@ -78,12 +93,28 @@ export const verifyHHCredentialsFunction = inngest.createFunction(
           errorMessage.includes("пароль") ||
           errorMessage.includes("login")
         ) {
-          return {
+          const errorResult = {
             success: false,
             isValid: false,
             error: "Неверный логин или пароль",
           };
+
+          await publish(
+            verifyHHCredentialsChannel(workspaceId).result(errorResult),
+          );
+
+          return errorResult;
         }
+
+        const unknownErrorResult = {
+          success: false,
+          isValid: false,
+          error: errorMessage,
+        };
+
+        await publish(
+          verifyHHCredentialsChannel(workspaceId).result(unknownErrorResult),
+        );
 
         throw error;
       }

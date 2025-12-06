@@ -78,3 +78,18 @@ export const refreshVacancyResponsesChannel = channel(
     }),
   ),
 );
+
+/**
+ * Канал для верификации HH credentials
+ */
+export const verifyHHCredentialsChannel = channel(
+  (workspaceId: string) => `verify-hh-credentials-${workspaceId}`,
+).addTopic(
+  topic("result").schema(
+    z.object({
+      success: z.boolean(),
+      isValid: z.boolean(),
+      error: z.string().optional(),
+    }),
+  ),
+);
