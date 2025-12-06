@@ -11,76 +11,34 @@
  * - media/      - Audio transcription
  * - screening/  - Resume screening utilities
  * - triggers/   - Inngest event triggers
+ * - auth/       - Authentication services
  */
+
+// ==================== Auth ====================
+export { checkHHCredentials } from "./auth";
 
 // ==================== Base Utilities ====================
 export {
-  // Result type
-  type Result,
+  // Constants
+  AI,
+  // Logger
+  createLogger,
   err,
   flatMap,
+  INTERVIEW,
+  logger,
   map,
   ok,
+  RESPONSE_STATUS,
+  type ResponseStatus,
+  // Result type
+  type Result,
+  SCREENING,
+  TELEGRAM,
   tryCatch,
   unwrap,
   unwrapOr,
-  // Logger
-  createLogger,
-  logger,
-  // Constants
-  AI,
-  INTERVIEW,
-  RESPONSE_STATUS,
-  SCREENING,
-  TELEGRAM,
-  type ResponseStatus,
 } from "./base";
-
-// ==================== Types ====================
-export type {
-  ExtractedContacts,
-  HHContactEmail,
-  HHContactPhone,
-  HHContacts,
-  HHContactType,
-  HHPreferredContact,
-} from "./types";
-
-// ==================== Vacancy ====================
-export {
-  // Repository
-  checkVacancyExists,
-  getVacanciesWithoutDescription,
-  getVacancyById,
-  hasVacancyDescription,
-  saveBasicVacancy,
-  saveVacancyToDb,
-  updateVacancyDescription,
-  // Requirements
-  extractVacancyRequirements,
-  getVacancyRequirements,
-} from "./vacancy";
-
-// ==================== Response ====================
-export {
-  // Repository
-  checkResponseExists,
-  getResponseById,
-  getResponseByResumeId,
-  getResponsesWithoutDetails,
-  hasDetailedInfo,
-  saveBasicResponse,
-  saveResponseToDb,
-  updateResponseDetails,
-  updateResponseStatus,
-  uploadResumePdf,
-  // Screening
-  screenResponse,
-  // Contacts
-  extractContactsFromResponse,
-  extractContactsFromResponses,
-} from "./response";
-
 // ==================== Interview ====================
 export {
   analyzeAndGenerateNextQuestion,
@@ -88,17 +46,33 @@ export {
   getInterviewContext,
   saveQuestionAnswer,
 } from "./interview";
-
+// ==================== Media ====================
+export { transcribeAudio } from "./media";
 // ==================== Messaging ====================
 export {
   extractTelegramUsername,
   generateWelcomeMessage,
   sendHHChatMessage,
 } from "./messaging";
-
-// ==================== Media ====================
-export { transcribeAudio } from "./media";
-
+// ==================== Response ====================
+export {
+  // Repository
+  checkResponseExists,
+  // Contacts
+  extractContactsFromResponse,
+  extractContactsFromResponses,
+  getResponseById,
+  getResponseByResumeId,
+  getResponsesWithoutDetails,
+  hasDetailedInfo,
+  saveBasicResponse,
+  saveResponseToDb,
+  // Screening
+  screenResponse,
+  updateResponseDetails,
+  updateResponseStatus,
+  uploadResumePdf,
+} from "./response";
 // ==================== Screening ====================
 export {
   formatResumeForScreening,
@@ -107,7 +81,6 @@ export {
   screenResume,
   validateScreeningResult,
 } from "./screening";
-
 // ==================== Triggers ====================
 export {
   triggerCandidateWelcome,
@@ -118,3 +91,26 @@ export {
   triggerVacancyResponsesRefresh,
   triggerVoiceTranscription,
 } from "./triggers";
+// ==================== Types ====================
+export type {
+  ExtractedContacts,
+  HHContactEmail,
+  HHContactPhone,
+  HHContacts,
+  HHContactType,
+  HHPreferredContact,
+} from "./types";
+// ==================== Vacancy ====================
+export {
+  // Repository
+  checkVacancyExists,
+  // Requirements
+  extractVacancyRequirements,
+  getVacanciesWithoutDescription,
+  getVacancyById,
+  getVacancyRequirements,
+  hasVacancyDescription,
+  saveBasicVacancy,
+  saveVacancyToDb,
+  updateVacancyDescription,
+} from "./vacancy";

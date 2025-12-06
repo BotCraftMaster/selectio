@@ -13,6 +13,9 @@
     },
     "./channels": {
       "default": "./src/inngest/channels-client.ts"
+    },
+    "./auth": {
+      "default": "./src/services/auth/index.ts"
     }
   },
   "license": "MIT",
