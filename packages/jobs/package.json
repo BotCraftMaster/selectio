@@ -33,6 +33,7 @@
     "@ai-sdk/openai": "2.0.77",
     "@inngest/realtime": "0.4.5",
     "@selectio/config": "workspace:*",
+    "@selectio/emails": "workspace:*",
     "@selectio/db": "workspace:*",
     "@selectio/lib": "workspace:*",
     "@selectio/prompts": "workspace:*",

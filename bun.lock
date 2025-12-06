@@ -156,6 +156,7 @@
         "@inngest/realtime": "0.4.5",
         "@selectio/config": "workspace:*",
         "@selectio/db": "workspace:*",
+        "@selectio/emails": "workspace:*",
         "@selectio/lib": "workspace:*",
         "@selectio/prompts": "workspace:*",
         "@selectio/telegram-bot": "workspace:*",
