@@ -6,4 +6,5 @@ export {
   refreshVacancyResponsesChannel,
   screenAllResponsesChannel,
   screenNewResponsesChannel,
+  verifyHHCredentialsChannel,
 } from "./channels-client";
