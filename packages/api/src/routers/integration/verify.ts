@@ -16,7 +16,6 @@ export const verifyIntegrationCredentials = protectedProcedure
 
     // Performing verification using the shared logic (the same logic Inngest would use)
     const result = await checkHHCredentials(email, password);
-
     if (!result.success) {
       throw new TRPCError({
         code: "BAD_REQUEST",

@@ -66,15 +66,20 @@ export async function checkHHCredentials(
         }
       }
 
-      const match = cookieStr.match(/x-xsrftoken=([^;]+)/i);
-      if (match?.[1]) {
-        xsrfToken = match[1];
+      // Check for both x-xsrftoken and _xsrf
+      const xsrfMatch = cookieStr.match(/x-xsrftoken=([^;]+)/i);
+      const underscoreXsrfMatch = cookieStr.match(/_xsrf=([^;]+)/i);
+
+      if (xsrfMatch?.[1]) {
+        xsrfToken = xsrfMatch[1];
+      } else if (underscoreXsrfMatch?.[1]) {
+        xsrfToken = underscoreXsrfMatch[1];
       }
     }
 
     if (!xsrfToken) {
       const existingXsrfCookie = existingCookies.find(
-        (c) => c.name.toLowerCase() === "x-xsrftoken",
+        (c) => c.name.toLowerCase() === "x-xsrftoken" || c.name === "_xsrf",
       );
       if (existingXsrfCookie) {
         xsrfToken = existingXsrfCookie.value;
@@ -96,12 +101,12 @@ export async function checkHHCredentials(
     if (!password) {
       return err("Требуется пароль для проверки");
     }
-
     const formData = new URLSearchParams();
     formData.append("failUrl", "/account/login?backurl=%2F&role=employer");
     formData.append("accountType", "EMPLOYER");
     formData.append("role", "employer");
     formData.append("remember", "yes");
+    formData.append("isBot", "false");
     formData.append("username", username);
     formData.append("password", password);
 

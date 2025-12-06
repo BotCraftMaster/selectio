@@ -203,7 +203,7 @@ export function IntegrationDialog({
           email: data.email,
           password: data.password,
         });
-      } catch (error) {
+      } catch (_error) {
         // Ошибка уже обработана в onError
         return;
       }
