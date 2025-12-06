@@ -3,7 +3,8 @@ import {
   hasDetailedInfo,
   saveBasicResponse,
   updateResponseDetails,
-} from "../../services/response-service";
+  uploadResumePdf,
+} from "../../services/response";
 import type { ResponseData } from "../types";
 import { HH_CONFIG } from "./config";
 import { humanScroll } from "./human-behavior";
@@ -312,16 +313,15 @@ async function parseResponseDetails(
 
       const experienceData = await parseResumeExperience(page, response.url);
 
-      // Загружаем PDF в S3
       let resumePdfFileId: string | null = null;
       if (experienceData.pdfBuffer) {
-        const { uploadResumePdf } = await import(
-          "../../services/response-service"
-        );
-        resumePdfFileId = await uploadResumePdf(
+        const uploadResult = await uploadResumePdf(
           experienceData.pdfBuffer,
           response.resumeId,
         );
+        if (uploadResult.success) {
+          resumePdfFileId = uploadResult.data;
+        }
       }
 
       await updateResponseDetails({

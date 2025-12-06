@@ -12,8 +12,8 @@ import {
 } from "../../../parsers/hh/auth";
 import { HH_CONFIG } from "../../../parsers/hh/config";
 import { parseResumeExperience } from "../../../parsers/hh/resume-parser";
-import { updateResponseDetails } from "../../../services/response-service";
-import { extractTelegramUsername } from "../../../services/telegram-username-service";
+import { updateResponseDetails, uploadResumePdf } from "../../../services/response";
+import { extractTelegramUsername } from "../../../services/messaging";
 import { inngest } from "../../client";
 
 puppeteer.use(StealthPlugin());
@@ -188,16 +188,15 @@ export const refreshSingleResumeFunction = inngest.createFunction(
           }
         }
 
-        // Загружаем PDF в S3 и сохраняем в БД
         let resumePdfFileId: string | null = null;
         if (experienceData.pdfBuffer) {
-          const { uploadResumePdf } = await import(
-            "../../../services/response-service"
-          );
-          resumePdfFileId = await uploadResumePdf(
+          const result = await uploadResumePdf(
             experienceData.pdfBuffer,
             response.resumeId,
           );
+          if (result.success) {
+            resumePdfFileId = result.data;
+          }
         }
 
         await updateResponseDetails({

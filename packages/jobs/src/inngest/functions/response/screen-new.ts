@@ -1,5 +1,5 @@
 import { db } from "@selectio/db";
-import { screenResponse } from "../../../services/response-screening-service";
+import { screenResponse, unwrap } from "../../../services/response";
 import { screenNewResponsesChannel } from "../../channels/client";
 import { inngest } from "../../client";
 
@@ -88,7 +88,8 @@ export const screenNewResponsesFunction = inngest.createFunction(
           try {
             console.log(`🎯 Скрининг отклика: ${response.id}`);
 
-            const result = await screenResponse(response.id);
+            const resultWrapper = await screenResponse(response.id);
+            const result = unwrap(resultWrapper);
 
             console.log(`✅ Скрининг завершен: ${response.id}`, {
               score: result.score,

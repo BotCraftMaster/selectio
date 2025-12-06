@@ -1,4 +1,4 @@
-import { extractVacancyRequirements } from "../../../services/screening-prompt-service";
+import { extractVacancyRequirements, unwrap } from "../../../services/vacancy";
 import { inngest } from "../../client";
 
 /**
@@ -20,10 +20,13 @@ export const extractVacancyRequirementsFunction = inngest.createFunction(
       });
 
       try {
-        const requirements = await extractVacancyRequirements(
+        const result = await extractVacancyRequirements(
           vacancyId,
           description,
         );
+
+        // Unwrap Result - throws if error
+        const requirements = unwrap(result);
 
         console.log("✅ Требования успешно извлечены и сохранены", {
           vacancyId,
@@ -47,3 +50,4 @@ export const extractVacancyRequirementsFunction = inngest.createFunction(
     });
   },
 );
+

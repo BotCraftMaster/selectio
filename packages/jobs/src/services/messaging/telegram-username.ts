@@ -1,5 +1,8 @@
 import { buildTelegramUsernameExtractionPrompt } from "@selectio/prompts";
-import { generateText } from "../lib/ai-client";
+import { generateText } from "../../lib/ai-client";
+import { AI, createLogger, TELEGRAM } from "../base";
+
+const logger = createLogger("TelegramUsername");
 
 /**
  * Extract Telegram username from contacts data using AI
@@ -20,7 +23,7 @@ export async function extractTelegramUsername(
 
     const { text } = await generateText({
       prompt,
-      temperature: 0,
+      temperature: AI.TEMPERATURE_DETERMINISTIC,
       generationName: "extract-telegram-username",
       metadata: {
         contactsPreview: contactsJson.substring(0, 200),
@@ -39,18 +42,15 @@ export async function extractTelegramUsername(
     }
 
     // Validate the username format
-    const usernameRegex = /^[a-zA-Z0-9_]{5,}$/;
-    if (!usernameRegex.test(cleanedText)) {
-      console.log(
-        `⚠️ Неверный формат Telegram username: ${cleanedText}, игнорируем`,
-      );
+    if (!TELEGRAM.USERNAME_PATTERN.test(cleanedText)) {
+      logger.warn("Invalid Telegram username format detected, ignoring");
       return null;
     }
 
-    console.log(`✅ Извлечён Telegram username: ${cleanedText}`);
+    logger.info("Telegram username extracted successfully");
     return cleanedText;
   } catch (error) {
-    console.error("❌ Ошибка извлечения Telegram username:", error);
+    logger.error("Error extracting Telegram username", { error });
     return null;
   }
 }

@@ -4,7 +4,7 @@ import {
   createInterviewScoring,
   getInterviewContext,
   saveQuestionAnswer,
-} from "../../../../services/interview-service";
+} from "../../../../services/interview";
 import { inngest } from "../../../client";
 
 /**
