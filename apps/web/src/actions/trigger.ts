@@ -243,7 +243,10 @@ export async function triggerSendWelcome(
     return { success: true as const };
   } catch (error) {
     console.error("Не удалось запустить отправку приветствия:", error);
-    return { success: false as const, error: "Failed to trigger welcome" };
+    return {
+      success: false as const,
+      error: "Не удалось запустить отправку приветствия",
+    };
   }
 }
 

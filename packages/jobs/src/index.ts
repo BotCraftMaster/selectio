@@ -100,3 +100,6 @@ export type {
 
 // ==================== Utils ====================
 export { loadCookies, saveCookies } from "./utils/cookies";
+
+export { checkHHCredentials } from "./services";
+

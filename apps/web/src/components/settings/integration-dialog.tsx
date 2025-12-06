@@ -166,13 +166,21 @@ export function IntegrationDialog({
     }),
   );
 
+  const verifyMutation = useMutation(
+    trpc.integration.verifyCredentials.mutationOptions({
+      onError: (err) => {
+        toast.error(err.message || "Ошибка проверки данных");
+      },
+    }),
+  );
+
   const handleClose = () => {
     form.reset();
     setShowPassword(false);
     onClose();
   };
 
-  const onSubmit = (data: IntegrationFormValues) => {
+  const onSubmit = async (data: IntegrationFormValues) => {
     if (!workspaceData?.workspace?.id) {
       toast.error("Workspace не найден");
       return;
@@ -187,6 +195,19 @@ export function IntegrationDialog({
         password: data.password,
       },
     };
+
+    if (data.type === "hh") {
+      try {
+        await verifyMutation.mutateAsync({
+          type: "hh",
+          email: data.email,
+          password: data.password,
+        });
+      } catch (error) {
+        // Ошибка уже обработана в onError
+        return;
+      }
+    }
 
     if (isEditing) {
       updateMutation.mutate(payload);
@@ -353,16 +374,22 @@ export function IntegrationDialog({
               </Button>
               <Button
                 type="submit"
-                disabled={createMutation.isPending || updateMutation.isPending}
+                disabled={
+                  createMutation.isPending ||
+                  updateMutation.isPending ||
+                  verifyMutation.isPending
+                }
                 className="h-11"
               >
-                {isEditing
-                  ? updateMutation.isPending
-                    ? "Обновление..."
-                    : "Обновить"
-                  : createMutation.isPending
-                    ? "Подключение..."
-                    : "Подключить"}
+                {verifyMutation.isPending
+                  ? "Проверка..."
+                  : isEditing
+                    ? updateMutation.isPending
+                      ? "Обновление..."
+                      : "Обновить"
+                    : createMutation.isPending
+                      ? "Подключение..."
+                      : "Подключить"}
               </Button>
             </DialogFooter>
           </form>
