@@ -86,7 +86,7 @@ export async function checkHHCredentials(
     }
 
     if (!xsrfToken) {
-      return err("XSRF token not found during login attempt");
+      return err("XSRF токен не найден при попытке входа");
     }
 
     const newCookieHeader = Array.from(allCookiesMap.entries())
@@ -94,7 +94,7 @@ export async function checkHHCredentials(
       .join("; ");
 
     if (!password) {
-      return err("Password is required for verification");
+      return err("Требуется пароль для проверки");
     }
 
     const formData = new URLSearchParams();
@@ -134,7 +134,7 @@ export async function checkHHCredentials(
     if (isLoginPage) {
       return ok({
         isValid: false,
-        error: "Invalid login or password",
+        error: "Неверный логин или пароль",
       });
     }
 
@@ -165,7 +165,7 @@ export async function checkHHCredentials(
     const msg =
       error instanceof Error
         ? error.message
-        : "Unknown error during verification";
+        : "Неизвестная ошибка при проверке";
     console.error("checkHHCredentials error:", error);
     return err(msg);
   }
